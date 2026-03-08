@@ -234,6 +234,8 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
     checkoutAttempts,
     checkoutHits,
     checkoutRate,
+    bestFirst9Avg: Math.round(bestFirst9Avg * 10) / 10,
+    bestAvgUntil170: Math.round(bestAvgUntil170 * 10) / 10,
   };
 };
 
