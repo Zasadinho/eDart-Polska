@@ -1,5 +1,6 @@
 import { useLeague } from "@/contexts/LeagueContext";
 import { Link } from "react-router-dom";
+import PlayerAvatar from "@/components/PlayerAvatar";
 
 const PlayersPage = () => {
   const { players, activeLeagueId, getPlayerLeagueStats, getPlayerAchievements } = useLeague();
