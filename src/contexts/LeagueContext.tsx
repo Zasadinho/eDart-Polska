@@ -206,8 +206,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
 
     const isWinner = myScore > oppScore;
     if (isWinner) { wins++; form.push("W"); basePoints += rules.win; }
-    else if (myScore < oppScore) { losses++; form.push("L"); }
-    else { draws++; form.push("D"); basePoints += rules.draw; }
+    else { losses++; form.push("L"); }
 
     bonusPoints += calcMatchBonusPoints(isP1, m, myScore, oppScore, isWinner, rules);
   });
