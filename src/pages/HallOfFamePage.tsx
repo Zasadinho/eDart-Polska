@@ -21,12 +21,12 @@ const HallOfFamePage = () => {
   const records: { icon: React.ReactNode; title: string; entries: RecordEntry[] }[] = [];
 
   // Best single-match average
-  const avgRecords: { pid: string; name: string; avatar: string; val: number }[] = [];
+  const avgRecords: { pid: string; name: string; avatar: string; avatarUrl?: string | null; val: number }[] = [];
   leagueMatches.forEach((m) => {
     const p1 = players.find((p) => p.id === m.player1Id);
     const p2 = players.find((p) => p.id === m.player2Id);
-    if (m.avg1 != null && p1) avgRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, val: m.avg1 });
-    if (m.avg2 != null && p2) avgRecords.push({ pid: p2.id, name: p2.name, avatar: p2.avatar, val: m.avg2 });
+    if (m.avg1 != null && p1) avgRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, avatarUrl: p1.avatar_url, val: m.avg1 });
+    if (m.avg2 != null && p2) avgRecords.push({ pid: p2.id, name: p2.name, avatar: p2.avatar, avatarUrl: p2.avatar_url, val: m.avg2 });
   });
   avgRecords.sort((a, b) => b.val - a.val);
   records.push({
