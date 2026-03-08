@@ -69,6 +69,8 @@ export interface PlayerLeagueStats {
   checkoutAttempts: number;
   checkoutHits: number;
   checkoutRate: number;
+  bestFirst9Avg: number;
+  bestAvgUntil170: number;
 }
 
 export interface Match {
@@ -107,6 +109,10 @@ export interface Match {
   bracketRound?: string;
   bracketPosition?: number;
   groupName?: string;
+  first9Avg1?: number;
+  first9Avg2?: number;
+  avgUntil170_1?: number;
+  avgUntil170_2?: number;
 }
 
 export interface Achievement {
@@ -169,8 +175,17 @@ export const achievements: Achievement[] = [
   { id: "a6", name: "Perfekcjonista", description: "Najlepsza średnia w meczu powyżej 90", icon: "✨", rarity: "epic", condition: (s) => s.bestAvg >= 90 },
   { id: "a7", name: "Maszyna do Punktów", description: "Najlepsza średnia w meczu powyżej 100", icon: "🤖", rarity: "legendary", condition: (s) => s.bestAvg >= 100 },
 
-  // ─── TONY (Scoring) ───
-  { id: "t1", name: "Ton 60 Starter", description: "Zbierz 5 wyników Ton 60", icon: "🎪", rarity: "common", condition: (s) => s.ton60 >= 5 },
+  // ─── FIRST 9 AVERAGE ───
+  { id: "f1", name: "Szybki Start", description: "First 9 Average powyżej 60", icon: "⚡", rarity: "common", condition: (s) => s.bestFirst9Avg >= 60 },
+  { id: "f2", name: "Rakieta", description: "First 9 Average powyżej 80", icon: "🚀", rarity: "rare", condition: (s) => s.bestFirst9Avg >= 80 },
+  { id: "f3", name: "Błyskawica", description: "First 9 Average powyżej 100", icon: "⚡", rarity: "epic", condition: (s) => s.bestFirst9Avg >= 100 },
+  { id: "f4", name: "Perfekcyjny Start", description: "First 9 Average powyżej 120", icon: "💫", rarity: "legendary", condition: (s) => s.bestFirst9Avg >= 120 },
+
+  // ─── AVERAGE UNTIL 170 ───
+  { id: "u1", name: "Scoring Machine", description: "Avg Until 170 powyżej 60", icon: "📊", rarity: "common", condition: (s) => s.bestAvgUntil170 >= 60 },
+  { id: "u2", name: "Heavy Scorer", description: "Avg Until 170 powyżej 80", icon: "💪", rarity: "rare", condition: (s) => s.bestAvgUntil170 >= 80 },
+  { id: "u3", name: "Power Scorer", description: "Avg Until 170 powyżej 100", icon: "🔥", rarity: "epic", condition: (s) => s.bestAvgUntil170 >= 100 },
+  { id: "u4", name: "Scoring Legend", description: "Avg Until 170 powyżej 120", icon: "👑", rarity: "legendary", condition: (s) => s.bestAvgUntil170 >= 120 },
   { id: "t2", name: "Ton 80 Kolekcjoner", description: "Zbierz 15 wyników Ton 80", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 15 },
   { id: "t3", name: "Ton+ Hunter", description: "Rzuć 20 wyników powyżej 100", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 20 },
   { id: "t4", name: "Ton Kolekcjoner", description: "Zbierz łącznie 50 tonów (60+80+plus)", icon: "💰", rarity: "epic", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus) >= 50 },

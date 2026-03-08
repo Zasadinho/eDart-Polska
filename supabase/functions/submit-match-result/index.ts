@@ -80,6 +80,10 @@ Deno.serve(async (req) => {
       checkout_attempts2 = 0,
       checkout_hits1 = 0,
       checkout_hits2 = 0,
+      first_9_avg1,
+      first_9_avg2,
+      avg_until_170_1,
+      avg_until_170_2,
       autodarts_link,
       // If admin wants to auto-complete
       auto_complete = false,
@@ -183,6 +187,10 @@ Deno.serve(async (req) => {
         checkout_attempts2,
         checkout_hits1,
         checkout_hits2,
+        first_9_avg1: first_9_avg1 ?? null,
+        first_9_avg2: first_9_avg2 ?? null,
+        avg_until_170_1: avg_until_170_1 ?? null,
+        avg_until_170_2: avg_until_170_2 ?? null,
         autodarts_link: autodarts_link ?? null,
       })
       .eq("id", matchId);

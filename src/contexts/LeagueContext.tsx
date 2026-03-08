@@ -63,6 +63,10 @@ export interface MatchResultData {
   checkoutAttempts2?: number;
   checkoutHits1?: number;
   checkoutHits2?: number;
+  first9Avg1?: number;
+  first9Avg2?: number;
+  avgUntil170_1?: number;
+  avgUntil170_2?: number;
   autodartsLink?: string;
 }
 
@@ -128,6 +132,10 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
     bracketRound: m.bracket_round,
     bracketPosition: m.bracket_position,
     groupName: m.group_name,
+    first9Avg1: m.first_9_avg1 ? Number(m.first_9_avg1) : undefined,
+    first9Avg2: m.first_9_avg2 ? Number(m.first_9_avg2) : undefined,
+    avgUntil170_1: m.avg_until_170_1 ? Number(m.avg_until_170_1) : undefined,
+    avgUntil170_2: m.avg_until_170_2 ? Number(m.avg_until_170_2) : undefined,
   };
 };
 
@@ -166,6 +174,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
   let highestCheckout = 0, bestAvg = 0, totalDarts = 0;
   let ton60 = 0, ton80 = 0, tonPlus = 0;
   let checkoutAttempts = 0, checkoutHits = 0;
+  let bestFirst9Avg = 0, bestAvgUntil170 = 0;
   let basePoints = 0, bonusPoints = 0;
   const avgValues: number[] = [];
   const form: ("W" | "L" | "D")[] = [];
@@ -190,6 +199,10 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
     tonPlus += isP1 ? (m.tonPlus1 ?? 0) : (m.tonPlus2 ?? 0);
     checkoutAttempts += isP1 ? (m.checkoutAttempts1 ?? 0) : (m.checkoutAttempts2 ?? 0);
     checkoutHits += isP1 ? (m.checkoutHits1 ?? 0) : (m.checkoutHits2 ?? 0);
+    const myFirst9 = isP1 ? (m.first9Avg1 ?? 0) : (m.first9Avg2 ?? 0);
+    if (myFirst9 > bestFirst9Avg) bestFirst9Avg = myFirst9;
+    const myAvgUntil170 = isP1 ? (m.avgUntil170_1 ?? 0) : (m.avgUntil170_2 ?? 0);
+    if (myAvgUntil170 > bestAvgUntil170) bestAvgUntil170 = myAvgUntil170;
 
     const isWinner = myScore > oppScore;
     if (isWinner) { wins++; form.push("W"); basePoints += rules.win; }
@@ -221,6 +234,8 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
     checkoutAttempts,
     checkoutHits,
     checkoutRate,
+    bestFirst9Avg: Math.round(bestFirst9Avg * 10) / 10,
+    bestAvgUntil170: Math.round(bestAvgUntil170 * 10) / 10,
   };
 };
 
@@ -340,6 +355,10 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       checkout_attempts2: data.checkoutAttempts2 ?? 0,
       checkout_hits1: data.checkoutHits1 ?? 0,
       checkout_hits2: data.checkoutHits2 ?? 0,
+      first_9_avg1: data.first9Avg1 ?? null,
+      first_9_avg2: data.first9Avg2 ?? null,
+      avg_until_170_1: data.avgUntil170_1 ?? null,
+      avg_until_170_2: data.avgUntil170_2 ?? null,
       autodarts_link: data.autodartsLink,
     }).eq("id", matchId);
 
@@ -369,6 +388,8 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       darts_thrown1: data.dartsThrown1 ?? 0, darts_thrown2: data.dartsThrown2 ?? 0,
       checkout_attempts1: data.checkoutAttempts1 ?? 0, checkout_attempts2: data.checkoutAttempts2 ?? 0,
       checkout_hits1: data.checkoutHits1 ?? 0, checkout_hits2: data.checkoutHits2 ?? 0,
+      first_9_avg1: data.first9Avg1 ?? null, first_9_avg2: data.first9Avg2 ?? null,
+      avg_until_170_1: data.avgUntil170_1 ?? null, avg_until_170_2: data.avgUntil170_2 ?? null,
       autodarts_link: data.autodartsLink,
     }).eq("id", matchId);
 
@@ -397,6 +418,8 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       darts_thrown1: 0, darts_thrown2: 0,
       checkout_attempts1: 0, checkout_attempts2: 0,
       checkout_hits1: 0, checkout_hits2: 0,
+      first_9_avg1: null, first_9_avg2: null,
+      avg_until_170_1: null, avg_until_170_2: null,
       autodarts_link: null,
     }).eq("id", matchId);
 
@@ -408,6 +431,8 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       ton40_1: 0, ton40_2: 0, ton60_1: 0, ton60_2: 0, ton80_1: 0, ton80_2: 0,
       tonPlus1: 0, tonPlus2: 0, dartsThrown1: 0, dartsThrown2: 0,
       checkoutAttempts1: 0, checkoutAttempts2: 0, checkoutHits1: 0, checkoutHits2: 0,
+      first9Avg1: undefined, first9Avg2: undefined,
+      avgUntil170_1: undefined, avgUntil170_2: undefined,
       autodartsLink: undefined,
     } : m));
   }, []);

@@ -169,6 +169,8 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
     setEditScore2(String(m.score2 ?? ""));
     setEditStats({
       avg1: String(m.avg1 ?? ""), avg2: String(m.avg2 ?? ""),
+      first9Avg1: String(m.first9Avg1 ?? ""), first9Avg2: String(m.first9Avg2 ?? ""),
+      avgUntil170_1: String(m.avgUntil170_1 ?? ""), avgUntil170_2: String(m.avgUntil170_2 ?? ""),
       oneEighties1: String(m.oneEighties1 ?? ""), oneEighties2: String(m.oneEighties2 ?? ""),
       hc1: String(m.highCheckout1 ?? ""), hc2: String(m.highCheckout2 ?? ""),
       ton60_1: String(m.ton60_1 ?? ""), ton60_2: String(m.ton60_2 ?? ""),
@@ -203,6 +205,10 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
       checkoutAttempts2: parseInt(editStats.checkoutAttempts2) || 0,
       checkoutHits1: parseInt(editStats.checkoutHits1) || 0,
       checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
+      first9Avg1: parseFloat(editStats.first9Avg1) || undefined,
+      first9Avg2: parseFloat(editStats.first9Avg2) || undefined,
+      avgUntil170_1: parseFloat(editStats.avgUntil170_1) || undefined,
+      avgUntil170_2: parseFloat(editStats.avgUntil170_2) || undefined,
       autodartsLink: m.autodartsLink,
     });
     setEditingId(null);
@@ -1023,6 +1029,8 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
     setEditScore2(String(m.score2 ?? ""));
     setEditStats({
       avg1: String(m.avg1 ?? ""), avg2: String(m.avg2 ?? ""),
+      first9Avg1: String(m.first9Avg1 ?? ""), first9Avg2: String(m.first9Avg2 ?? ""),
+      avgUntil170_1: String(m.avgUntil170_1 ?? ""), avgUntil170_2: String(m.avgUntil170_2 ?? ""),
       oneEighties1: String(m.oneEighties1 ?? ""), oneEighties2: String(m.oneEighties2 ?? ""),
       hc1: String(m.highCheckout1 ?? ""), hc2: String(m.highCheckout2 ?? ""),
       ton60_1: String(m.ton60_1 ?? ""), ton60_2: String(m.ton60_2 ?? ""),
@@ -1057,6 +1065,10 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
       checkoutAttempts2: parseInt(editStats.checkoutAttempts2) || 0,
       checkoutHits1: parseInt(editStats.checkoutHits1) || 0,
       checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
+      first9Avg1: parseFloat(editStats.first9Avg1) || undefined,
+      first9Avg2: parseFloat(editStats.first9Avg2) || undefined,
+      avgUntil170_1: parseFloat(editStats.avgUntil170_1) || undefined,
+      avgUntil170_2: parseFloat(editStats.avgUntil170_2) || undefined,
       autodartsLink: m.autodartsLink,
     });
     setEditingId(null);
@@ -1103,6 +1115,10 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
       checkoutAttempts2: parseInt(editStats.checkoutAttempts2) || 0,
       checkoutHits1: parseInt(editStats.checkoutHits1) || 0,
       checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
+      first9Avg1: parseFloat(editStats.first9Avg1) || undefined,
+      first9Avg2: parseFloat(editStats.first9Avg2) || undefined,
+      avgUntil170_1: parseFloat(editStats.avgUntil170_1) || undefined,
+      avgUntil170_2: parseFloat(editStats.avgUntil170_2) || undefined,
       autodartsLink: m.autodartsLink,
     });
     await approveMatch(m.id);
