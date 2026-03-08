@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import LeagueSelector from "@/components/LeagueSelector";
+import MatchProposalSection from "@/components/MatchProposalSection";
 
 interface PlayerContact {
   id: string;
@@ -92,7 +93,7 @@ const MyMatchesPage = () => {
           <Handshake className="h-8 w-8 text-primary" /> Moje Mecze
         </h1>
         <p className="text-muted-foreground font-body mb-4">
-          Twoje nadchodzące mecze z danymi kontaktowymi przeciwników
+          Twoje nadchodzące mecze — ustal termin z przeciwnikiem
         </p>
         <LeagueSelector />
       </div>
@@ -120,6 +121,7 @@ const MyMatchesPage = () => {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                   <Calendar className="h-3.5 w-3.5" />
                   <span className="font-body">
+                    Termin do:{" "}
                     {new Date(match.date).toLocaleDateString("pl-PL", {
                       day: "numeric",
                       month: "long",
@@ -182,6 +184,17 @@ const MyMatchesPage = () => {
                   <p className="text-xs text-muted-foreground font-body italic">
                     Przeciwnik nie podał jeszcze danych kontaktowych.
                   </p>
+                )}
+
+                {/* Proposal section */}
+                {myPlayerId && (
+                  <MatchProposalSection
+                    matchId={match.id}
+                    myPlayerId={myPlayerId}
+                    opponentName={opponentName}
+                    matchDeadline={match.date}
+                    confirmedDate={match.confirmedDate ?? null}
+                  />
                 )}
               </div>
             );
