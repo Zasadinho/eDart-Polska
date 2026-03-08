@@ -210,7 +210,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
     basePoints,
     bonusPoints,
     legsWon, legsLost, avg,
-    highestCheckout, oneEighties, nineDarters,
+    highestCheckout, oneEighties,
     form: form,
     badges: [],
     matchesPlayed: completed.length,
