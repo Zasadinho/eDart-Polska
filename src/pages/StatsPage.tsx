@@ -110,9 +110,10 @@ const StatsPage = () => {
                   <th className="text-left px-4 py-3 text-xs font-display uppercase tracking-wider text-muted-foreground">Gracz</th>
                   {activeTab === "tons" && (
                     <>
-                       <th className="text-center px-3 py-3 text-xs font-display uppercase tracking-wider text-secondary">T60</th>
-                      <th className="text-center px-3 py-3 text-xs font-display uppercase tracking-wider text-primary">T80</th>
-                      <th className="text-center px-3 py-3 text-xs font-display uppercase tracking-wider text-foreground">T+</th>
+                       <th className="text-center px-3 py-3 text-xs font-display uppercase tracking-wider text-secondary">60+</th>
+                      <th className="text-center px-3 py-3 text-xs font-display uppercase tracking-wider text-primary">100+</th>
+                      <th className="text-center px-3 py-3 text-xs font-display uppercase tracking-wider text-foreground">140+</th>
+                      <th className="text-center px-3 py-3 text-xs font-display uppercase tracking-wider text-accent">170+</th>
                       <th className="text-center px-3 py-3 text-xs font-display uppercase tracking-wider text-destructive">180</th>
                       <th className="text-center px-3 py-3 text-xs font-display uppercase tracking-wider text-foreground">Suma</th>
                     </>
