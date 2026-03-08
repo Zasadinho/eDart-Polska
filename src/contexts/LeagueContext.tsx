@@ -431,6 +431,8 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       ton40_1: 0, ton40_2: 0, ton60_1: 0, ton60_2: 0, ton80_1: 0, ton80_2: 0,
       tonPlus1: 0, tonPlus2: 0, dartsThrown1: 0, dartsThrown2: 0,
       checkoutAttempts1: 0, checkoutAttempts2: 0, checkoutHits1: 0, checkoutHits2: 0,
+      first9Avg1: undefined, first9Avg2: undefined,
+      avgUntil170_1: undefined, avgUntil170_2: undefined,
       autodartsLink: undefined,
     } : m));
   }, []);
