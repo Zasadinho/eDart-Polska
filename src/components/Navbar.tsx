@@ -122,8 +122,12 @@ const Navbar = () => {
                 </Button>
               </Link>
             )}
+            <div className="flex items-center gap-2 mb-2 px-2">
+              <ThemeToggle />
+            </div>
             {user ? (
               <>
+                <div className="px-2 mb-2"><NotificationBell /></div>
                 <Link to="/settings" onClick={() => setMobileOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start font-display uppercase tracking-wider text-sm mb-1">
                     <Settings className="h-4 w-4 mr-1" /> Ustawienia
