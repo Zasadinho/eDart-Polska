@@ -323,28 +323,33 @@ async function fetchMatchData(matchId: string, token: string) {
         else if (points >= 80) st.ton80++;
         else if (points >= 60) st.ton60++;
 
-        // Checkout detection
-        const isCheckout = turn.isCheckout || turn.checkout || turn.bupiResult === "D" ||
-          (dartsArr && dartsArr.length > 0 && (() => {
+        // Checkout detection - score field = remaining score, so score === 0 means checkout
+        const remainingScore = typeof turn.score === "number" ? turn.score : -1;
+        const isCheckout = remainingScore === 0 || turn.isCheckout || turn.checkout ||
+          (dartsArr && dartsArr.length > 0 && !turn.busted && (() => {
             const lastDart = dartsArr[dartsArr.length - 1];
             const seg = lastDart.segment || lastDart;
-            return (seg.bed === "D" || seg.multiplier === 2) && points > 0;
-          })());
+            return seg.bed === "D" || seg.bed === "Double" || seg.multiplier === 2 || seg.name === "BULL";
+          })() && points > 0);
 
         if (isCheckout && points > 0) {
           st.checkoutHits++;
           if (points > st.highCheckout) st.highCheckout = points;
         }
 
-        // Checkout attempts
+        // Checkout attempts - count doubles thrown when remaining score <= 170
         if (typeof turn.checkoutAttempts === "number") {
           st.checkoutAttempts += turn.checkoutAttempts;
         } else if (typeof turn.doublesThrown === "number") {
           st.checkoutAttempts += turn.doublesThrown;
         } else if (dartsArr) {
+          // In Autodarts, remaining score before throw is (score + points)
+          // Check if any dart targeted a double/bull for checkout
           for (const d of dartsArr) {
             const seg = d.segment || d;
-            if (seg.bed === "D" || seg.multiplier === 2) st.checkoutAttempts++;
+            if (seg.bed === "D" || seg.bed === "Double" || seg.multiplier === 2 || seg.name === "BULL") {
+              st.checkoutAttempts++;
+            }
           }
         }
       }
