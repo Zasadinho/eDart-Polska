@@ -1,19 +1,18 @@
 export type LeagueType = "league" | "bracket" | "group_bracket";
 
 export interface BonusRules {
-  win: number;       // points for win (default 3)
-  draw: number;      // points for draw (default 1)
-  per180: number;    // points per 180 scored (default 1)
-  checkout100: number; // points for checkout 100+ (default 1)
-  checkout150: number; // extra points for checkout 150+ (default 1)
-  avg90: number;     // points for avg 90+ (default 1)
-  avg100: number;    // extra points for avg 100+ (default 1)
-  closeLoss: number; // points for loser if 1-leg difference (default 1)
-  cleanSweep: number; // points for winner if opponent 0 legs (default 1)
+  win: number;       // punkty za wygraną (domyślnie 3)
+  per180: number;    // punkty za każdą 180 (domyślnie 1)
+  checkout100: number; // punkty za checkout 100+ (domyślnie 1)
+  checkout150: number; // dodatkowe punkty za checkout 150+ (domyślnie 1)
+  avg90: number;     // punkty za średnią 90+ (domyślnie 1)
+  avg100: number;    // dodatkowe punkty za średnią 100+ (domyślnie 1)
+  closeLoss: number; // punkty za przegraną różnicą 1 lega (domyślnie 1)
+  cleanSweep: number; // punkty za wygraną do zera (domyślnie 1)
 }
 
 export const DEFAULT_BONUS_RULES: BonusRules = {
-  win: 3, draw: 1, per180: 1,
+  win: 3, per180: 1,
   checkout100: 1, checkout150: 1, avg90: 1, avg100: 1,
   closeLoss: 1, cleanSweep: 1,
 };
