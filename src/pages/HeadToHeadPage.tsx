@@ -8,13 +8,11 @@ import LeagueSelector from "@/components/LeagueSelector";
 import PlayerAvatar from "@/components/PlayerAvatar";
 
 const HeadToHeadPage = () => {
-  const { players, matches, activeLeagueId, getLeagueMatches } = useLeague();
+  const { players, matches } = useLeague();
   const [player1Id, setPlayer1Id] = useState<string>("");
   const [player2Id, setPlayer2Id] = useState<string>("");
 
-  const leagueMatches = getLeagueMatches(activeLeagueId);
-
-  const h2hMatches = leagueMatches.filter(
+  const h2hMatches = matches.filter(
     (m) =>
       m.status === "completed" &&
       ((m.player1Id === player1Id && m.player2Id === player2Id) ||

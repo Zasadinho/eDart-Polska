@@ -1,0 +1,1 @@
+ALTER TABLE public.leagues ADD COLUMN meetings_per_pair integer NOT NULL DEFAULT 1;

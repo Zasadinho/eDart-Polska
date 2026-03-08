@@ -24,6 +24,7 @@ export type Database = {
           is_active: boolean
           league_type: string
           max_legs: number | null
+          meetings_per_pair: number
           name: string
           registration_open: boolean
           season: string
@@ -37,6 +38,7 @@ export type Database = {
           is_active?: boolean
           league_type?: string
           max_legs?: number | null
+          meetings_per_pair?: number
           name: string
           registration_open?: boolean
           season: string
@@ -50,6 +52,7 @@ export type Database = {
           is_active?: boolean
           league_type?: string
           max_legs?: number | null
+          meetings_per_pair?: number
           name?: string
           registration_open?: boolean
           season?: string
