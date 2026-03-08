@@ -190,11 +190,23 @@ const SubmitMatchPage = () => {
       }
 
       const targetMatch = matchedUpcoming || selectedMatch;
-      const isReversedOrder = Boolean(
+      const expectedP1AutoId = targetMatch ? playerAutodartsMap[targetMatch.player1Id] : undefined;
+      const expectedP2AutoId = targetMatch ? playerAutodartsMap[targetMatch.player2Id] : undefined;
+
+      const byAutodartsId = Boolean(
+        expectedP1AutoId && expectedP2AutoId &&
+        payload.player1_autodarts_id && payload.player2_autodarts_id &&
+        payload.player1_autodarts_id === expectedP2AutoId &&
+        payload.player2_autodarts_id === expectedP1AutoId
+      );
+
+      const byName = Boolean(
         targetMatch &&
           normalizeName(targetMatch.player1Name) === p2 &&
           normalizeName(targetMatch.player2Name) === p1
       );
+
+      const isReversedOrder = byAutodartsId || byName;
 
       const alignedPayload = isReversedOrder
         ? {
@@ -225,6 +237,8 @@ const SubmitMatchPage = () => {
             checkout_hits2: payload.checkout_hits1,
             player1_name: payload.player2_name,
             player2_name: payload.player1_name,
+            player1_autodarts_id: payload.player2_autodarts_id,
+            player2_autodarts_id: payload.player1_autodarts_id,
           }
         : payload;
 
@@ -240,7 +254,7 @@ const SubmitMatchPage = () => {
         });
       }
     },
-    [autoSubmitFromExtension, mapPayloadToStats, selectedMatch, submitMatchResult, toast, upcomingMatches]
+    [autoSubmitFromExtension, mapPayloadToStats, playerAutodartsMap, selectedMatch, submitMatchResult, toast, upcomingMatches]
   );
 
   const requestExtensionData = useCallback(() => {
