@@ -994,11 +994,16 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
 
 // ─── MATCHES TAB ───
 const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }: any) => {
+  const { updateMatchResult, approveMatch, rejectMatch, refreshData } = useLeague();
   const [selectedLeague, setSelectedLeague] = useState(leagues[0]?.id || "");
   const [newMatchP1, setNewMatchP1] = useState("");
   const [newMatchP2, setNewMatchP2] = useState("");
   const [newMatchDate, setNewMatchDate] = useState("");
   const [newMatchRound, setNewMatchRound] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editScore1, setEditScore1] = useState("");
+  const [editScore2, setEditScore2] = useState("");
+  const [editStats, setEditStats] = useState<Record<string, string>>({});
 
   const handleAddMatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1013,16 +1018,119 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
     setNewMatchP1(""); setNewMatchP2(""); setNewMatchDate(""); setNewMatchRound("");
   };
 
+  const startEdit = (m: any) => {
+    setEditingId(m.id);
+    setEditScore1(String(m.score1 ?? ""));
+    setEditScore2(String(m.score2 ?? ""));
+    setEditStats({
+      avg1: String(m.avg1 ?? ""), avg2: String(m.avg2 ?? ""),
+      oneEighties1: String(m.oneEighties1 ?? ""), oneEighties2: String(m.oneEighties2 ?? ""),
+      hc1: String(m.highCheckout1 ?? ""), hc2: String(m.highCheckout2 ?? ""),
+      ton60_1: String(m.ton60_1 ?? ""), ton60_2: String(m.ton60_2 ?? ""),
+      ton80_1: String(m.ton80_1 ?? ""), ton80_2: String(m.ton80_2 ?? ""),
+      tonPlus1: String(m.tonPlus1 ?? ""), tonPlus2: String(m.tonPlus2 ?? ""),
+      darts1: String(m.dartsThrown1 ?? ""), darts2: String(m.dartsThrown2 ?? ""),
+      checkoutAttempts1: String(m.checkoutAttempts1 ?? ""), checkoutAttempts2: String(m.checkoutAttempts2 ?? ""),
+      checkoutHits1: String(m.checkoutHits1 ?? ""), checkoutHits2: String(m.checkoutHits2 ?? ""),
+      nineDarters1: String(m.nineDarters1 ?? ""), nineDarters2: String(m.nineDarters2 ?? ""),
+    });
+  };
+
+  const saveEdit = async (m: any) => {
+    const s1 = parseInt(editScore1) || 0;
+    const s2 = parseInt(editScore2) || 0;
+    await updateMatchResult(m.id, {
+      score1: s1, score2: s2,
+      avg1: parseFloat(editStats.avg1) || undefined,
+      avg2: parseFloat(editStats.avg2) || undefined,
+      oneEighties1: parseInt(editStats.oneEighties1) || 0,
+      oneEighties2: parseInt(editStats.oneEighties2) || 0,
+      highCheckout1: parseInt(editStats.hc1) || 0,
+      highCheckout2: parseInt(editStats.hc2) || 0,
+      ton60_1: parseInt(editStats.ton60_1) || 0,
+      ton60_2: parseInt(editStats.ton60_2) || 0,
+      ton80_1: parseInt(editStats.ton80_1) || 0,
+      ton80_2: parseInt(editStats.ton80_2) || 0,
+      tonPlus1: parseInt(editStats.tonPlus1) || 0,
+      tonPlus2: parseInt(editStats.tonPlus2) || 0,
+      dartsThrown1: parseInt(editStats.darts1) || 0,
+      dartsThrown2: parseInt(editStats.darts2) || 0,
+      checkoutAttempts1: parseInt(editStats.checkoutAttempts1) || 0,
+      checkoutAttempts2: parseInt(editStats.checkoutAttempts2) || 0,
+      checkoutHits1: parseInt(editStats.checkoutHits1) || 0,
+      checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
+      nineDarters1: parseInt(editStats.nineDarters1) || 0,
+      nineDarters2: parseInt(editStats.nineDarters2) || 0,
+      autodartsLink: m.autodartsLink,
+    });
+    setEditingId(null);
+    toast({ title: "✏️ Wynik zaktualizowany!", description: `${m.player1Name} vs ${m.player2Name}` });
+  };
+
+  const handleSetCompleted = async (m: any) => {
+    // If match has scores, mark as completed directly
+    if (m.score1 != null && m.score2 != null) {
+      await approveMatch(m.id);
+      toast({ title: "✅ Mecz oznaczony jako rozegrany!", description: `${m.player1Name} vs ${m.player2Name}` });
+    } else {
+      // Open edit first so admin can enter scores
+      startEdit(m);
+      toast({ title: "Wprowadź wynik", description: "Uzupełnij wynik i statystyki, a potem zapisz.", variant: "default" });
+    }
+  };
+
+  const handleResetMatch = async (matchId: string) => {
+    await rejectMatch(matchId);
+    toast({ title: "🔄 Mecz zresetowany", description: "Status zmieniony na 'zaplanowany', statystyki wyczyszczone." });
+  };
+
+  const handleCompleteWithStats = async (m: any) => {
+    const s1 = parseInt(editScore1) || 0;
+    const s2 = parseInt(editScore2) || 0;
+    await updateMatchResult(m.id, {
+      score1: s1, score2: s2,
+      avg1: parseFloat(editStats.avg1) || undefined,
+      avg2: parseFloat(editStats.avg2) || undefined,
+      oneEighties1: parseInt(editStats.oneEighties1) || 0,
+      oneEighties2: parseInt(editStats.oneEighties2) || 0,
+      highCheckout1: parseInt(editStats.hc1) || 0,
+      highCheckout2: parseInt(editStats.hc2) || 0,
+      ton60_1: parseInt(editStats.ton60_1) || 0,
+      ton60_2: parseInt(editStats.ton60_2) || 0,
+      ton80_1: parseInt(editStats.ton80_1) || 0,
+      ton80_2: parseInt(editStats.ton80_2) || 0,
+      tonPlus1: parseInt(editStats.tonPlus1) || 0,
+      tonPlus2: parseInt(editStats.tonPlus2) || 0,
+      dartsThrown1: parseInt(editStats.darts1) || 0,
+      dartsThrown2: parseInt(editStats.darts2) || 0,
+      checkoutAttempts1: parseInt(editStats.checkoutAttempts1) || 0,
+      checkoutAttempts2: parseInt(editStats.checkoutAttempts2) || 0,
+      checkoutHits1: parseInt(editStats.checkoutHits1) || 0,
+      checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
+      nineDarters1: parseInt(editStats.nineDarters1) || 0,
+      nineDarters2: parseInt(editStats.nineDarters2) || 0,
+      autodartsLink: m.autodartsLink,
+    });
+    await approveMatch(m.id);
+    setEditingId(null);
+    toast({ title: "✅ Wynik zapisany i mecz zatwierdzony!", description: `${m.player1Name} ${s1}:${s2} ${m.player2Name}` });
+  };
+
   const approvedPlayers = players.filter((p: any) => p.approved);
   const leagueMatches = selectedLeague ? matches.filter((m: any) => m.leagueId === selectedLeague) : matches;
 
-  // Group matches by bracket round or group name for display
   const groupedByBracket = leagueMatches.reduce((acc: any, m: any) => {
     const key = m.bracketRound || m.groupName || (m.round ? `Kolejka ${m.round}` : "Inne");
     if (!acc[key]) acc[key] = [];
     acc[key].push(m);
     return acc;
   }, {} as Record<string, any[]>);
+
+  const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+    completed: { label: "✅ Rozegrany", color: "text-secondary" },
+    pending_approval: { label: "⏳ Do zatwierdzenia", color: "text-accent" },
+    upcoming: { label: "📅 Zaplanowany", color: "text-muted-foreground" },
+  };
 
   return (
     <div className="space-y-6">
@@ -1084,20 +1192,84 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
         Object.entries(groupedByBracket).map(([key, groupMatches]: [string, any]) => (
           <div key={key} className="space-y-2">
             <h3 className="text-sm font-display font-bold text-primary uppercase tracking-wider">{key}</h3>
-            {groupMatches.map((m: any) => (
-              <div key={m.id} className="rounded-lg border border-border bg-card p-4 card-glow flex items-center justify-between">
-                <div>
-                  <div className="font-body text-sm text-foreground">{m.player1Name} vs {m.player2Name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(m.date).toLocaleDateString("pl-PL")} ·{" "}
-                    {m.status === "completed" ? `${m.score1}:${m.score2} ✅` : m.status === "pending_approval" ? `${m.score1}:${m.score2} ⏳` : "📅 Zaplanowany"}
-                  </div>
+            {groupMatches.map((m: any) => {
+              const statusInfo = STATUS_LABELS[m.status] || STATUS_LABELS.upcoming;
+              const isEditing = editingId === m.id;
+
+              return (
+                <div key={m.id} className="rounded-lg border border-border bg-card p-4 card-glow">
+                  {isEditing ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-display font-bold text-foreground text-sm">
+                          ✏️ Edytuj: {m.player1Name} vs {m.player2Name}
+                        </span>
+                        <Button variant="ghost" size="sm" onClick={() => setEditingId(null)} className="text-xs">Anuluj</Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground font-body mb-1 block">{m.player1Name} — Legi</Label>
+                          <Input type="number" min="0" value={editScore1} onChange={e => setEditScore1(e.target.value)} className="bg-muted/30 border-border text-center font-display text-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground font-body mb-1 block">{m.player2Name} — Legi</Label>
+                          <Input type="number" min="0" value={editScore2} onChange={e => setEditScore2(e.target.value)} className="bg-muted/30 border-border text-center font-display text-lg" />
+                        </div>
+                      </div>
+                      <MatchStatFields stats={editStats} setStats={setEditStats} p1={m.player1Name} p2={m.player2Name} />
+                      <div className="flex gap-3 flex-wrap">
+                        <Button variant="default" size="sm" className="flex-1" onClick={() => saveEdit(m)}>
+                          <Check className="h-4 w-4 mr-1" /> Zapisz zmiany
+                        </Button>
+                        {m.status !== "completed" && (
+                          <Button variant="hero" size="sm" className="flex-1" onClick={() => handleCompleteWithStats(m)}>
+                            <CheckCircle2 className="h-4 w-4 mr-1" /> Zapisz i zatwierdź
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-body text-sm text-foreground">{m.player1Name} vs {m.player2Name}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {new Date(m.date).toLocaleDateString("pl-PL")}
+                          {m.score1 != null && m.score2 != null && (
+                            <span className="ml-1 font-display font-bold"> · {m.score1}:{m.score2}</span>
+                          )}
+                          {m.avg1 != null && <span> · Śr. {Number(m.avg1).toFixed(1)}/{Number(m.avg2).toFixed(1)}</span>}
+                          {(m.oneEighties1 > 0 || m.oneEighties2 > 0) && <span> · 180: {m.oneEighties1 ?? 0}/{m.oneEighties2 ?? 0}</span>}
+                        </div>
+                        <span className={`text-[10px] font-display uppercase ${statusInfo.color}`}>{statusInfo.label}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button size="sm" variant="ghost" onClick={() => startEdit(m)} title="Edytuj wynik i statystyki">
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        {m.status === "upcoming" && (
+                          <Button size="sm" variant="ghost" className="text-secondary hover:text-secondary" onClick={() => handleSetCompleted(m)} title="Oznacz jako rozegrany">
+                            <CheckCircle2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {m.status === "pending_approval" && (
+                          <Button size="sm" variant="ghost" className="text-secondary hover:text-secondary" onClick={() => { approveMatch(m.id); toast({ title: "✅ Mecz zatwierdzony!" }); }} title="Zatwierdź">
+                            <CheckCircle2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {(m.status === "completed" || m.status === "pending_approval") && (
+                          <Button size="sm" variant="ghost" className="text-accent hover:text-accent" onClick={() => handleResetMatch(m.id)} title="Resetuj mecz (cofnij do zaplanowanego)">
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { deleteMatch(m.id); toast({ title: "Mecz usunięty" }); }} title="Usuń mecz">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { deleteMatch(m.id); toast({ title: "Mecz usunięty" }); }}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ))
       ) : (
