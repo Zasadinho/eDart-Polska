@@ -188,20 +188,28 @@ const SubmitMatchPage = () => {
       const p1 = (payload.player1_name || "").trim().toLowerCase();
       const p2 = (payload.player2_name || "").trim().toLowerCase();
 
+      // Only match upcoming league matches (not random results)
       const matchedUpcoming = upcomingMatches.find((m) => {
         const m1 = m.player1Name.trim().toLowerCase();
         const m2 = m.player2Name.trim().toLowerCase();
         return (m1 === p1 && m2 === p2) || (m1 === p2 && m2 === p1);
       });
 
+      if (!matchedUpcoming && allowAutoSubmit) {
+        // Don't auto-submit if we can't match to a league game
+        console.log("Auto-submit skipped: no matching league match for", p1, "vs", p2);
+        return;
+      }
+
       if (matchedUpcoming) {
         setSelectedMatchId(matchedUpcoming.id);
       }
 
-      // Check if we need to swap: autodarts player1 matches match player2
+      // Always swap on the FORM side if Autodarts player1 matches our match player2
       let finalPayload = payload;
       if (matchedUpcoming) {
         const m1 = matchedUpcoming.player1Name.trim().toLowerCase();
+        // If our match's player1 is autodarts' player2 -> swap
         if (m1 === p2 && m1 !== p1) {
           finalPayload = swapPayload(payload);
         }
