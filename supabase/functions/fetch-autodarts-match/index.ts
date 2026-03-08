@@ -259,10 +259,6 @@ function processGameTurns(
         runningRemaining -= dartValue;
         if (runningRemaining <= 0) break;
       }
-
-        runningRemaining -= dartValue;
-        if (runningRemaining <= 0) break;
-      }
     } else if (!dartsArr && scoreBeforeTurn != null) {
       // No per-dart detail: only count if starting score is a one-dart finish
       if (isFinishableWithOneDouble(scoreBeforeTurn)) {
