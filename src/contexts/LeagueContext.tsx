@@ -177,7 +177,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
   let bestFirst9Avg = 0, bestAvgUntil170 = 0;
   let basePoints = 0, bonusPoints = 0;
   const avgValues: number[] = [];
-  const form: ("W" | "L" | "D")[] = [];
+  const form: ("W" | "L")[] = [];
 
   completed.forEach((m) => {
     const isP1 = m.player1Id === playerId;
