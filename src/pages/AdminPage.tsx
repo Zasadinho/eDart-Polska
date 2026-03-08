@@ -218,6 +218,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
   const [description, setDescription] = useState("");
   const [format, setFormat] = useState("Best of 5");
   const [isActive, setIsActive] = useState(true);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
   const [leagueType, setLeagueType] = useState<LeagueType>("league");
   const [bonusRules, setBonusRules] = useState<BonusRules>({ ...DEFAULT_BONUS_RULES });
   
@@ -234,13 +235,14 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
 
   const resetForm = () => {
     setName(""); setSeason(""); setDescription(""); setFormat("Best of 5");
-    setIsActive(true); setLeagueType("league"); setBonusRules({ ...DEFAULT_BONUS_RULES });
+    setIsActive(true); setRegistrationOpen(false); setLeagueType("league"); setBonusRules({ ...DEFAULT_BONUS_RULES });
     setShowForm(false); setEditId(null);
   };
 
   const startEdit = (l: any) => {
     setEditId(l.id); setName(l.name); setSeason(l.season); setDescription(l.description);
     setFormat(l.format || "Best of 5"); setIsActive(l.is_active);
+    setRegistrationOpen(l.registration_open ?? false);
     setLeagueType(l.league_type || "league");
     setBonusRules({ ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) });
     setShowForm(true);
@@ -251,10 +253,10 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     if (!name || !season) { toast({ title: "Błąd", description: "Wypełnij wymagane pola.", variant: "destructive" }); return; }
     const maxLegs = BEST_OF_OPTIONS.find(o => o.value === format)?.maxLegs || 5;
     if (editId) {
-      await updateLeague(editId, { name, season, description, format, is_active: isActive, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules });
+      await updateLeague(editId, { name, season, description, format, is_active: isActive, registration_open: registrationOpen, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules });
       toast({ title: "Zaktualizowano!", description: `${name} została zmieniona.` });
     } else {
-      const result = await addLeague({ name, season, description, format, is_active: isActive, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules });
+      const result = await addLeague({ name, season, description, format, is_active: isActive, registration_open: registrationOpen, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules });
       if (result?.error) {
         toast({ title: "Błąd", description: "Nie udało się utworzyć. Sprawdź uprawnienia.", variant: "destructive" });
         return;
@@ -424,6 +426,16 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                   <SelectContent>
                     <SelectItem value="active">Aktywna</SelectItem>
                     <SelectItem value="inactive">Zakończona / Archiwalna</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Zapisy</Label>
+                <Select value={registrationOpen ? "open" : "closed"} onValueChange={(v) => setRegistrationOpen(v === "open")}>
+                  <SelectTrigger className="bg-muted/30 border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="open">📝 Otwarte zapisy</SelectItem>
+                    <SelectItem value="closed">🔒 Zamknięte</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

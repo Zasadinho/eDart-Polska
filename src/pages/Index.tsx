@@ -5,6 +5,7 @@ import GroupBracketView from "@/components/GroupBracketView";
 import HeroSection from "@/components/HeroSection";
 import UpcomingMatchesPreview from "@/components/UpcomingMatchesPreview";
 import LeagueSelector from "@/components/LeagueSelector";
+import OpenLeagues from "@/components/OpenLeagues";
 
 const Index = () => {
   const { activeLeagueId, leagues } = useLeague();
@@ -15,6 +16,7 @@ const Index = () => {
     <div className="min-h-screen">
       <HeroSection />
       <div className="container mx-auto px-4 py-8 space-y-8">
+        <OpenLeagues />
         <LeagueSelector />
         {league && (
           <div className="text-sm text-muted-foreground font-body">

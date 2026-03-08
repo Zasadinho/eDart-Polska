@@ -25,6 +25,7 @@ export type Database = {
           league_type: string
           max_legs: number | null
           name: string
+          registration_open: boolean
           season: string
         }
         Insert: {
@@ -37,6 +38,7 @@ export type Database = {
           league_type?: string
           max_legs?: number | null
           name: string
+          registration_open?: boolean
           season: string
         }
         Update: {
@@ -49,6 +51,7 @@ export type Database = {
           league_type?: string
           max_legs?: number | null
           name?: string
+          registration_open?: boolean
           season?: string
         }
         Relationships: []

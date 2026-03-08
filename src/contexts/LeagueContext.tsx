@@ -35,6 +35,8 @@ interface LeagueContextType {
   getGlobalTonStats: () => TonLeaderEntry[];
   getLeagueTonStats: (leagueId: string) => TonLeaderEntry[];
   getPendingApprovalMatches: () => Match[];
+  joinLeague: (leagueId: string) => Promise<{ error: string | null }>;
+  leaveLeague: (leagueId: string) => Promise<void>;
   loading: boolean;
   refreshData: () => void;
 }
@@ -243,6 +245,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       is_active: l.is_active, format: l.format, max_legs: l.max_legs,
       league_type: l.league_type || "league",
       bonus_rules: { ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) } as BonusRules,
+      registration_open: l.registration_open ?? false,
     }));
     setLeagueList(leagues);
     if (leagues.length > 0 && !activeLeagueId) {
@@ -425,6 +428,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       format: league.format, max_legs: league.max_legs, is_active: league.is_active,
       league_type: league.league_type || "league",
       bonus_rules: league.bonus_rules as any,
+      registration_open: league.registration_open ?? false,
     }).select().single();
     if (data) {
       const newLeague: League = {
@@ -432,6 +436,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         format: data.format, max_legs: data.max_legs, is_active: data.is_active,
         league_type: (data.league_type as League["league_type"]) || "league",
         bonus_rules: { ...DEFAULT_BONUS_RULES, ...((data as any).bonus_rules || {}) } as BonusRules,
+        registration_open: (data as any).registration_open ?? false,
       };
       setLeagueList((prev) => [...prev, newLeague]);
       if (!activeLeagueId) setActiveLeagueId(data.id);
@@ -536,6 +541,70 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   const getGlobalTonStats = useCallback(() => calcTonStats(), [calcTonStats]);
   const getLeagueTonStats = useCallback((leagueId: string) => calcTonStats(leagueId), [calcTonStats]);
 
+  const joinLeague = useCallback(async (leagueId: string): Promise<{ error: string | null }> => {
+    // Find the player linked to current auth user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: "Musisz być zalogowany." };
+
+    const { data: player } = await supabase
+      .from("players")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!player) return { error: "Nie znaleziono konta gracza." };
+
+    // Check if already joined
+    const { data: existing } = await supabase
+      .from("player_leagues")
+      .select("id")
+      .eq("player_id", player.id)
+      .eq("league_id", leagueId)
+      .maybeSingle();
+
+    if (existing) return { error: "Już jesteś zapisany do tej ligi." };
+
+    const { error } = await supabase
+      .from("player_leagues")
+      .insert({ player_id: player.id, league_id: leagueId });
+
+    if (error) return { error: error.message };
+
+    // Update local state
+    setPlayerList((prev) => prev.map((p) =>
+      p.id === player.id
+        ? { ...p, leagueIds: [...(p.leagueIds || []), leagueId] }
+        : p
+    ));
+
+    return { error: null };
+  }, []);
+
+  const leaveLeague = useCallback(async (leagueId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: player } = await supabase
+      .from("players")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!player) return;
+
+    await supabase
+      .from("player_leagues")
+      .delete()
+      .eq("player_id", player.id)
+      .eq("league_id", leagueId);
+
+    setPlayerList((prev) => prev.map((p) =>
+      p.id === player.id
+        ? { ...p, leagueIds: (p.leagueIds || []).filter((id) => id !== leagueId) }
+        : p
+    ));
+  }, []);
+
   return (
     <LeagueContext.Provider value={{
       players: playerList, matches: matchList, leagues: leagueList,
@@ -548,6 +617,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       updatePlayer, deletePlayer, assignPlayerToLeague, removePlayerFromLeague,
       deleteMatch,
       getGlobalTonStats, getLeagueTonStats, getPendingApprovalMatches,
+      joinLeague, leaveLeague,
       loading, refreshData,
     }}>
       {children}
