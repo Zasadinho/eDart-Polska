@@ -36,8 +36,8 @@ const GroupBracketView = () => {
       const player = players.find(p => p.id === pid);
       const completed = gMatches.filter(m => m.status === "completed" && (m.player1Id === pid || m.player2Id === pid));
       
-      let wins = 0, losses = 0, draws = 0, legsWon = 0, legsLost = 0;
-      const form: ("W" | "L" | "D")[] = [];
+      let wins = 0, losses = 0, legsWon = 0, legsLost = 0;
+      const form: ("W" | "L")[] = [];
 
       completed.forEach(m => {
         const isP1 = m.player1Id === pid;
@@ -46,8 +46,7 @@ const GroupBracketView = () => {
         legsWon += myScore;
         legsLost += oppScore;
         if (myScore > oppScore) { wins++; form.push("W"); }
-        else if (myScore < oppScore) { losses++; form.push("L"); }
-        else { draws++; form.push("D"); }
+        else { losses++; form.push("L"); }
       });
 
       return {
