@@ -239,33 +239,10 @@ function processGameTurns(
     // Since we can't know intent perfectly, we count darts hitting double segments or bull
     const canAttemptCheckout = scoreBeforeTurn != null && scoreBeforeTurn <= 170 && scoreBeforeTurn > 1;
 
-    if (canAttemptCheckout && dartsArr) {
-      for (const d of dartsArr) {
-        const seg = d.segment || d;
-        const bed = String(seg.bed || "").toLowerCase();
-        const name = String(seg.name || "").toLowerCase();
-        const multiplier = Number(seg.multiplier ?? 1);
-        const number = Number(seg.number ?? seg.value ?? 0);
-
-        // Double hit (D1-D20): multiplier=2 and number 1-20
-        const isDouble = multiplier === 2 && number >= 1 && number <= 20;
-        // Bull (inner bull = 50, outer bull = 25)
-        const isBull = number === 25 && multiplier >= 1;
-        // Bed-based detection: "double", "innerbull", "outerbull"
-        const isBedDouble = bed.includes("double");
-        const isBedBull = bed.includes("bull");
-        // Miss at double = single of same number when remaining/2 = that number
-        // e.g. remaining=40, aiming D20, hit S20 → that's a miss
-        const requiredDouble = Math.floor(scoreBeforeTurn / 2);
-        const isMissAtDouble = multiplier === 1 && number === requiredDouble && number >= 1 && number <= 20 && scoreBeforeTurn <= 40 && scoreBeforeTurn % 2 === 0;
-
-        if (isDouble || isBull || isBedDouble || isBedBull || isMissAtDouble) {
-          st.checkoutAttempts++;
-        }
-      }
-    } else if (canAttemptCheckout && !dartsArr) {
-      // No throws detail — estimate 1 attempt per visit on checkout
-      st.checkoutAttempts += 1;
+    if (canAttemptCheckout) {
+      // Every dart thrown when on a finishing score counts as a checkout attempt
+      // (miss at S20 when aiming D20, miss at S1, hitting D10 — all are attempts)
+      st.checkoutAttempts += dartsCount;
     }
   }
 }
