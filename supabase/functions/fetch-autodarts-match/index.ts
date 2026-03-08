@@ -313,9 +313,6 @@ async function fetchMatchData(matchId: string, token: string) {
   st[0].legsWon = legsWon1;
   st[1].legsWon = legsWon2;
 
-  const directCo1 = extractDirectCheckoutStats(players[0]);
-  const directCo2 = extractDirectCheckoutStats(players[1]);
-
   // Process embedded games (legs)
   const games = Array.isArray(match.games) ? match.games.filter((g: any) => g && typeof g === "object") : [];
   console.log("Games count:", games.length);
@@ -323,12 +320,6 @@ async function fetchMatchData(matchId: string, token: string) {
   for (let gi = 0; gi < games.length; gi++) {
     processGameTurns(games[gi], playerIdMap, st, gi);
   }
-
-  // Prefer direct checkout stats from Autodarts payload when available
-  if (directCo1.hits != null) st[0].checkoutHits = directCo1.hits;
-  if (directCo1.attempts != null) st[0].checkoutAttempts = directCo1.attempts;
-  if (directCo2.hits != null) st[1].checkoutHits = directCo2.hits;
-  if (directCo2.attempts != null) st[1].checkoutAttempts = directCo2.attempts;
 
   // Log stats for debugging
   for (let i = 0; i < 2; i++) {
