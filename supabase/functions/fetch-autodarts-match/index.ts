@@ -36,7 +36,6 @@ interface PlayerStats {
   checkoutAttempts: number;
   checkoutHits: number;
   legsWon: number;
-  altAttempts61: number;
 }
 
 function emptyStats(): PlayerStats {
