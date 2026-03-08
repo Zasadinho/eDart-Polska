@@ -172,6 +172,54 @@ export type Database = {
         }
         Relationships: []
       }
+      match_proposals: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          proposed_date: string
+          proposed_time: string | null
+          proposer_player_id: string
+          response_note: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          proposed_date: string
+          proposed_time?: string | null
+          proposer_player_id: string
+          response_note?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          proposed_date?: string
+          proposed_time?: string | null
+          proposer_player_id?: string
+          response_note?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_proposals_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_proposals_proposer_player_id_fkey"
+            columns: ["proposer_player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           autodarts_link: string | null
@@ -185,6 +233,7 @@ export type Database = {
           checkout_attempts2: number
           checkout_hits1: number
           checkout_hits2: number
+          confirmed_date: string | null
           created_at: string
           darts_thrown1: number | null
           darts_thrown2: number | null
@@ -229,6 +278,7 @@ export type Database = {
           checkout_attempts2?: number
           checkout_hits1?: number
           checkout_hits2?: number
+          confirmed_date?: string | null
           created_at?: string
           darts_thrown1?: number | null
           darts_thrown2?: number | null
@@ -273,6 +323,7 @@ export type Database = {
           checkout_attempts2?: number
           checkout_hits1?: number
           checkout_hits2?: number
+          confirmed_date?: string | null
           created_at?: string
           darts_thrown1?: number | null
           darts_thrown2?: number | null
