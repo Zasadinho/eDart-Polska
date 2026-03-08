@@ -1,0 +1,1 @@
+ALTER TABLE public.leagues ADD COLUMN bonus_rules jsonb DEFAULT '{"win": 3, "draw": 1, "per180": 1, "nineDarter": 3, "checkout100": 1, "checkout150": 1, "avg90": 1, "avg100": 1, "closeLoss": 1, "cleanSweep": 1}'::jsonb;

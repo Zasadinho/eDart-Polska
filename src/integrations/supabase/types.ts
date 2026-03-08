@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       leagues: {
         Row: {
+          bonus_rules: Json | null
           created_at: string
           description: string
           format: string | null
@@ -27,6 +28,7 @@ export type Database = {
           season: string
         }
         Insert: {
+          bonus_rules?: Json | null
           created_at?: string
           description?: string
           format?: string | null
@@ -38,6 +40,7 @@ export type Database = {
           season: string
         }
         Update: {
+          bonus_rules?: Json | null
           created_at?: string
           description?: string
           format?: string | null
