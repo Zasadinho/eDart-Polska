@@ -270,12 +270,9 @@ function processGameTurns(
           multiplier === 1 &&
           number === requiredDouble;
 
-        const oneDartFinishWindow = isFinishableWithOneDouble(runningRemaining);
-        const shouldCountAttempt =
-          oneDartFinishWindow ||
-          (visitInCheckoutRange && (isDoubleHit || isBullHit || isMarkedDoubleTarget || isMiss || isSingleAtRequiredDouble));
-
-        if (shouldCountAttempt) {
+        // Count a checkout attempt for EVERY dart thrown when remaining is a one-dart finish
+        // (remaining is 2,4,6,...,40 even or =50 bull)
+        if (isFinishableWithOneDouble(runningRemaining)) {
           st.checkoutAttempts++;
         }
 
