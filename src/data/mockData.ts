@@ -205,13 +205,13 @@ export const achievements: Achievement[] = [
   { id: "u6", name: "Kosmiczny Scoring", description: "Średnia do 170 powyżej 140", icon: "🌠", rarity: "legendary", condition: (s) => s.bestAvgUntil170 >= 140 },
 
   // ─── TONY / SCORING (t1-t7) ───
-  { id: "t1", name: "Ton 60 Początkujący", description: "Zbierz 10 wyników Ton 60", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 10 },
-  { id: "t2", name: "Ton 80 Kolekcjoner", description: "Zbierz 15 wyników Ton 80", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 15 },
-  { id: "t3", name: "Ton+ Łowca", description: "Rzuć 20 wyników powyżej 100", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 20 },
-  { id: "t4", name: "Ton Kolekcjoner", description: "Zbierz łącznie 50 tonów (60+80+100+)", icon: "💰", rarity: "epic", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus) >= 50 },
-  { id: "t5", name: "Ton Milioner", description: "Zbierz łącznie 100 tonów", icon: "💎", rarity: "legendary", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus) >= 100 },
-  { id: "t6", name: "Ton 60 Mistrz", description: "Zbierz 30 wyników Ton 60", icon: "🎯", rarity: "rare", condition: (s) => s.ton60 >= 30 },
-  { id: "t7", name: "Ton 80 Mistrz", description: "Zbierz 30 wyników Ton 80", icon: "🎯", rarity: "epic", condition: (s) => s.ton80 >= 30 },
+  { id: "t1", name: "60+ Początkujący", description: "Zbierz 10 wyników 60+", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 10 },
+  { id: "t2", name: "100+ Kolekcjoner", description: "Zbierz 15 wyników 100+", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 15 },
+  { id: "t3", name: "140+ Łowca", description: "Rzuć 20 wyników 140+", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 20 },
+  { id: "t4", name: "Ton Kolekcjoner", description: "Zbierz łącznie 50 tonów (60+100+140+170+)", icon: "💰", rarity: "epic", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 50 },
+  { id: "t5", name: "Ton Milioner", description: "Zbierz łącznie 100 tonów", icon: "💎", rarity: "legendary", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 100 },
+  { id: "t6", name: "60+ Mistrz", description: "Zbierz 30 wyników 60+", icon: "🎯", rarity: "rare", condition: (s) => s.ton60 >= 30 },
+  { id: "t7", name: "100+ Mistrz", description: "Zbierz 30 wyników 100+", icon: "🎯", rarity: "epic", condition: (s) => s.ton80 >= 30 },
 
   // ─── PROCENT WYGRANYCH (r1-r4) ───
   { id: "r1", name: "Ponad Połowa", description: "Procent wygranych powyżej 50% (min. 5 meczów)", icon: "📊", rarity: "common", condition: (s) => s.winRate > 50 && s.matchesPlayed >= 5 },
