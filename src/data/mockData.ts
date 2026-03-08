@@ -29,6 +29,7 @@ export interface League {
   max_legs?: number;
   league_type: LeagueType;
   bonus_rules: BonusRules;
+  registration_open?: boolean;
 }
 
 export interface Player {
