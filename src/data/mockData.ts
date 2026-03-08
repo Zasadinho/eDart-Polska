@@ -154,7 +154,7 @@ export const achievements: Achievement[] = [
   { id: "s2", name: "Seria 5 Wygranych", description: "Wygraj 5 meczów z rzędu", icon: "🔥🔥", rarity: "epic", condition: (s) => { const f = s.form; for (let i = 0; i <= f.length - 5; i++) { if (f.slice(i,i+5).every(x=>x==="W")) return true; } return false; }},
   { id: "s3", name: "Nieśmiertelny", description: "Wygraj 7 meczów z rzędu", icon: "🔥🔥🔥", rarity: "legendary", condition: (s) => { const f = s.form; for (let i = 0; i <= f.length - 7; i++) { if (f.slice(i,i+7).every(x=>x==="W")) return true; } return false; }},
   { id: "s4", name: "Seria 10 Wygranych", description: "Wygraj 10 meczów z rzędu", icon: "💥", rarity: "legendary", condition: (s) => { const f = s.form; for (let i = 0; i <= f.length - 10; i++) { if (f.slice(i,i+10).every(x=>x==="W")) return true; } return false; }},
-  { id: "s5", name: "Bez Porażki", description: "Rozegraj 5 meczów bez porażki (wygrane + remisy)", icon: "🛡️", rarity: "epic", condition: (s) => { const f = s.form; for (let i = 0; i <= f.length - 5; i++) { if (f.slice(i,i+5).every(x=>x!=="L")) return true; } return false; }},
+  { id: "s5", name: "Bez Porażki", description: "Rozegraj 5 meczów bez porażki", icon: "🛡️", rarity: "epic", condition: (s) => { const f = s.form; for (let i = 0; i <= f.length - 5; i++) { if (f.slice(i,i+5).every(x=>x==="W")) return true; } return false; }},
 
   // ─── 180-tki (e1-e6) ───
   { id: "e1", name: "Pierwsza 180", description: "Rzuć swoją pierwszą 180-tkę", icon: "🎲", rarity: "common", condition: (s) => s.oneEighties >= 1 },

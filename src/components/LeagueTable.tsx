@@ -115,7 +115,6 @@ const LeagueTable = () => {
         <h3 className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-2">System punktowy</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 text-[10px] font-body text-muted-foreground">
           {rules.win > 0 && <span>🏆 Wygrana: <strong className="text-foreground">+{rules.win}</strong></span>}
-          {rules.draw > 0 && <span>🤝 Remis: <strong className="text-foreground">+{rules.draw}</strong></span>}
           {rules.per180 > 0 && <span>🎯 180: <strong className="text-foreground">+{rules.per180}</strong></span>}
           
           {rules.checkout100 > 0 && <span>✅ CO 100+: <strong className="text-foreground">+{rules.checkout100}</strong></span>}

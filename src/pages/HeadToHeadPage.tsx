@@ -109,9 +109,7 @@ const HeadToHeadPage = () => {
                 <div className="text-4xl font-display font-bold text-foreground">
                   {p1Wins} <span className="text-muted-foreground text-lg">:</span> {p2Wins}
                 </div>
-                {draws > 0 && (
-                  <div className="text-xs text-muted-foreground font-body mt-1">{draws} {draws === 1 ? "remis" : "remisy"}</div>
-                )}
+                </div>
                 <div className="text-xs text-muted-foreground font-display uppercase mt-2">
                   {h2hMatches.length} {h2hMatches.length === 1 ? "mecz" : h2hMatches.length < 5 ? "mecze" : "meczów"}
                 </div>

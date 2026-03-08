@@ -44,7 +44,7 @@ const PlayersPage = () => {
                 <div className="flex gap-0.5">
                   {player.stats.form.slice(-5).map((f, i) => (
                     <span key={i} className={`w-4 h-4 rounded-sm flex items-center justify-center text-[9px] font-bold ${
-                      f === "W" ? "bg-secondary/20 text-secondary" : f === "L" ? "bg-destructive/20 text-destructive" : "bg-accent/20 text-accent"
+                      f === "W" ? "bg-secondary/20 text-secondary" : "bg-destructive/20 text-destructive"
                     }`}>{f}</span>
                   ))}
                 </div>

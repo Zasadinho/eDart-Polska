@@ -217,7 +217,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
 
   return {
     playerId, leagueId,
-    wins, losses, draws,
+    wins, losses,
     points: basePoints + bonusPoints,
     basePoints,
     bonusPoints,
