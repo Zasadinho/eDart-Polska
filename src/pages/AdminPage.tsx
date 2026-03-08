@@ -268,7 +268,7 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
                   </div>
                   <div className="text-right flex-1">
                     <div className="font-body font-medium text-foreground">{m.player2Name}</div>
-                    {m.avg2 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg2?.toFixed(1)} · 180: {m.oneEighties2 ?? 0} · HC: {m.highCheckout2 ?? 0}{(m.nineDarters2 ?? 0) > 0 && ` · 9d: ${m.nineDarters2}`}</div>}
+                    {m.avg2 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg2?.toFixed(1)} · 180: {m.oneEighties2 ?? 0} · HC: {m.highCheckout2 ?? 0}</div>}
                   </div>
                 </div>
                 {m.autodartsLink && <div className="text-xs text-primary mb-4"><a href={m.autodartsLink} target="_blank" rel="noopener noreferrer" className="hover:underline">🔗 Link Autodarts</a></div>}
