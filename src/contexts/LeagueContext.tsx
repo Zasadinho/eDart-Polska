@@ -428,6 +428,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       format: league.format, max_legs: league.max_legs, is_active: league.is_active,
       league_type: league.league_type || "league",
       bonus_rules: league.bonus_rules as any,
+      registration_open: league.registration_open ?? false,
     }).select().single();
     if (data) {
       const newLeague: League = {
