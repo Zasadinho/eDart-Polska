@@ -184,7 +184,7 @@ async function tryAuthCodeFlow(clientId: string, redirectUri: string, email: str
     password: password,
   });
 
-  const loginRes = await fetch(formAction, {
+  const loginRes = await fetch(formActionUrl, {
     method: "POST",
     redirect: "manual",
     headers: {
