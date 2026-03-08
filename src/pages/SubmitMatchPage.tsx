@@ -87,6 +87,7 @@ const SubmitMatchPage = () => {
 
   // Raw preview of fetched Autodarts data
   const [rawPreview, setRawPreview] = useState<AutoPayload | null>(null);
+  const [playerAutodartsMap, setPlayerAutodartsMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!user) {
