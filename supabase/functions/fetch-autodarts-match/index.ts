@@ -246,35 +246,19 @@ function processGameTurns(
     // can be finished with exactly one double (remaining ≤40 even, or =50)
     if (dartsArr && scoreBeforeTurn != null) {
       let runningRemaining = scoreBeforeTurn;
-      const visitInCheckoutRange = scoreBeforeTurn <= 170 && scoreBeforeTurn > 1;
 
       for (const d of dartsArr) {
-        const seg = d.segment || d;
         const dartValue = getDartPoints(d);
-
-        const bed = String(seg?.bed ?? "").toLowerCase();
-        const name = String(seg?.name ?? "").toLowerCase();
-        const number = Number(seg?.number ?? seg?.value ?? 0);
-        const multiplier = Number(seg?.multiplier ?? 1);
-
-        const isDoubleHit = multiplier === 2 && number >= 1 && number <= 20;
-        const isBullHit = number === 25 && multiplier === 2;
-        const isMiss = bed.includes("miss") || name.includes("miss");
-        const isMarkedDoubleTarget = bed.includes("double") || name.includes("double") || bed.includes("bull") || name.includes("bull");
-
-        // Single hit on required double number (e.g. S20 while on 40) also counts as attempt
-        const requiredDouble = runningRemaining % 2 === 0 ? runningRemaining / 2 : -1;
-        const isSingleAtRequiredDouble =
-          runningRemaining <= 40 &&
-          runningRemaining > 1 &&
-          multiplier === 1 &&
-          number === requiredDouble;
 
         // Count a checkout attempt for EVERY dart thrown when remaining is a one-dart finish
         // (remaining is 2,4,6,...,40 even or =50 bull)
         if (isFinishableWithOneDouble(runningRemaining)) {
           st.checkoutAttempts++;
         }
+
+        runningRemaining -= dartValue;
+        if (runningRemaining <= 0) break;
+      }
 
         runningRemaining -= dartValue;
         if (runningRemaining <= 0) break;
