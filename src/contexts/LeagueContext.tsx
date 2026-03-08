@@ -218,7 +218,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
     bonusPoints,
     legsWon, legsLost, avg,
     highestCheckout, oneEighties, nineDarters,
-    form: form.slice(-5),
+    form: form,
     badges: [],
     matchesPlayed: completed.length,
     bestAvg: Math.round(bestAvg * 10) / 10,

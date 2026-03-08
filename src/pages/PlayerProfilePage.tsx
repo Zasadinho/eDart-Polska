@@ -2,9 +2,27 @@ import { useParams, Link } from "react-router-dom";
 import { useLeague } from "@/contexts/LeagueContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Target, Trophy, TrendingUp, Crosshair, BarChart3, Zap } from "lucide-react";
+import { achievements } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import PlayerProgressChart from "@/components/PlayerProgressChart";
 import PlayerAvatar from "@/components/PlayerAvatar";
+
+const RARITY_ORDER: Record<string, number> = { common: 0, rare: 1, epic: 2, legendary: 3 };
+const RARITY_STYLES: Record<string, string> = {
+  common: "border-border bg-muted/20",
+  rare: "border-blue-500/30 bg-blue-500/5",
+  epic: "border-purple-500/30 bg-purple-500/5",
+  legendary: "border-yellow-500/30 bg-yellow-500/5 shadow-[0_0_12px_-4px_hsl(var(--accent)/0.3)]",
+};
+const RARITY_BADGE: Record<string, string> = {
+  common: "bg-muted text-muted-foreground",
+  rare: "bg-blue-500/15 text-blue-400",
+  epic: "bg-purple-500/15 text-purple-400",
+  legendary: "bg-yellow-500/15 text-yellow-400",
+};
+const RARITY_LABELS: Record<string, string> = {
+  common: "Zwykłe", rare: "Rzadkie", epic: "Epickie", legendary: "Legendarne",
+};
 
 const PlayerProfilePage = () => {
   const { id } = useParams();
@@ -92,7 +110,7 @@ const PlayerProfilePage = () => {
             {stats.form.length > 0 && (
               <div className="flex items-center gap-2 mb-6">
                 <span className="text-xs font-display uppercase tracking-wider text-muted-foreground">Forma:</span>
-                {stats.form.map((f, i) => (
+                {stats.form.slice(-5).map((f, i) => (
                   <span key={i} className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold border ${
                     f === "W" ? "bg-secondary/20 text-secondary border-secondary/30" :
                     f === "L" ? "bg-destructive/20 text-destructive border-destructive/30" :
@@ -106,15 +124,22 @@ const PlayerProfilePage = () => {
             {achiev.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-display uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-                  <Zap className="h-4 w-4" /> Osiągnięcia ({achiev.length})
+                  <Zap className="h-4 w-4" /> Osiągnięcia ({achiev.length}/{achievements.length})
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                  {achiev.map((a) => (
-                    <div key={a.id} className="rounded-lg border border-border bg-muted/20 p-3 flex items-center gap-3">
+                  {achiev
+                    .sort((a, b) => RARITY_ORDER[b.rarity] - RARITY_ORDER[a.rarity])
+                    .map((a) => (
+                    <div key={a.id} className={`rounded-lg border p-3 flex items-center gap-3 ${RARITY_STYLES[a.rarity]}`}>
                       <span className="text-2xl">{a.icon}</span>
-                      <div>
-                        <div className="font-body font-semibold text-foreground text-sm">{a.name}</div>
-                        <div className="text-xs text-muted-foreground">{a.description}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-body font-semibold text-foreground text-sm flex items-center gap-1.5">
+                          {a.name}
+                          <span className={`text-[9px] font-display uppercase tracking-widest px-1.5 py-0.5 rounded-full ${RARITY_BADGE[a.rarity]}`}>
+                            {RARITY_LABELS[a.rarity]}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">{a.description}</div>
                       </div>
                     </div>
                   ))}
