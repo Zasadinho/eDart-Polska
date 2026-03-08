@@ -243,14 +243,27 @@ async function fetchMatchData(matchId: string, token: string) {
       const turns = game.turns || game.visits || game.rounds || [];
       let turnIdx1 = 0, turnIdx2 = 0;
 
+      // Log first turn structure for debugging
+      if (turns.length > 0) {
+        console.log("Sample turn keys:", Object.keys(turns[0]));
+        console.log("Sample turn:", JSON.stringify(turns[0]).substring(0, 500));
+      }
+
       for (const turn of turns) {
         const pIdx = turn.player ?? turn.playerIndex ?? turn.p ?? 0;
 
+        // Extract darts array - could be in turn.darts or turn.throws
+        const dartsArr = Array.isArray(turn.darts) ? turn.darts : 
+                         Array.isArray(turn.throws) ? turn.throws : null;
+
+        // Calculate points from turn
         let points = 0;
-        if (typeof turn.points === "number") points = turn.points;
-        else if (typeof turn.score === "number") points = turn.score;
-        else if (Array.isArray(turn.darts)) {
-          for (const d of turn.darts) {
+        if (typeof turn.points === "number") {
+          points = turn.points;
+        } else if (typeof turn.score === "number") {
+          points = turn.score;
+        } else if (dartsArr) {
+          for (const d of dartsArr) {
             const segment = d.segment || d;
             const mul = segment.multiplier ?? d.multiplier ?? 1;
             const val = segment.number ?? segment.value ?? d.number ?? d.value ?? 0;
@@ -258,7 +271,16 @@ async function fetchMatchData(matchId: string, token: string) {
           }
         }
 
-        const dartsCount = Array.isArray(turn.darts) ? turn.darts.length : (turn.dartsThrown ?? turn.throws ?? 3);
+        // Count darts - ensure it's always a number
+        let dartsCount = 3; // default
+        if (dartsArr) {
+          dartsCount = dartsArr.length;
+        } else if (typeof turn.dartsThrown === "number") {
+          dartsCount = turn.dartsThrown;
+        } else if (typeof turn.throws === "number") {
+          dartsCount = turn.throws;
+        }
+
         const st = pIdx === 0 ? s1 : s2;
         const tidx = pIdx === 0 ? turnIdx1++ : turnIdx2++;
 
@@ -275,20 +297,26 @@ async function fetchMatchData(matchId: string, token: string) {
         else if (points >= 80) st.ton80++;
         else if (points >= 60) st.ton60++;
 
-        const isCheckout = turn.isCheckout || turn.checkout ||
-          (Array.isArray(turn.darts) && turn.darts.some((d: any) => d.segment?.bed === "D" || d.bed === "D" || d.segment?.multiplier === 2));
+        // Checkout detection
+        const isCheckout = turn.isCheckout || turn.checkout || turn.bupiResult === "D" ||
+          (dartsArr && dartsArr.length > 0 && (() => {
+            const lastDart = dartsArr[dartsArr.length - 1];
+            const seg = lastDart.segment || lastDart;
+            return (seg.bed === "D" || seg.multiplier === 2) && points > 0;
+          })());
 
         if (isCheckout && points > 0) {
           st.checkoutHits++;
           if (points > st.highCheckout) st.highCheckout = points;
         }
 
-        if (turn.checkoutAttempts != null) {
+        // Checkout attempts
+        if (typeof turn.checkoutAttempts === "number") {
           st.checkoutAttempts += turn.checkoutAttempts;
-        } else if (turn.doublesThrown != null) {
+        } else if (typeof turn.doublesThrown === "number") {
           st.checkoutAttempts += turn.doublesThrown;
-        } else if (Array.isArray(turn.darts)) {
-          for (const d of turn.darts) {
+        } else if (dartsArr) {
+          for (const d of dartsArr) {
             const seg = d.segment || d;
             if (seg.bed === "D" || seg.multiplier === 2) st.checkoutAttempts++;
           }
