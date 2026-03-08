@@ -38,6 +38,8 @@ export interface Player {
   avatar: string;
   approved: boolean;
   leagueIds?: string[];
+  phone?: string | null;
+  discord?: string | null;
 }
 
 export interface PlayerLeagueStats {

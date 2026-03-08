@@ -259,6 +259,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
     const allPlayers: Player[] = (playersData || []).map((p: any) => ({
       id: p.id, name: p.name, avatar: p.avatar, approved: p.approved,
+      phone: p.phone ?? null, discord: p.discord ?? null,
       leagueIds: playerLeagues.filter((pl: any) => pl.player_id === p.id).map((pl: any) => pl.league_id),
     }));
     const approved = allPlayers.filter(p => p.approved);
@@ -486,7 +487,12 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const updatePlayer = useCallback(async (id: string, data: Partial<Player>) => {
-    await supabase.from("players").update({ name: data.name, avatar: data.avatar }).eq("id", id);
+    const updateData: any = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.avatar !== undefined) updateData.avatar = data.avatar;
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.discord !== undefined) updateData.discord = data.discord;
+    await supabase.from("players").update(updateData).eq("id", id);
     setPlayerList((prev) => prev.map((p) => p.id === id ? { ...p, ...data } : p));
   }, []);
 
