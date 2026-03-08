@@ -259,7 +259,7 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-left flex-1">
                     <div className="font-body font-medium text-foreground">{m.player1Name}</div>
-                    {m.avg1 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg1?.toFixed(1)} · 180: {m.oneEighties1 ?? 0} · HC: {m.highCheckout1 ?? 0}{(m.nineDarters1 ?? 0) > 0 && ` · 9d: ${m.nineDarters1}`}</div>}
+                    {m.avg1 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg1?.toFixed(1)} · 180: {m.oneEighties1 ?? 0} · HC: {m.highCheckout1 ?? 0}</div>}
                   </div>
                   <div className="flex items-center gap-3 px-4">
                     <span className={`text-3xl font-display font-bold ${(m.score1 ?? 0) > (m.score2 ?? 0) ? "text-secondary" : "text-muted-foreground"}`}>{m.score1}</span>
