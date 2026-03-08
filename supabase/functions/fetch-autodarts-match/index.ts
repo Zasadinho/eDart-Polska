@@ -29,6 +29,8 @@ interface PlayerStats {
   totalDarts: number;
   first9Score: number;
   first9Darts: number;
+  until170Score: number;
+  until170Darts: number;
   oneEighties: number;
   highCheckout: number;
   ton60: number;
@@ -43,6 +45,7 @@ function emptyStats(): PlayerStats {
   return {
     totalScore: 0, totalDarts: 0,
     first9Score: 0, first9Darts: 0,
+    until170Score: 0, until170Darts: 0,
     oneEighties: 0, highCheckout: 0,
     ton60: 0, ton80: 0, tonPlus: 0,
     checkoutAttempts: 0, checkoutHits: 0,
