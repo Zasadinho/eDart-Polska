@@ -140,6 +140,8 @@ const SubmitMatchPage = () => {
       ton80_2: String(asNumber(payload.ton80_2)),
       tonPlus1: String(asNumber(payload.ton_plus1)),
       tonPlus2: String(asNumber(payload.ton_plus2)),
+      ton40_1: String(asNumber(payload.ton40_1)),
+      ton40_2: String(asNumber(payload.ton40_2)),
       darts1: String(asNumber(payload.darts_thrown1)),
       darts2: String(asNumber(payload.darts_thrown2)),
       checkoutAttempts1: String(asNumber(payload.checkout_attempts1)),
