@@ -125,6 +125,8 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
     ton80_2: m.ton80_2,
     tonPlus1: m.ton_plus1,
     tonPlus2: m.ton_plus2,
+    ton40_1: m.ton40_1,
+    ton40_2: m.ton40_2,
     dartsThrown1: m.darts_thrown1,
     dartsThrown2: m.darts_thrown2,
     checkoutAttempts1: m.checkout_attempts1,
