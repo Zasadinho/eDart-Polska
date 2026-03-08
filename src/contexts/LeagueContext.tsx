@@ -467,6 +467,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         league_type: (data.league_type as League["league_type"]) || "league",
         bonus_rules: { ...DEFAULT_BONUS_RULES, ...((data as any).bonus_rules || {}) } as BonusRules,
         registration_open: (data as any).registration_open ?? false,
+        meetings_per_pair: (data as any).meetings_per_pair ?? 1,
       };
       setLeagueList((prev) => [...prev, newLeague]);
       if (!activeLeagueId) setActiveLeagueId(data.id);
