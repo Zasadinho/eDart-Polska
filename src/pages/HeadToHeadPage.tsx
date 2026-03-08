@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import PlayerAvatar from "@/components/PlayerAvatar";
 
 const HeadToHeadPage = () => {
-  const { players, matches } = useLeague();
+  const { players, matches, leagues } = useLeague();
   const [player1Id, setPlayer1Id] = useState<string>("");
   const [player2Id, setPlayer2Id] = useState<string>("");
 
