@@ -21,6 +21,8 @@ import HeadToHeadPage from "./pages/HeadToHeadPage";
 import CalendarPage from "./pages/CalendarPage";
 import HallOfFamePage from "./pages/HallOfFamePage";
 import AchievementsPage from "./pages/AchievementsPage";
+import ChatPage from "./pages/ChatPage";
+import AnnouncementsPage from "./pages/AnnouncementsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
