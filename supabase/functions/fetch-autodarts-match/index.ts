@@ -222,7 +222,7 @@ async function fetchMatchData(matchId: string, token: string) {
     const a170_1 = ps1.avgUntil170 ?? ps1.averageUntil170 ?? ps1.avg_u170 ?? null;
     const a170_2 = ps2.avgUntil170 ?? ps2.averageUntil170 ?? ps2.avg_u170 ?? null;
 
-    return buildResult(s1, s2, avg1, avg2, f9a1, f9a2, a170_1, a170_2, p1Name, p2Name, matchId);
+    return buildResult(s1, s2, avg1, avg2, f9a1, f9a2, a170_1, a170_2, p1Name, p2Name, p1AutoId, p2AutoId, matchId);
   }
 
   // No pre-calculated stats - parse from games array
