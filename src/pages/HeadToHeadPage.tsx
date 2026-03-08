@@ -58,8 +58,7 @@ const HeadToHeadPage = () => {
         <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2 flex items-center gap-3">
           <Swords className="h-8 w-8 text-primary" /> Porównanie H2H
         </h1>
-        <p className="text-muted-foreground font-body mb-4">Porównaj statystyki dwóch graczy</p>
-        <LeagueSelector />
+        <p className="text-muted-foreground font-body mb-4">Porównaj statystyki dwóch graczy ze wszystkich rozgrywek</p>
       </div>
 
       {/* Player selectors */}
