@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import {
   Player, Match, League, PlayerLeagueStats, Achievement,
   players as initialPlayers,
@@ -23,6 +23,20 @@ interface LeagueContextType {
   approvePlayer: (playerId: string) => void;
   pendingPlayers: Player[];
   addPendingPlayer: (name: string) => void;
+  // League management
+  addLeague: (league: Omit<League, "id">) => void;
+  updateLeague: (id: string, data: Partial<League>) => void;
+  deleteLeague: (id: string) => void;
+  // Player management
+  updatePlayer: (id: string, data: Partial<Player>) => void;
+  deletePlayer: (id: string) => void;
+  assignPlayerToLeague: (playerId: string, leagueId: string) => void;
+  removePlayerFromLeague: (playerId: string, leagueId: string) => void;
+  // Delete match
+  deleteMatch: (matchId: string) => void;
+  // Global ton stats
+  getGlobalTonStats: () => TonLeaderEntry[];
+  getLeagueTonStats: (leagueId: string) => TonLeaderEntry[];
 }
 
 export interface MatchResultData {
@@ -45,6 +59,20 @@ export interface MatchResultData {
   dartsThrown1?: number;
   dartsThrown2?: number;
   autodartsLink?: string;
+}
+
+export interface TonLeaderEntry {
+  playerId: string;
+  playerName: string;
+  avatar: string;
+  ton40: number;
+  ton60: number;
+  ton80: number;
+  tonPlus: number;
+  oneEighties: number;
+  totalTons: number;
+  highestCheckout: number;
+  bestAvg: number;
 }
 
 const LeagueContext = createContext<LeagueContextType | null>(null);
@@ -105,6 +133,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[]): Player
 export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   const [matchList, setMatchList] = useState<Match[]>(initialMatches);
   const [playerList, setPlayerList] = useState<Player[]>(initialPlayers);
+  const [leagueList, setLeagueList] = useState<League[]>(initialLeagues);
   const [pendingPlayers, setPendingPlayers] = useState<Player[]>([]);
   const [activeLeagueId, setActiveLeagueId] = useState("l1");
 
@@ -113,13 +142,13 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   const getPlayerLeagueStats = useCallback((playerId: string, leagueId: string) => calcStats(playerId, leagueId, matchList), [matchList]);
 
   const getPlayerAllLeagueStats = useCallback((playerId: string) => {
-    return initialLeagues.filter(l => {
+    return leagueList.filter(l => {
       return matchList.some(m => m.leagueId === l.id && (m.player1Id === playerId || m.player2Id === playerId));
     }).map(league => ({
       league,
       stats: calcStats(playerId, league.id, matchList),
     }));
-  }, [matchList]);
+  }, [matchList, leagueList]);
 
   const getPlayerAchievements = useCallback((playerId: string, leagueId: string) => {
     const stats = calcStats(playerId, leagueId, matchList);
@@ -154,6 +183,10 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     }]);
   }, [playerList]);
 
+  const deleteMatch = useCallback((matchId: string) => {
+    setMatchList((prev) => prev.filter((m) => m.id !== matchId));
+  }, []);
+
   const addPendingPlayer = useCallback((name: string) => {
     const initials = name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
     setPendingPlayers((prev) => [...prev, { id: `p${Date.now()}`, name, avatar: initials, approved: false }]);
@@ -162,18 +195,105 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   const approvePlayer = useCallback((playerId: string) => {
     setPendingPlayers((prev) => {
       const player = prev.find((p) => p.id === playerId);
-      if (player) setPlayerList((bp) => [...bp, { ...player, approved: true }]);
+      if (player) setPlayerList((bp) => [...bp, { ...player, approved: true, leagueIds: [] }]);
       return prev.filter((p) => p.id !== playerId);
     });
   }, []);
 
+  // League management
+  const addLeague = useCallback((league: Omit<League, "id">) => {
+    setLeagueList((prev) => [...prev, { ...league, id: `l${Date.now()}` }]);
+  }, []);
+
+  const updateLeague = useCallback((id: string, data: Partial<League>) => {
+    setLeagueList((prev) => prev.map((l) => l.id === id ? { ...l, ...data } : l));
+  }, []);
+
+  const deleteLeague = useCallback((id: string) => {
+    setLeagueList((prev) => prev.filter((l) => l.id !== id));
+    setMatchList((prev) => prev.filter((m) => m.leagueId !== id));
+  }, []);
+
+  const updatePlayer = useCallback((id: string, data: Partial<Player>) => {
+    setPlayerList((prev) => prev.map((p) => p.id === id ? { ...p, ...data } : p));
+  }, []);
+
+  const deletePlayer = useCallback((id: string) => {
+    setPlayerList((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
+  const assignPlayerToLeague = useCallback((playerId: string, leagueId: string) => {
+    setPlayerList((prev) => prev.map((p) => {
+      if (p.id === playerId) {
+        const ids = p.leagueIds || [];
+        if (!ids.includes(leagueId)) return { ...p, leagueIds: [...ids, leagueId] };
+      }
+      return p;
+    }));
+  }, []);
+
+  const removePlayerFromLeague = useCallback((playerId: string, leagueId: string) => {
+    setPlayerList((prev) => prev.map((p) => {
+      if (p.id === playerId) {
+        return { ...p, leagueIds: (p.leagueIds || []).filter((id) => id !== leagueId) };
+      }
+      return p;
+    }));
+  }, []);
+
+  // Ton stats
+  const calcTonStats = useCallback((filterLeagueId?: string): TonLeaderEntry[] => {
+    const filtered = filterLeagueId ? matchList.filter(m => m.leagueId === filterLeagueId && m.status === "completed") : matchList.filter(m => m.status === "completed");
+    const playerMap = new Map<string, TonLeaderEntry>();
+
+    filtered.forEach((m) => {
+      [
+        { id: m.player1Id, name: m.player1Name, t40: m.ton40_1 ?? 0, t60: m.ton60_1 ?? 0, t80: m.ton80_1 ?? 0, tp: m.tonPlus1 ?? 0, e: m.oneEighties1 ?? 0, hc: m.highCheckout1 ?? 0, avg: m.avg1 ?? 0 },
+        { id: m.player2Id, name: m.player2Name, t40: m.ton40_2 ?? 0, t60: m.ton60_2 ?? 0, t80: m.ton80_2 ?? 0, tp: m.tonPlus2 ?? 0, e: m.oneEighties2 ?? 0, hc: m.highCheckout2 ?? 0, avg: m.avg2 ?? 0 },
+      ].forEach(({ id, name, t40, t60, t80, tp, e, hc, avg }) => {
+        const existing = playerMap.get(id);
+        const player = playerList.find(p => p.id === id);
+        if (existing) {
+          existing.ton40 += t40;
+          existing.ton60 += t60;
+          existing.ton80 += t80;
+          existing.tonPlus += tp;
+          existing.oneEighties += e;
+          existing.totalTons += t40 + t60 + t80 + tp + e;
+          if (hc > existing.highestCheckout) existing.highestCheckout = hc;
+          if (avg > existing.bestAvg) existing.bestAvg = avg;
+        } else {
+          playerMap.set(id, {
+            playerId: id,
+            playerName: name,
+            avatar: player?.avatar || name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2),
+            ton40: t40, ton60: t60, ton80: t80, tonPlus: tp,
+            oneEighties: e,
+            totalTons: t40 + t60 + t80 + tp + e,
+            highestCheckout: hc,
+            bestAvg: avg,
+          });
+        }
+      });
+    });
+
+    return Array.from(playerMap.values()).sort((a, b) => b.totalTons - a.totalTons);
+  }, [matchList, playerList]);
+
+  const getGlobalTonStats = useCallback(() => calcTonStats(), [calcTonStats]);
+  const getLeagueTonStats = useCallback((leagueId: string) => calcTonStats(leagueId), [calcTonStats]);
+
   return (
     <LeagueContext.Provider value={{
-      players: playerList, matches: matchList, leagues: initialLeagues,
+      players: playerList, matches: matchList, leagues: leagueList,
       activeLeagueId, setActiveLeagueId,
       getLeagueMatches, getPlayerLeagueStats, getPlayerAllLeagueStats,
       getPlayerAchievements, getLeagueStandings,
       submitMatchResult, addMatch, approvePlayer, pendingPlayers, addPendingPlayer,
+      addLeague, updateLeague, deleteLeague,
+      updatePlayer, deletePlayer, assignPlayerToLeague, removePlayerFromLeague,
+      deleteMatch,
+      getGlobalTonStats, getLeagueTonStats,
     }}>
       {children}
     </LeagueContext.Provider>

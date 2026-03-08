@@ -4,6 +4,8 @@ export interface League {
   season: string;
   description: string;
   isActive: boolean;
+  format?: string; // e.g. "Best of 5", "Best of 7"
+  maxLegs?: number;
 }
 
 export interface Player {
@@ -11,6 +13,7 @@ export interface Player {
   name: string;
   avatar: string;
   approved: boolean;
+  leagueIds?: string[]; // leagues player is enrolled in
 }
 
 export interface PlayerLeagueStats {
@@ -75,39 +78,43 @@ export interface Achievement {
   name: string;
   description: string;
   icon: string;
+  rarity: "common" | "rare" | "epic" | "legendary";
   condition: (stats: PlayerLeagueStats) => boolean;
 }
 
 export const achievements: Achievement[] = [
-  { id: "a1", name: "Pierwszy Mecz", description: "Rozegraj swój pierwszy mecz", icon: "🎯", condition: (s) => s.matchesPlayed >= 1 },
-  { id: "a2", name: "Seria 3 Wygranych", description: "Wygraj 3 mecze z rzędu", icon: "🔥", condition: (s) => { const f = s.form; for (let i = 0; i <= f.length - 3; i++) { if (f[i]==="W"&&f[i+1]==="W"&&f[i+2]==="W") return true; } return false; }},
-  { id: "a3", name: "Seria 5 Wygranych", description: "Wygraj 5 meczów z rzędu", icon: "🔥🔥", condition: (s) => { const f = s.form; for (let i = 0; i <= f.length - 5; i++) { if (f.slice(i,i+5).every(x=>x==="W")) return true; } return false; }},
-  { id: "a4", name: "180 Master", description: "Rzuć 10 lub więcej 180-tek w lidze", icon: "💯", condition: (s) => s.oneEighties >= 10 },
-  { id: "a5", name: "Pierwsza 180", description: "Rzuć swoją pierwszą 180-tkę", icon: "🎲", condition: (s) => s.oneEighties >= 1 },
-  { id: "a6", name: "Checkout Snajper", description: "Zamknij lega powyżej 100", icon: "🎯", condition: (s) => s.highestCheckout >= 100 },
-  { id: "a7", name: "Wielki Checkout", description: "Zamknij lega powyżej 150", icon: "💎", condition: (s) => s.highestCheckout >= 150 },
-  { id: "a8", name: "Średnia 70+", description: "Osiągnij średnią 70 lub wyższą", icon: "📊", condition: (s) => s.avg >= 70 },
-  { id: "a9", name: "Średnia 80+", description: "Osiągnij średnią 80 lub wyższą", icon: "📈", condition: (s) => s.avg >= 80 },
-  { id: "a10", name: "10 Zwycięstw", description: "Wygraj 10 meczów w lidze", icon: "🏆", condition: (s) => s.wins >= 10 },
-  { id: "a11", name: "Niepokonany", description: "Wygraj 5 meczów bez porażki", icon: "⚡", condition: (s) => s.wins >= 5 && s.losses === 0 },
-  { id: "a12", name: "Ton+ Hunter", description: "Rzuć 20 wyników powyżej 100 w lidze", icon: "🎪", condition: (s) => s.tonPlus >= 20 },
+  { id: "a1", name: "Pierwszy Mecz", description: "Rozegraj swój pierwszy mecz", icon: "🎯", rarity: "common", condition: (s) => s.matchesPlayed >= 1 },
+  { id: "a2", name: "Seria 3 Wygranych", description: "Wygraj 3 mecze z rzędu", icon: "🔥", rarity: "rare", condition: (s) => { const f = s.form; for (let i = 0; i <= f.length - 3; i++) { if (f[i]==="W"&&f[i+1]==="W"&&f[i+2]==="W") return true; } return false; }},
+  { id: "a3", name: "Seria 5 Wygranych", description: "Wygraj 5 meczów z rzędu", icon: "🔥🔥", rarity: "epic", condition: (s) => { const f = s.form; for (let i = 0; i <= f.length - 5; i++) { if (f.slice(i,i+5).every(x=>x==="W")) return true; } return false; }},
+  { id: "a4", name: "180 Master", description: "Rzuć 10 lub więcej 180-tek w lidze", icon: "💯", rarity: "epic", condition: (s) => s.oneEighties >= 10 },
+  { id: "a5", name: "Pierwsza 180", description: "Rzuć swoją pierwszą 180-tkę", icon: "🎲", rarity: "common", condition: (s) => s.oneEighties >= 1 },
+  { id: "a6", name: "Checkout Snajper", description: "Zamknij lega powyżej 100", icon: "🎯", rarity: "rare", condition: (s) => s.highestCheckout >= 100 },
+  { id: "a7", name: "Wielki Checkout", description: "Zamknij lega powyżej 150", icon: "💎", rarity: "legendary", condition: (s) => s.highestCheckout >= 150 },
+  { id: "a8", name: "Średnia 70+", description: "Osiągnij średnią 70 lub wyższą", icon: "📊", rarity: "rare", condition: (s) => s.avg >= 70 },
+  { id: "a9", name: "Średnia 80+", description: "Osiągnij średnią 80 lub wyższą", icon: "📈", rarity: "epic", condition: (s) => s.avg >= 80 },
+  { id: "a10", name: "10 Zwycięstw", description: "Wygraj 10 meczów w lidze", icon: "🏆", rarity: "rare", condition: (s) => s.wins >= 10 },
+  { id: "a11", name: "Niepokonany", description: "Wygraj 5 meczów bez porażki", icon: "⚡", rarity: "legendary", condition: (s) => s.wins >= 5 && s.losses === 0 },
+  { id: "a12", name: "Ton+ Hunter", description: "Rzuć 20 wyników powyżej 100 w lidze", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 20 },
+  { id: "a13", name: "Rzucający Maszyna", description: "Rzuć ponad 500 dartsów w lidze", icon: "🤖", rarity: "rare", condition: (s) => s.totalDartsThrown >= 500 },
+  { id: "a14", name: "Perfekcjonista", description: "Osiągnij najlepszą średnią powyżej 90", icon: "🌟", rarity: "legendary", condition: (s) => s.bestAvg >= 90 },
+  { id: "a15", name: "Ton 80 Kolekcjoner", description: "Zbierz 15 wyników Ton 80 (80-99)", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 15 },
 ];
 
 export const leagues: League[] = [
-  { id: "l1", name: "Liga Główna", season: "Wiosna 2026", description: "Główna liga darta — rywalizacja o mistrzostwo", isActive: true },
-  { id: "l2", name: "Liga Amatorska", season: "Wiosna 2026", description: "Liga dla początkujących i średnio-zaawansowanych graczy", isActive: true },
-  { id: "l3", name: "Puchar Zimowy", season: "Zima 2025/26", description: "Turniej pucharowy — faza grupowa", isActive: false },
+  { id: "l1", name: "Liga Główna", season: "Wiosna 2026", description: "Główna liga darta — rywalizacja o mistrzostwo", isActive: true, format: "Best of 5", maxLegs: 5 },
+  { id: "l2", name: "Liga Amatorska", season: "Wiosna 2026", description: "Liga dla początkujących i średnio-zaawansowanych graczy", isActive: true, format: "Best of 3", maxLegs: 3 },
+  { id: "l3", name: "Puchar Zimowy", season: "Zima 2025/26", description: "Turniej pucharowy — faza grupowa", isActive: false, format: "Best of 5", maxLegs: 5 },
 ];
 
 export const players: Player[] = [
-  { id: "1", name: "Krzysztof Nowak", avatar: "KN", approved: true },
-  { id: "2", name: "Anna Wiśniewska", avatar: "AW", approved: true },
-  { id: "3", name: "Tomasz Kowalski", avatar: "TK", approved: true },
-  { id: "4", name: "Magdalena Zielińska", avatar: "MZ", approved: true },
-  { id: "5", name: "Piotr Kamiński", avatar: "PK", approved: true },
-  { id: "6", name: "Ewa Dąbrowska", avatar: "ED", approved: true },
-  { id: "7", name: "Marek Lewandowski", avatar: "ML", approved: true },
-  { id: "8", name: "Julia Wójcik", avatar: "JW", approved: true },
+  { id: "1", name: "Krzysztof Nowak", avatar: "KN", approved: true, leagueIds: ["l1", "l3"] },
+  { id: "2", name: "Anna Wiśniewska", avatar: "AW", approved: true, leagueIds: ["l1", "l3"] },
+  { id: "3", name: "Tomasz Kowalski", avatar: "TK", approved: true, leagueIds: ["l1"] },
+  { id: "4", name: "Magdalena Zielińska", avatar: "MZ", approved: true, leagueIds: ["l1"] },
+  { id: "5", name: "Piotr Kamiński", avatar: "PK", approved: true, leagueIds: ["l1", "l2"] },
+  { id: "6", name: "Ewa Dąbrowska", avatar: "ED", approved: true, leagueIds: ["l1", "l2"] },
+  { id: "7", name: "Marek Lewandowski", avatar: "ML", approved: true, leagueIds: ["l2"] },
+  { id: "8", name: "Julia Wójcik", avatar: "JW", approved: true, leagueIds: ["l2"] },
 ];
 
 export const matches: Match[] = [
