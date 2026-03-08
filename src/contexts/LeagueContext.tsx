@@ -180,7 +180,6 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
     legsWon += myLegs;
     legsLost += oppLegs;
     oneEighties += isP1 ? (m.oneEighties1 ?? 0) : (m.oneEighties2 ?? 0);
-    nineDarters += isP1 ? (m.nineDarters1 ?? 0) : (m.nineDarters2 ?? 0);
     const hc = isP1 ? (m.highCheckout1 ?? 0) : (m.highCheckout2 ?? 0);
     if (hc > highestCheckout) highestCheckout = hc;
     const myAvg = isP1 ? (m.avg1 ?? 0) : (m.avg2 ?? 0);
