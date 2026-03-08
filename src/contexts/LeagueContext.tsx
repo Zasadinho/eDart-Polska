@@ -445,6 +445,9 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
             highestCheckout: hc, bestAvg: avg,
             wins: won, losses: lost, matchesPlayed: 1,
             winRate: won ? 100 : 0,
+            checkoutAttempts: 0,
+            checkoutHits: 0,
+            checkoutRate: 0,
           });
         }
       });
