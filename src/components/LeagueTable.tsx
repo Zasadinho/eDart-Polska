@@ -23,7 +23,10 @@ const RankIcon = ({ rank }: { rank: number }) => {
 };
 
 const LeagueTable = () => {
-  const { activeLeagueId, getLeagueStandings, getPlayerAchievements } = useLeague();
+  const { activeLeagueId, getLeagueStandings, getPlayerAchievements, leagues } = useLeague();
+  const standings = getLeagueStandings(activeLeagueId);
+  const league = leagues.find(l => l.id === activeLeagueId);
+  const rules = league?.bonus_rules ?? DEFAULT_BONUS_RULES;
   const standings = getLeagueStandings(activeLeagueId);
 
   if (standings.length === 0) {
