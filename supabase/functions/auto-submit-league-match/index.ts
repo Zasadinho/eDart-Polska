@@ -370,10 +370,33 @@ Deno.serve(async (req) => {
     }
 
     // ─── Step 4: Fetch full stats from Autodarts API ───
+    // Try player's token first, then server credentials as fallback
     let statsData: any = null;
 
     if (autodarts_match_id) {
-      const adToken = await loginToAutodarts();
+      let adToken: string | null = null;
+
+      // Try player's autodarts token first
+      if (autodarts_token) {
+        try {
+          const testRes = await fetch(`${API_BASE}/as/v0/matches/${autodarts_match_id}`, {
+            headers: { Authorization: `Bearer ${autodarts_token}` },
+          });
+          if (testRes.ok) {
+            adToken = autodarts_token;
+            console.log("[auto-submit] Using player's autodarts token");
+          } else {
+            await testRes.text();
+          }
+        } catch { /* fallback */ }
+      }
+
+      // Fallback to server credentials
+      if (!adToken) {
+        adToken = await loginToAutodarts();
+        if (adToken) console.log("[auto-submit] Using server autodarts credentials");
+      }
+
       if (adToken) {
         try {
           const adMatch = await fetchJson(
