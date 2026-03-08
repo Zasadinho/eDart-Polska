@@ -110,7 +110,7 @@ const PlayerProfilePage = () => {
             {stats.form.length > 0 && (
               <div className="flex items-center gap-2 mb-6">
                 <span className="text-xs font-display uppercase tracking-wider text-muted-foreground">Forma:</span>
-                {stats.form.map((f, i) => (
+                {stats.form.slice(-5).map((f, i) => (
                   <span key={i} className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold border ${
                     f === "W" ? "bg-secondary/20 text-secondary border-secondary/30" :
                     f === "L" ? "bg-destructive/20 text-destructive border-destructive/30" :
