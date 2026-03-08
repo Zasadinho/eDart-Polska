@@ -108,7 +108,7 @@ const SettingsPage = () => {
       </div>
 
       {/* Contact info */}
-      {playerData && (
+      {playerData ? (
         <div className="rounded-lg border border-border bg-card p-6 card-glow mb-6">
           <h2 className="text-lg font-display font-bold text-foreground mb-4 flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-primary" /> Dane kontaktowe
