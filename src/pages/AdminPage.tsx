@@ -751,6 +751,27 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
   const approved = players.filter((p: any) => p.approved);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [adding, setAdding] = useState(false);
+  const [profiles, setProfiles] = useState<{ user_id: string; name: string }[]>([]);
+  const [playerUserMap, setPlayerUserMap] = useState<Record<string, string | null>>({});
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const { data } = await supabase.from("profiles").select("user_id, name");
+      setProfiles(data || []);
+      // Fetch player->user_id mapping
+      const { data: playersWithUser } = await supabase.from("players").select("id, user_id");
+      const map: Record<string, string | null> = {};
+      (playersWithUser || []).forEach((p: any) => { map[p.id] = p.user_id; });
+      setPlayerUserMap(map);
+    };
+    fetchProfiles();
+  }, [players]);
+
+  const linkUserToPlayer = async (playerId: string, userId: string | null) => {
+    await supabase.from("players").update({ user_id: userId }).eq("id", playerId);
+    setPlayerUserMap(prev => ({ ...prev, [playerId]: userId }));
+    toast({ title: userId ? "Konto powiązane!" : "Powiązanie usunięte" });
+  };
 
   const handleAddPlayer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -806,6 +827,20 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
               <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { deletePlayer(p.id); toast({ title: "Gracz usunięty", description: p.name }); }}>
                 <Trash2 className="h-4 w-4" />
               </Button>
+            </div>
+            {/* Link user account */}
+            <div className="mb-3">
+              <Label className="text-xs text-muted-foreground font-body mb-1 block">Powiązane konto użytkownika</Label>
+              <select
+                value={playerUserMap[p.id] || ""}
+                onChange={(e) => linkUserToPlayer(p.id, e.target.value || null)}
+                className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm font-body text-foreground"
+              >
+                <option value="">— brak powiązania —</option>
+                {profiles.map((pr: any) => (
+                  <option key={pr.user_id} value={pr.user_id}>{pr.name} ({pr.user_id.slice(0, 8)}...)</option>
+                ))}
+              </select>
             </div>
             <div className="flex flex-wrap gap-2">
               {leagues.map((l: any) => {
