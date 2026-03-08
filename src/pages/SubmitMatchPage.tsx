@@ -79,6 +79,8 @@ const SubmitMatchPage = () => {
     setCheckoutAttempts2("");
     setCheckoutHits1("");
     setCheckoutHits2("");
+    setNineDarters1("");
+    setNineDarters2("");
     setShowAdvanced(false);
   };
 
