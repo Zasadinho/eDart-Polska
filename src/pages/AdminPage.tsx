@@ -429,6 +429,16 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Zapisy</Label>
+                <Select value={registrationOpen ? "open" : "closed"} onValueChange={(v) => setRegistrationOpen(v === "open")}>
+                  <SelectTrigger className="bg-muted/30 border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="open">📝 Otwarte zapisy</SelectItem>
+                    <SelectItem value="closed">🔒 Zamknięte</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Opis</Label>
