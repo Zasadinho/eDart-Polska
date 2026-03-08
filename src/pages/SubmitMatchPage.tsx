@@ -49,6 +49,7 @@ const SubmitMatchPage = () => {
 
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [loadingPlayer, setLoadingPlayer] = useState(true);
+  const [playerAutodartsMap, setPlayerAutodartsMap] = useState<Record<string, string>>({});
   const [selectedMatchId, setSelectedMatchId] = useState("");
   const [autodartsLink, setAutodartsLink] = useState("");
   const [score1, setScore1] = useState("");
@@ -69,8 +70,16 @@ const SubmitMatchPage = () => {
     }
     const fetchPlayerId = async () => {
       setLoadingPlayer(true);
-      const { data } = await supabase.from("players").select("id").eq("user_id", user.id).maybeSingle();
-      setMyPlayerId(data?.id ?? null);
+      const [{ data: me }, { data: allPlayers }] = await Promise.all([
+        supabase.from("players").select("id").eq("user_id", user.id).maybeSingle(),
+        supabase.from("players").select("id, autodarts_user_id").not("autodarts_user_id", "is", null),
+      ]);
+      setMyPlayerId(me?.id ?? null);
+      const map: Record<string, string> = {};
+      (allPlayers || []).forEach((p: any) => {
+        if (p.id && p.autodarts_user_id) map[p.id] = p.autodarts_user_id;
+      });
+      setPlayerAutodartsMap(map);
       setLoadingPlayer(false);
     };
     fetchPlayerId();
@@ -181,11 +190,23 @@ const SubmitMatchPage = () => {
       }
 
       const targetMatch = matchedUpcoming || selectedMatch;
-      const isReversedOrder = Boolean(
+      const expectedP1AutoId = targetMatch ? playerAutodartsMap[targetMatch.player1Id] : undefined;
+      const expectedP2AutoId = targetMatch ? playerAutodartsMap[targetMatch.player2Id] : undefined;
+
+      const byAutodartsId = Boolean(
+        expectedP1AutoId && expectedP2AutoId &&
+        payload.player1_autodarts_id && payload.player2_autodarts_id &&
+        payload.player1_autodarts_id === expectedP2AutoId &&
+        payload.player2_autodarts_id === expectedP1AutoId
+      );
+
+      const byName = Boolean(
         targetMatch &&
           normalizeName(targetMatch.player1Name) === p2 &&
           normalizeName(targetMatch.player2Name) === p1
       );
+
+      const isReversedOrder = byAutodartsId || byName;
 
       const alignedPayload = isReversedOrder
         ? {
@@ -216,6 +237,8 @@ const SubmitMatchPage = () => {
             checkout_hits2: payload.checkout_hits1,
             player1_name: payload.player2_name,
             player2_name: payload.player1_name,
+            player1_autodarts_id: payload.player2_autodarts_id,
+            player2_autodarts_id: payload.player1_autodarts_id,
           }
         : payload;
 
@@ -231,7 +254,7 @@ const SubmitMatchPage = () => {
         });
       }
     },
-    [autoSubmitFromExtension, mapPayloadToStats, selectedMatch, submitMatchResult, toast, upcomingMatches]
+    [autoSubmitFromExtension, mapPayloadToStats, playerAutodartsMap, selectedMatch, submitMatchResult, toast, upcomingMatches]
   );
 
   const requestExtensionData = useCallback(() => {

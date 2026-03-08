@@ -155,6 +155,8 @@ async function fetchMatchData(matchId: string, token: string) {
 
   const p1Name = players[0].name || players[0].username || "Player 1";
   const p2Name = players[1].name || players[1].username || "Player 2";
+  const p1AutoId = players[0].userId || players[0].id || players[0].playerId || null;
+  const p2AutoId = players[1].userId || players[1].id || players[1].playerId || null;
 
   // Build playerId -> index map (Autodarts uses UUIDs in turns, not numeric indices)
   const playerIdMap: Record<string, number> = {};
@@ -220,7 +222,7 @@ async function fetchMatchData(matchId: string, token: string) {
     const a170_1 = ps1.avgUntil170 ?? ps1.averageUntil170 ?? ps1.avg_u170 ?? null;
     const a170_2 = ps2.avgUntil170 ?? ps2.averageUntil170 ?? ps2.avg_u170 ?? null;
 
-    return buildResult(s1, s2, avg1, avg2, f9a1, f9a2, a170_1, a170_2, p1Name, p2Name, matchId);
+    return buildResult(s1, s2, avg1, avg2, f9a1, f9a2, a170_1, a170_2, p1Name, p2Name, p1AutoId, p2AutoId, matchId);
   }
 
   // No pre-calculated stats - parse from games array
@@ -417,7 +419,7 @@ async function fetchMatchData(matchId: string, token: string) {
   const a170_1 = s1.until170Darts > 0 ? Math.round((s1.until170Score / s1.until170Darts) * 3 * 100) / 100 : null;
   const a170_2 = s2.until170Darts > 0 ? Math.round((s2.until170Score / s2.until170Darts) * 3 * 100) / 100 : null;
 
-  return buildResult(s1, s2, avg1, avg2, f9a1, f9a2, a170_1, a170_2, p1Name, p2Name, matchId);
+  return buildResult(s1, s2, avg1, avg2, f9a1, f9a2, a170_1, a170_2, p1Name, p2Name, p1AutoId, p2AutoId, matchId);
 }
 
 function buildResult(
@@ -425,7 +427,9 @@ function buildResult(
   avg1: number | null, avg2: number | null,
   f9a1: number | null, f9a2: number | null,
   a170_1: number | null, a170_2: number | null,
-  p1Name: string, p2Name: string, matchId: string
+  p1Name: string, p2Name: string,
+  p1AutoId: string | null, p2AutoId: string | null,
+  matchId: string
 ) {
   const result = {
     score1: s1.legsWon,
@@ -442,6 +446,8 @@ function buildResult(
     checkout_attempts1: s1.checkoutAttempts, checkout_attempts2: s2.checkoutAttempts,
     checkout_hits1: s1.checkoutHits, checkout_hits2: s2.checkoutHits,
     player1_name: p1Name, player2_name: p2Name,
+    player1_autodarts_id: p1AutoId,
+    player2_autodarts_id: p2AutoId,
     autodarts_link: `https://play.autodarts.io/history/matches/${matchId}`,
   };
   console.log("Final result:", JSON.stringify(result));
