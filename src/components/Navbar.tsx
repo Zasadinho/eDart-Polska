@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogIn, LogOut, Shield, BarChart3, Settings, Handshake, Swords, Calendar, Trophy, Zap } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield, BarChart3, Settings, Handshake, Swords, Calendar, Trophy, Zap, MessageCircle, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,15 +50,23 @@ const Navbar = () => {
               </Link>
             ))}
             {user && (
-              <Link to="/my-matches">
-                <Button
-                  variant={location.pathname === "/my-matches" ? "default" : "ghost"}
-                  size="sm"
-                  className="font-display uppercase tracking-wider text-xs"
-                >
-                  <Handshake className="h-3.5 w-3.5 mr-1" /> Moje Mecze
-                </Button>
-              </Link>
+              <>
+                <Link to="/my-matches">
+                  <Button variant={location.pathname === "/my-matches" ? "default" : "ghost"} size="sm" className="font-display uppercase tracking-wider text-xs">
+                    <Handshake className="h-3.5 w-3.5 mr-1" /> Moje Mecze
+                  </Button>
+                </Link>
+                <Link to="/chat">
+                  <Button variant={location.pathname === "/chat" ? "default" : "ghost"} size="sm" className="font-display uppercase tracking-wider text-xs">
+                    <MessageCircle className="h-3.5 w-3.5 mr-1" /> Czat
+                  </Button>
+                </Link>
+                <Link to="/announcements">
+                  <Button variant={location.pathname === "/announcements" ? "default" : "ghost"} size="sm" className="font-display uppercase tracking-wider text-xs">
+                    <Megaphone className="h-3.5 w-3.5 mr-1" /> Ogłoszenia
+                  </Button>
+                </Link>
+              </>
             )}
             {showAdminLink && (
               <Link to="/admin">
@@ -114,11 +122,23 @@ const Navbar = () => {
               </Link>
             ))}
             {user && (
-              <Link to="/my-matches" onClick={() => setMobileOpen(false)}>
-                <Button variant={location.pathname === "/my-matches" ? "default" : "ghost"} className="w-full justify-start font-display uppercase tracking-wider text-sm mb-1">
-                  <Handshake className="h-4 w-4 mr-1" /> Moje Mecze
-                </Button>
-              </Link>
+              <>
+                <Link to="/my-matches" onClick={() => setMobileOpen(false)}>
+                  <Button variant={location.pathname === "/my-matches" ? "default" : "ghost"} className="w-full justify-start font-display uppercase tracking-wider text-sm mb-1">
+                    <Handshake className="h-4 w-4 mr-1" /> Moje Mecze
+                  </Button>
+                </Link>
+                <Link to="/chat" onClick={() => setMobileOpen(false)}>
+                  <Button variant={location.pathname === "/chat" ? "default" : "ghost"} className="w-full justify-start font-display uppercase tracking-wider text-sm mb-1">
+                    <MessageCircle className="h-4 w-4 mr-1" /> Czat
+                  </Button>
+                </Link>
+                <Link to="/announcements" onClick={() => setMobileOpen(false)}>
+                  <Button variant={location.pathname === "/announcements" ? "default" : "ghost"} className="w-full justify-start font-display uppercase tracking-wider text-sm mb-1">
+                    <Megaphone className="h-4 w-4 mr-1" /> Ogłoszenia
+                  </Button>
+                </Link>
+              </>
             )}
             {showAdminLink && (
               <Link to="/admin" onClick={() => setMobileOpen(false)}>
