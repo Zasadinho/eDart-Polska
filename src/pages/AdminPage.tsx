@@ -365,9 +365,10 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     return Array.from(rounds).sort((a, b) => a - b);
   };
 
-  // Calculate total rounds for given player count
-  const getTotalRounds = (playerCount: number): number => {
-    return playerCount % 2 === 0 ? playerCount - 1 : playerCount;
+  // Calculate total rounds for given player count (with meetings_per_pair)
+  const getTotalRounds = (playerCount: number, mpp: number = 1): number => {
+    const baseRounds = playerCount % 2 === 0 ? playerCount - 1 : playerCount;
+    return baseRounds * mpp;
   };
 
   const handleGenerateSchedule = async (league: any) => {
