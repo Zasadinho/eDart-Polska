@@ -274,27 +274,33 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
   const getLeagueMatches = useCallback((leagueId: string) => matchList.filter((m) => m.leagueId === leagueId), [matchList]);
 
-  const getPlayerLeagueStats = useCallback((playerId: string, leagueId: string) => calcStats(playerId, leagueId, matchList), [matchList]);
+  const getLeagueRules = useCallback((leagueId: string): BonusRules => {
+    const league = leagueList.find(l => l.id === leagueId);
+    return league?.bonus_rules ?? DEFAULT_BONUS_RULES;
+  }, [leagueList]);
+
+  const getPlayerLeagueStats = useCallback((playerId: string, leagueId: string) => calcStats(playerId, leagueId, matchList, getLeagueRules(leagueId)), [matchList, getLeagueRules]);
 
   const getPlayerAllLeagueStats = useCallback((playerId: string) => {
     return leagueList.filter(l => {
       return matchList.some(m => m.leagueId === l.id && (m.player1Id === playerId || m.player2Id === playerId));
-    }).map(league => ({ league, stats: calcStats(playerId, league.id, matchList) }));
+    }).map(league => ({ league, stats: calcStats(playerId, league.id, matchList, league.bonus_rules) }));
   }, [matchList, leagueList]);
 
   const getPlayerAchievements = useCallback((playerId: string, leagueId: string) => {
-    const stats = calcStats(playerId, leagueId, matchList);
+    const stats = calcStats(playerId, leagueId, matchList, getLeagueRules(leagueId));
     return achievements.filter((a) => a.condition(stats));
-  }, [matchList]);
+  }, [matchList, getLeagueRules]);
 
   const getLeagueStandings = useCallback((leagueId: string) => {
+    const rules = getLeagueRules(leagueId);
     const leaguePlayers = playerList.filter((p) => p.approved && matchList.some(
       (m) => m.leagueId === leagueId && (m.player1Id === p.id || m.player2Id === p.id)
     ));
     return leaguePlayers
-      .map((p) => ({ ...p, stats: calcStats(p.id, leagueId, matchList) }))
+      .map((p) => ({ ...p, stats: calcStats(p.id, leagueId, matchList, rules) }))
       .sort((a, b) => b.stats.points - a.stats.points || (b.stats.legsWon - b.stats.legsLost) - (a.stats.legsWon - a.stats.legsLost));
-  }, [matchList, playerList]);
+  }, [matchList, playerList, getLeagueRules]);
 
   const submitMatchResult = useCallback(async (matchId: string, data: MatchResultData) => {
     // Players submit results as "pending_approval" - admin/moderator must approve
