@@ -35,6 +35,7 @@ const App = () => (
               <Route path="/matches" element={<MatchesPage />} />
               <Route path="/players" element={<PlayersPage />} />
               <Route path="/players/:id" element={<PlayerProfilePage />} />
+              <Route path="/my-matches" element={<MyMatchesPage />} />
               <Route path="/submit" element={<SubmitMatchPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/admin" element={<AdminPage />} />
