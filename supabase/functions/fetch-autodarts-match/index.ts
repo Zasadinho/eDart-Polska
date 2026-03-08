@@ -205,8 +205,7 @@ function processGameTurns(
       points = turn.points;
     } else if (dartsArr) {
       for (const d of dartsArr) {
-        const seg = d.segment || d;
-        points += (seg.number ?? seg.value ?? 0) * (seg.multiplier ?? 1);
+        points += getDartPoints(d);
       }
     }
 
