@@ -3,6 +3,8 @@ import { Menu, X, LogIn, LogOut, Shield, BarChart3, Settings, Handshake, Swords 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import ThemeToggle from "@/components/ThemeToggle";
+import NotificationBell from "@/components/NotificationBell";
 
 const navItems = [
   { label: "Tabela Ligi", href: "/" },
