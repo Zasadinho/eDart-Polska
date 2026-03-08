@@ -828,7 +828,20 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2">
+            {/* Link user account */}
+            <div className="mb-3">
+              <Label className="text-xs text-muted-foreground font-body mb-1 block">Powiązane konto użytkownika</Label>
+              <select
+                value={playerUserMap[p.id] || ""}
+                onChange={(e) => linkUserToPlayer(p.id, e.target.value || null)}
+                className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm font-body text-foreground"
+              >
+                <option value="">— brak powiązania —</option>
+                {profiles.map((pr: any) => (
+                  <option key={pr.user_id} value={pr.user_id}>{pr.name} ({pr.user_id.slice(0, 8)}...)</option>
+                ))}
+              </select>
+            </div>
               {leagues.map((l: any) => {
                 const isIn = (p.leagueIds || []).includes(l.id);
                 return (
