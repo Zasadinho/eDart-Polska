@@ -50,7 +50,7 @@ const HallOfFamePage = () => {
     icon: <Crosshair className="h-6 w-6 text-primary" />,
     title: "Najwyższy checkout",
     entries: coRecords.slice(0, 5).map((r) => ({
-      playerId: r.pid, playerName: r.name, playerAvatar: r.avatar, value: r.val,
+      playerId: r.pid, playerName: r.name, playerAvatar: r.avatar, playerAvatarUrl: r.avatarUrl, value: r.val,
     })),
   });
 
