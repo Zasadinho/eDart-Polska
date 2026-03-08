@@ -84,6 +84,8 @@ export interface Match {
   bracketRound?: string;
   bracketPosition?: number;
   groupName?: string;
+  nineDarters1?: number;
+  nineDarters2?: number;
 }
 
 export interface Achievement {
