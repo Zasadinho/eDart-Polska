@@ -48,6 +48,7 @@ function emptyStats(): PlayerStats {
     ton60: 0, ton100: 0, ton140: 0, ton170: 0,
     checkoutAttempts: 0, checkoutHits: 0,
     legsWon: 0,
+    altAttempts61: 0,
   };
 }
 
