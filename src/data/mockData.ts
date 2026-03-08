@@ -36,7 +36,6 @@ export interface PlayerLeagueStats {
   matchesPlayed: number;
   bestAvg: number;
   totalDartsThrown: number;
-  ton40: number;
   ton60: number;
   ton80: number;
   tonPlus: number;
