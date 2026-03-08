@@ -6,6 +6,7 @@ import { LogIn, UserPlus, Target, KeyRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { lovable } from "@/integrations/lovable/index";
 
 const LoginPage = () => {
   const { toast } = useToast();
