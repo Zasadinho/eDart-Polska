@@ -219,6 +219,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
   const [format, setFormat] = useState("Best of 5");
   const [isActive, setIsActive] = useState(true);
   const [leagueType, setLeagueType] = useState<LeagueType>("league");
+  const [bonusRules, setBonusRules] = useState<BonusRules>({ ...DEFAULT_BONUS_RULES });
   
   // Tournament generation state
   const [showGenerate, setShowGenerate] = useState<string | null>(null);
@@ -230,13 +231,16 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
 
   const resetForm = () => {
     setName(""); setSeason(""); setDescription(""); setFormat("Best of 5");
-    setIsActive(true); setLeagueType("league"); setShowForm(false); setEditId(null);
+    setIsActive(true); setLeagueType("league"); setBonusRules({ ...DEFAULT_BONUS_RULES });
+    setShowForm(false); setEditId(null);
   };
 
   const startEdit = (l: any) => {
     setEditId(l.id); setName(l.name); setSeason(l.season); setDescription(l.description);
     setFormat(l.format || "Best of 5"); setIsActive(l.is_active);
-    setLeagueType(l.league_type || "league"); setShowForm(true);
+    setLeagueType(l.league_type || "league");
+    setBonusRules({ ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) });
+    setShowForm(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
