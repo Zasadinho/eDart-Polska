@@ -74,7 +74,6 @@ const LeagueTable = () => {
                     </td>
                     <td className="text-center px-1.5 py-2 text-xs font-body text-muted-foreground">{entry.stats.matchesPlayed}</td>
                     <td className="text-center px-1.5 py-2 text-xs font-body text-secondary font-semibold">{entry.stats.wins}</td>
-                    <td className="text-center px-1.5 py-2 text-xs font-body text-accent font-semibold">{entry.stats.draws}</td>
                     <td className="text-center px-1.5 py-2 text-xs font-body text-destructive font-semibold">{entry.stats.losses}</td>
                     <td className="text-center px-1.5 py-2">
                       <div className="flex flex-col items-center">
