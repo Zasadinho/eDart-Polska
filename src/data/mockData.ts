@@ -57,7 +57,6 @@ export interface PlayerLeagueStats {
   avg: number;
   highestCheckout: number;
   oneEighties: number;
-  nineDarters: number;
   form: ("W" | "L" | "D")[];
   badges: string[];
   matchesPlayed: number;
