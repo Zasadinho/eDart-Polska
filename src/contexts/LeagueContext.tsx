@@ -442,9 +442,9 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
     filtered.forEach((m) => {
       [
-        { id: m.player1Id, name: m.player1Name, t40: m.ton40_1 ?? 0, t60: m.ton60_1 ?? 0, t80: m.ton80_1 ?? 0, tp: m.tonPlus1 ?? 0, e: m.oneEighties1 ?? 0, hc: m.highCheckout1 ?? 0, avg: m.avg1 ?? 0, score: m.score1 ?? 0, oppScore: m.score2 ?? 0, attempts: m.checkoutAttempts1 ?? 0, hits: m.checkoutHits1 ?? 0 },
-        { id: m.player2Id, name: m.player2Name, t40: m.ton40_2 ?? 0, t60: m.ton60_2 ?? 0, t80: m.ton80_2 ?? 0, tp: m.tonPlus2 ?? 0, e: m.oneEighties2 ?? 0, hc: m.highCheckout2 ?? 0, avg: m.avg2 ?? 0, score: m.score2 ?? 0, oppScore: m.score1 ?? 0, attempts: m.checkoutAttempts2 ?? 0, hits: m.checkoutHits2 ?? 0 },
-      ].forEach(({ id, name, t40, t60, t80, tp, e, hc, avg, score, oppScore, attempts, hits }) => {
+      { id: m.player1Id, name: m.player1Name, t60: m.ton60_1 ?? 0, t80: m.ton80_1 ?? 0, tp: m.tonPlus1 ?? 0, e: m.oneEighties1 ?? 0, hc: m.highCheckout1 ?? 0, avg: m.avg1 ?? 0, score: m.score1 ?? 0, oppScore: m.score2 ?? 0, attempts: m.checkoutAttempts1 ?? 0, hits: m.checkoutHits1 ?? 0 },
+        { id: m.player2Id, name: m.player2Name, t60: m.ton60_2 ?? 0, t80: m.ton80_2 ?? 0, tp: m.tonPlus2 ?? 0, e: m.oneEighties2 ?? 0, hc: m.highCheckout2 ?? 0, avg: m.avg2 ?? 0, score: m.score2 ?? 0, oppScore: m.score1 ?? 0, attempts: m.checkoutAttempts2 ?? 0, hits: m.checkoutHits2 ?? 0 },
+      ].forEach(({ id, name, t60, t80, tp, e, hc, avg, score, oppScore, attempts, hits }) => {
         const existing = playerMap.get(id);
         const player = playerList.find(p => p.id === id);
         const won = score > oppScore ? 1 : 0;
