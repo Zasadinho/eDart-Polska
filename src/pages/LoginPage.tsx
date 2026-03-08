@@ -39,7 +39,7 @@ const LoginPage = () => {
     if (error) {
       toast({ title: "Błąd logowania", description: error, variant: "destructive" });
     } else {
-      toast({ title: "Zalogowano!", description: "Witaj w DartLiga." });
+      toast({ title: "Zalogowano!", description: "Witaj w eDART Polska." });
       navigate("/");
     }
   };
