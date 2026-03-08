@@ -58,6 +58,13 @@ const formatCheckout = (hits: number, attempts: number): string => {
   return `${((hits / attempts) * 100).toFixed(2)}% (${hits}/${attempts})`;
 };
 
+const normalizeName = (name: string): string =>
+  (name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+
 const SubmitMatchPage = () => {
   const { user, profile, loading, isAdmin, isModerator } = useAuth();
   const { matches, submitMatchResult } = useLeague();
