@@ -177,7 +177,6 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
       darts1: String(m.dartsThrown1 ?? ""), darts2: String(m.dartsThrown2 ?? ""),
       checkoutAttempts1: String(m.checkoutAttempts1 ?? ""), checkoutAttempts2: String(m.checkoutAttempts2 ?? ""),
       checkoutHits1: String(m.checkoutHits1 ?? ""), checkoutHits2: String(m.checkoutHits2 ?? ""),
-      nineDarters1: String(m.nineDarters1 ?? ""), nineDarters2: String(m.nineDarters2 ?? ""),
     });
   };
 
