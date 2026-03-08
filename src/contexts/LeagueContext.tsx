@@ -449,7 +449,9 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   }, [activeLeagueId]);
 
   const updateLeague = useCallback(async (id: string, data: Partial<League>) => {
-    await supabase.from("leagues").update(data).eq("id", id);
+    const dbData: any = { ...data };
+    if (data.bonus_rules) dbData.bonus_rules = data.bonus_rules;
+    await supabase.from("leagues").update(dbData).eq("id", id);
     setLeagueList((prev) => prev.map((l) => l.id === id ? { ...l, ...data } : l));
   }, []);
 
