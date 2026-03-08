@@ -61,78 +61,11 @@ async function fetchJson(url: string, token: string) {
   return res.json();
 }
 
-function toNum(v: unknown): number | null {
-  if (typeof v === "number" && Number.isFinite(v)) return v;
-  if (typeof v === "string" && v.trim() !== "") {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  }
-  return null;
-}
-
-function pickFirstNumber(obj: any, keys: string[]): number | null {
-  if (!obj || typeof obj !== "object") return null;
-  for (const k of keys) {
-    const n = toNum(obj[k]);
-    if (n != null) return n;
-  }
-  return null;
-}
-
-function extractDirectCheckoutStats(player: any): { hits: number | null; attempts: number | null } {
-  const directHits = pickFirstNumber(player, [
-    "checkout_hits", "checkoutHits", "checkoutsWon", "checkoutsHit", "checkoutSuccesses",
-  ]);
-  const directAttempts = pickFirstNumber(player, [
-    "checkout_attempts", "checkoutAttempts", "checkoutTries", "checkout_tries", "checkoutsAttempts",
-  ]);
-
-  const statNodes = [
-    player?.stats,
-    player?.statistics,
-    player?.statistic,
-    player?.matchStats,
-    player?.gameStats,
-    player?.playerStats,
-    player?.performance,
-    player?.checkout,
-    player?.checkouts,
-  ].filter(Boolean);
-
-  let hits = directHits;
-  let attempts = directAttempts;
-
-  for (const node of statNodes) {
-    if (hits == null) {
-      hits = pickFirstNumber(node, [
-        "checkout_hits", "checkoutHits", "hits", "made", "won", "success", "successful", "count",
-      ]);
-    }
-
-    if (attempts == null) {
-      attempts = pickFirstNumber(node, [
-        "checkout_attempts", "checkoutAttempts", "attempts", "tries", "total", "thrown", "shots",
-      ]);
-    }
-
-    const checkoutObj = node?.checkout ?? node?.checkouts ?? null;
-    if (checkoutObj && typeof checkoutObj === "object") {
-      if (hits == null) {
-        hits = pickFirstNumber(checkoutObj, [
-          "hits", "made", "won", "success", "successful", "count",
-        ]);
-      }
-      if (attempts == null) {
-        attempts = pickFirstNumber(checkoutObj, [
-          "attempts", "tries", "total", "thrown", "shots",
-        ]);
-      }
-    }
-
-    if (hits != null && attempts != null) break;
-  }
-
-  return { hits, attempts };
+// Check if a remaining score can be finished with exactly one double dart
+function isFinishableWithOneDouble(remaining: number): boolean {
+  if (remaining === 50) return true; // Bull
+  if (remaining >= 2 && remaining <= 40 && remaining % 2 === 0) return true;
+  return false;
 }
 
 async function loginToAutodarts(): Promise<string | null> {
@@ -295,7 +228,34 @@ function processGameTurns(
     else if (points >= 100) st.ton100++;
     else if (points >= 60) st.ton60++;
 
-    // Checkout detection
+    // Checkout detection — track dart-by-dart remaining within this visit
+    // A checkout ATTEMPT = a dart thrown when the remaining score at that moment
+    // can be finished with exactly one double (remaining ≤40 even, or =50)
+    if (dartsArr && scoreBeforeTurn != null) {
+      let runningRemaining = scoreBeforeTurn;
+      for (const d of dartsArr) {
+        const seg = d.segment || d;
+        const dartValue = (seg.number ?? seg.value ?? 0) * (seg.multiplier ?? 1);
+        
+        // Before this dart: is the remaining finishable with one double?
+        if (isFinishableWithOneDouble(runningRemaining)) {
+          st.checkoutAttempts++;
+          
+          // Check if this dart actually finished (hit the double)
+          if (runningRemaining - dartValue === 0 && (seg.multiplier === 2 || (seg.number === 25 && seg.multiplier === 2))) {
+            // Checkout hit is already counted below via remainingAfter === 0
+          }
+        }
+        
+        runningRemaining -= dartValue;
+        if (runningRemaining <= 0) break; // busted or finished
+      }
+    } else if (!dartsArr && scoreBeforeTurn != null && isFinishableWithOneDouble(scoreBeforeTurn)) {
+      // No dart detail available — estimate 1 attempt if on a finish
+      st.checkoutAttempts += 1;
+    }
+
+    // Checkout hit detection
     const remainingAfter = typeof turn.score === "number" ? turn.score : null;
     const isBusted = turn.busted === true;
     const isCheckout = !isBusted && (remainingAfter === 0 || turn.isCheckout === true);
@@ -303,20 +263,6 @@ function processGameTurns(
     if (isCheckout && points > 0) {
       st.checkoutHits++;
       if (points > st.highCheckout) st.highCheckout = points;
-    }
-
-    // Checkout attempts: count darts thrown at doubles/bull when on a finishing score
-    // A "checkout attempt" = a dart aimed at a double. From the API we can detect:
-    // - Darts that HIT a double (bed contains "Double" or multiplier=2 with number 1-20)
-    // - Darts that HIT the bull (Inner/Outer Bull, number=25)
-    // - Darts that landed in single of the same number as the required double (likely a miss)
-    // Since we can't know intent perfectly, we count darts hitting double segments or bull
-    const canAttemptCheckout = scoreBeforeTurn != null && scoreBeforeTurn <= 170 && scoreBeforeTurn > 1;
-
-    if (canAttemptCheckout) {
-      // Every dart thrown when on a finishing score counts as a checkout attempt
-      // (miss at S20 when aiming D20, miss at S1, hitting D10 — all are attempts)
-      st.checkoutAttempts += dartsCount;
     }
   }
 }
@@ -326,20 +272,6 @@ async function fetchMatchData(matchId: string, token: string) {
 
   const players = match.players || [];
   if (players.length < 2) throw new Error("Match does not have 2 players");
-
-  // DEBUG: Log full player objects and match-level keys to discover checkout fields
-  console.log("=== MATCH TOP-LEVEL KEYS ===", Object.keys(match));
-  console.log("=== MATCH.variant ===", match.variant);
-  console.log("=== MATCH.gameMode ===", match.gameMode);
-  for (let pi = 0; pi < Math.min(players.length, 2); pi++) {
-    console.log(`=== PLAYER ${pi} FULL ===`, JSON.stringify(players[pi]).substring(0, 2000));
-  }
-  // Check if match has stats/statistics at top level
-  for (const statsKey of ["stats", "statistics", "playerStats", "matchStats", "summary"]) {
-    if (match[statsKey]) {
-      console.log(`=== MATCH.${statsKey} ===`, JSON.stringify(match[statsKey]).substring(0, 2000));
-    }
-  }
 
   console.log("Players:", players.map((p: any) => ({ name: p.name, id: p.id, userId: p.userId })));
 
@@ -367,9 +299,6 @@ async function fetchMatchData(matchId: string, token: string) {
   st[0].legsWon = legsWon1;
   st[1].legsWon = legsWon2;
 
-  const directCo1 = extractDirectCheckoutStats(players[0]);
-  const directCo2 = extractDirectCheckoutStats(players[1]);
-
   // Process embedded games (legs)
   const games = Array.isArray(match.games) ? match.games.filter((g: any) => g && typeof g === "object") : [];
   console.log("Games count:", games.length);
@@ -377,12 +306,6 @@ async function fetchMatchData(matchId: string, token: string) {
   for (let gi = 0; gi < games.length; gi++) {
     processGameTurns(games[gi], playerIdMap, st, gi);
   }
-
-  // Prefer direct checkout stats from Autodarts payload when available
-  if (directCo1.hits != null) st[0].checkoutHits = directCo1.hits;
-  if (directCo1.attempts != null) st[0].checkoutAttempts = directCo1.attempts;
-  if (directCo2.hits != null) st[1].checkoutHits = directCo2.hits;
-  if (directCo2.attempts != null) st[1].checkoutAttempts = directCo2.attempts;
 
   // Log stats for debugging
   for (let i = 0; i < 2; i++) {
@@ -392,18 +315,6 @@ async function fetchMatchData(matchId: string, token: string) {
   const avg = (s: PlayerStats) => s.totalDarts > 0 ? Math.round((s.totalScore / s.totalDarts) * 3 * 100) / 100 : null;
   const f9 = (s: PlayerStats) => s.first9Darts > 0 ? Math.round((s.first9Score / s.first9Darts) * 3 * 100) / 100 : null;
   const a170 = (s: PlayerStats) => s.until170Darts > 0 ? Math.round((s.until170Score / s.until170Darts) * 3 * 100) / 100 : null;
-
-  // Build debug info with raw player data keys for checkout discovery
-  const debugPlayers = players.map((p: any) => {
-    const result: Record<string, unknown> = { name: p.name };
-    // Include all keys from player object  
-    for (const key of Object.keys(p)) {
-      if (key !== "name") result[key] = p[key];
-    }
-    return result;
-  });
-
-  const debugMatchKeys = Object.keys(match).filter(k => k !== "games");
 
   return {
     score1: st[0].legsWon, score2: st[1].legsWon,
@@ -422,8 +333,6 @@ async function fetchMatchData(matchId: string, token: string) {
     player1_name: p1Name, player2_name: p2Name,
     player1_autodarts_id: p1AutoId, player2_autodarts_id: p2AutoId,
     autodarts_link: `https://play.autodarts.io/history/matches/${matchId}`,
-    _debug_match_keys: debugMatchKeys,
-    _debug_players: debugPlayers,
   };
 }
 
