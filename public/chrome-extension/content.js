@@ -1,6 +1,6 @@
 // Content script - runs on play.autodarts.io
-// Captures auth token + finished match stats and stores them for eDART page
-// After a finished match, checks if it's a league match via background script
+// Captures auth token + finished match stats
+// After a finished match, sends to background for auto-submission to eDART
 
 (function () {
   function safeJsonParse(value) {
@@ -41,7 +41,7 @@
     const score1 = normalizeScoreValue(match?.scores?.[0]);
     const score2 = normalizeScoreValue(match?.scores?.[1]);
 
-    const payload = {
+    return {
       match_id: match?.id || fallbackMatchId,
       autodarts_link: `https://play.autodarts.io/history/matches/${match?.id || fallbackMatchId}`,
       player1_name: p1.name || p1.username || p1.displayName || "Player 1",
@@ -72,8 +72,6 @@
       checkout_hits2: s2.checkoutHits ?? s2.checkouts ?? 0,
       captured_at: Date.now(),
     };
-
-    return payload;
   }
 
   function isFinishedMatch(match) {
@@ -89,8 +87,8 @@
     return a > 0 || b > 0;
   }
 
-  // Track already-checked match IDs to avoid duplicate checks
-  const checkedMatches = new Set();
+  // Track already-processed match IDs
+  const processedMatches = new Set();
 
   function captureFinishedMatch(match, sourceUrl) {
     if (!match || !isFinishedMatch(match)) return;
@@ -99,24 +97,26 @@
     const payload = buildPayloadFromMatch(match, idFromUrl);
     if (!payload?.match_id) return;
 
-    chrome.storage.local.set(
-      {
-        autodarts_last_match: payload,
-        autodarts_last_match_timestamp: Date.now(),
-      },
-      () => {
-        console.log("[eDART] Captured finished match:", payload.match_id, payload.player1_name, "vs", payload.player2_name);
-      }
-    );
+    // Store last match for manual use
+    chrome.storage.local.set({
+      autodarts_last_match: payload,
+      autodarts_last_match_timestamp: Date.now(),
+    }, () => {
+      console.log("[eDART] Captured finished match:", payload.match_id, payload.player1_name, "vs", payload.player2_name);
+    });
 
-    // Check if this is a league match (only once per match)
-    if (!checkedMatches.has(payload.match_id)) {
-      checkedMatches.add(payload.match_id);
+    // Auto-submit to eDART (only once per match)
+    if (!processedMatches.has(payload.match_id)) {
+      processedMatches.add(payload.match_id);
+      console.log("[eDART] Sending to server for league match check + auto-submit...");
+
       chrome.runtime.sendMessage(
-        { type: "CHECK_LEAGUE_MATCH", payload },
+        { type: "AUTO_SUBMIT_LEAGUE_MATCH", payload },
         (response) => {
-          if (response?.is_league_match) {
-            console.log("[eDART] ✅ Liga wykryta!", response.league_name, "- mecz zostanie zgłoszony automatycznie");
+          if (response?.is_league_match && response?.submitted) {
+            console.log("[eDART] ✅ Mecz ligowy zgłoszony automatycznie!", response.league_name, response.score);
+          } else if (response?.is_league_match) {
+            console.log("[eDART] ⚠️ Mecz ligowy wykryty, ale nie zgłoszony:", response.reason);
           } else {
             console.log("[eDART] Mecz towarzyski (nie ligowy)");
           }
@@ -127,24 +127,19 @@
 
   function getAutodartsToken() {
     const storages = [localStorage, sessionStorage];
-
     for (const storage of storages) {
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
         if (!key) continue;
-
         const value = storage.getItem(key);
         if (!value) continue;
-
         const parsed = safeJsonParse(value);
         if (parsed?.access_token) return parsed.access_token;
-
         if (key.startsWith("oidc.user:") || key.includes("autodarts")) {
           if (parsed?.access_token) return parsed.access_token;
         }
       }
     }
-
     return null;
   }
 
@@ -156,7 +151,6 @@
 
     if (url && url.includes("api.autodarts.io")) {
       let authHeader = null;
-
       if (options.headers) {
         if (options.headers instanceof Headers) {
           authHeader = options.headers.get("Authorization");
@@ -164,11 +158,9 @@
           authHeader = options.headers.Authorization || options.headers.authorization;
         }
       }
-
       if (!authHeader && request instanceof Request) {
         authHeader = request.headers?.get("Authorization");
       }
-
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.replace("Bearer ", "");
         chrome.storage.local.set({ autodarts_token: token, token_timestamp: Date.now() });
