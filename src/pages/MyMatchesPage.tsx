@@ -45,7 +45,7 @@ const MyMatchesPage = () => {
     (m) => m.status === "upcoming" && myPlayerId && (m.player1Id === myPlayerId || m.player2Id === myPlayerId)
   );
 
-  // Fetch contact info for opponents
+  // Fetch contact info for opponents using secure function
   useEffect(() => {
     if (!myPlayerId || myUpcoming.length === 0) return;
     const opponentIds = myUpcoming.map((m) =>
@@ -53,19 +53,18 @@ const MyMatchesPage = () => {
     );
     const uniqueIds = [...new Set(opponentIds)];
 
-    supabase
-      .from("players")
-      .select("id, phone, discord")
-      .in("id", uniqueIds)
-      .then(({ data }) => {
-        if (data) {
-          const map: Record<string, PlayerContact> = {};
-          data.forEach((p) => {
-            map[p.id] = { id: p.id, phone: p.phone, discord: p.discord };
-          });
-          setContacts(map);
-        }
-      });
+    Promise.all(
+      uniqueIds.map((id) =>
+        supabase.rpc("get_opponent_contact", { opponent_player_id: id }).then(({ data }) => {
+          if (data && data.length > 0) return { id, phone: data[0].phone, discord: data[0].discord };
+          return { id, phone: null, discord: null };
+        })
+      )
+    ).then((results) => {
+      const map: Record<string, PlayerContact> = {};
+      results.forEach((r) => { map[r.id] = { id: r.id, phone: r.phone, discord: r.discord }; });
+      setContacts(map);
+    });
   }, [myPlayerId, myUpcoming.length]);
 
   if (!user) {

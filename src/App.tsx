@@ -46,6 +46,8 @@ const App = () => (
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/hall-of-fame" element={<HallOfFamePage />} />
               <Route path="/achievements" element={<AchievementsPage />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/announcements" element={<AnnouncementsPage />} />
               <Route path="/submit" element={<SubmitMatchPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/admin" element={<AdminPage />} />
