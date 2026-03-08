@@ -10,7 +10,7 @@ import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, 
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { BEST_OF_OPTIONS, type LeagueType } from "@/data/mockData";
+import { BEST_OF_OPTIONS, type LeagueType, type BonusRules, DEFAULT_BONUS_RULES } from "@/data/mockData";
 import { generateRoundRobin, generateBracket, generateGroupStage, shuffle, getRecommendedGroups } from "@/lib/tournamentUtils";
 
 type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles";
