@@ -45,6 +45,34 @@ const PlayerProfilePage = () => {
         </div>
       </div>
 
+      {/* Contact info - visible only to logged-in users */}
+      {isLoggedIn && (player.phone || player.discord) && (
+        <div className="rounded-lg border border-border bg-card p-6 card-glow mb-8">
+          <h2 className="text-sm font-display uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" /> Kontakt
+          </h2>
+          <div className="flex flex-wrap gap-4">
+            {player.phone && (
+              <div className="flex items-center gap-2 text-foreground font-body">
+                <Phone className="h-4 w-4 text-primary" />
+                <a href={`tel:${player.phone}`} className="hover:text-primary transition-colors">{player.phone}</a>
+              </div>
+            )}
+            {player.discord && (
+              <div className="flex items-center gap-2 text-foreground font-body">
+                <MessageCircle className="h-4 w-4 text-primary" />
+                <span>{player.discord}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {isLoggedIn && !player.phone && !player.discord && (
+        <div className="rounded-lg border border-border bg-muted/20 p-4 mb-8 text-sm text-muted-foreground font-body">
+          Gracz nie podał jeszcze danych kontaktowych.
+        </div>
+      )}
+
       {/* Per-league stats */}
       {allLeagueStats.map(({ league, stats }) => {
         const achiev = getPlayerAchievements(player.id, league.id);
