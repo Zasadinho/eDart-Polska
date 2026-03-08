@@ -219,22 +219,23 @@ const SubmitMatchPage = () => {
         payload.match_id || payload.autodarts_link || `${payload.player1_name}-${payload.player2_name}`;
       if (allowAutoSubmit && processedAutoMatchRef.current === extMatchId) return;
 
-      const p1 = (payload.player1_name || "").trim().toLowerCase();
-      const p2 = (payload.player2_name || "").trim().toLowerCase();
+      const p1Raw = (payload.player1_name || "").trim();
+      const p2Raw = (payload.player2_name || "").trim();
+      const p1 = normalizeName(p1Raw);
+      const p2 = normalizeName(p2Raw);
 
-      // Match to upcoming league match first (for auto-submit)
+      // Match to upcoming league matches (name fallback)
       const matchedUpcoming = upcomingMatches.find((m) => {
-        const m1 = m.player1Name.trim().toLowerCase();
-        const m2 = m.player2Name.trim().toLowerCase();
+        const m1 = normalizeName(m.player1Name);
+        const m2 = normalizeName(m.player2Name);
         return (m1 === p1 && m2 === p2) || (m1 === p2 && m2 === p1);
       });
 
-      // For FORM mapping, use matched upcoming OR currently selected match
-      const targetMatch = matchedUpcoming ?? selectedMatch ?? null;
+      // For FORM mapping, use selected match first if user chose one
+      const targetMatch = selectedMatch ?? matchedUpcoming ?? null;
 
       if (!matchedUpcoming && allowAutoSubmit) {
-        // Don't auto-submit if we can't match to a league game
-        console.log("Auto-submit skipped: no matching league match for", p1, "vs", p2);
+        console.log("Auto-submit skipped: no matching league match for", p1Raw, "vs", p2Raw);
         return;
       }
 
@@ -242,15 +243,30 @@ const SubmitMatchPage = () => {
         setSelectedMatchId(targetMatch.id);
       }
 
-      // Swap on FORM side when Autodarts order is reversed vs target match
+      // Robust swap detection: prefer autodarts IDs, fallback to normalized names
       let finalPayload = payload;
       if (targetMatch) {
-        const m1 = targetMatch.player1Name.trim().toLowerCase();
-        const m2 = targetMatch.player2Name.trim().toLowerCase();
-        const sameOrder = m1 === p1 && m2 === p2;
-        const reversedOrder = m1 === p2 && m2 === p1;
+        const m1 = normalizeName(targetMatch.player1Name);
+        const m2 = normalizeName(targetMatch.player2Name);
 
-        if (reversedOrder && !sameOrder) {
+        const targetP1Auto = playerAutodartsMap[targetMatch.player1Id] || null;
+        const targetP2Auto = playerAutodartsMap[targetMatch.player2Id] || null;
+        const payloadP1Auto = (payload.player1_autodarts_id as string | undefined) || null;
+        const payloadP2Auto = (payload.player2_autodarts_id as string | undefined) || null;
+
+        let shouldSwap = false;
+
+        if (targetP1Auto && targetP2Auto && payloadP1Auto && payloadP2Auto) {
+          const sameById = targetP1Auto === payloadP1Auto && targetP2Auto === payloadP2Auto;
+          const reversedById = targetP1Auto === payloadP2Auto && targetP2Auto === payloadP1Auto;
+          shouldSwap = reversedById && !sameById;
+        } else {
+          const sameByName = m1 === p1 && m2 === p2;
+          const reversedByName = m1 === p2 && m2 === p1;
+          shouldSwap = reversedByName && !sameByName;
+        }
+
+        if (shouldSwap) {
           finalPayload = swapPayload(payload);
         }
       }
