@@ -20,6 +20,7 @@ import MyMatchesPage from "./pages/MyMatchesPage";
 import HeadToHeadPage from "./pages/HeadToHeadPage";
 import CalendarPage from "./pages/CalendarPage";
 import HallOfFamePage from "./pages/HallOfFamePage";
+import AchievementsPage from "./pages/AchievementsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/h2h" element={<HeadToHeadPage />} />
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/hall-of-fame" element={<HallOfFamePage />} />
+              <Route path="/achievements" element={<AchievementsPage />} />
               <Route path="/submit" element={<SubmitMatchPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/admin" element={<AdminPage />} />
