@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { KeyRound, User, ArrowLeft, Phone, MessageCircle } from "lucide-react";
+import { KeyRound, User, ArrowLeft, Phone, MessageCircle, Gamepad2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,19 +25,21 @@ const SettingsPage = () => {
   })());
 
   // We need to get player by user_id from supabase directly
-  const [playerData, setPlayerData] = useState<{ id: string; phone: string; discord: string; avatar_url: string | null } | null>(null);
+  const [playerData, setPlayerData] = useState<{ id: string; phone: string; discord: string; avatar_url: string | null; autodarts_user_id: string } | null>(null);
   const [phone, setPhone] = useState("");
   const [discord, setDiscord] = useState("");
+  const [autodartsId, setAutodartsId] = useState("");
   const [savingContact, setSavingContact] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     import("@/integrations/supabase/client").then(({ supabase }) => {
-      supabase.from("players").select("id, phone, discord, avatar_url").eq("user_id", user.id).maybeSingle().then(({ data }) => {
+      supabase.from("players").select("id, phone, discord, avatar_url, autodarts_user_id").eq("user_id", user.id).maybeSingle().then(({ data }) => {
         if (data) {
-          setPlayerData({ id: data.id, phone: data.phone || "", discord: data.discord || "", avatar_url: (data as any).avatar_url || null });
+          setPlayerData({ id: data.id, phone: data.phone || "", discord: data.discord || "", avatar_url: (data as any).avatar_url || null, autodarts_user_id: (data as any).autodarts_user_id || "" });
           setPhone(data.phone || "");
           setDiscord(data.discord || "");
+          setAutodartsId((data as any).autodarts_user_id || "");
         }
       });
     });
@@ -80,7 +82,12 @@ const SettingsPage = () => {
     e.preventDefault();
     if (!playerData) return;
     setSavingContact(true);
-    await updatePlayer(playerData.id, { phone: phone.trim() || null, discord: discord.trim() || null });
+    const { supabase } = await import("@/integrations/supabase/client");
+    await supabase.from("players").update({
+      phone: phone.trim() || null,
+      discord: discord.trim() || null,
+      autodarts_user_id: autodartsId.trim() || null,
+    } as any).eq("id", playerData.id);
     setSavingContact(false);
     toast({ title: "Zapisano!", description: "Dane kontaktowe zostały zaktualizowane." });
   };
@@ -139,6 +146,13 @@ const SettingsPage = () => {
                 <MessageCircle className="h-3 w-3" /> Discord
               </Label>
               <Input value={discord} onChange={(e) => setDiscord(e.target.value)} placeholder="np. username#1234" className="bg-muted/30 border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground flex items-center gap-1">
+                <Gamepad2 className="h-3 w-3" /> Autodarts User ID
+              </Label>
+              <Input value={autodartsId} onChange={(e) => setAutodartsId(e.target.value)} placeholder="Twój ID z autodarts.io" className="bg-muted/30 border-border" />
+              <p className="text-xs text-muted-foreground font-body">Podaj swój Autodarts User ID, aby system automatycznie pobierał wyniki Twoich meczy.</p>
             </div>
             <Button type="submit" variant="hero" disabled={savingContact}>
               {savingContact ? "Zapisywanie..." : "Zapisz kontakt"}
