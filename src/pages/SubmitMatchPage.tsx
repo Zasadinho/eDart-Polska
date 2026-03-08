@@ -198,7 +198,7 @@ const SubmitMatchPage = () => {
         setSelectedMatchId(matchedUpcoming.id);
       }
 
-      const targetMatch = matchedUpcoming || selectedMatch;
+      const targetMatch = selectedMatch || matchedUpcoming;
       const expectedP1AutoId = targetMatch ? playerAutodartsMap[targetMatch.player1Id] : undefined;
       const expectedP2AutoId = targetMatch ? playerAutodartsMap[targetMatch.player2Id] : undefined;
 
