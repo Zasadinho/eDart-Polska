@@ -113,8 +113,8 @@ const SubmitMatchPage = () => {
   const selectedMatch = matches.find((m) => m.id === selectedMatchId);
 
   const mapPayloadToStats = useCallback((payload: AutoPayload) => {
-    const scoreA = readScore(payload.score1);
-    const scoreB = readScore(payload.score2);
+    const scoreA = readScore(payload.score1 ?? payload.legs_won1);
+    const scoreB = readScore(payload.score2 ?? payload.legs_won2);
 
     setScore1(String(scoreA));
     setScore2(String(scoreB));
