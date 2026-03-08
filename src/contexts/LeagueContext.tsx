@@ -463,7 +463,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
           playerMap.set(id, {
             playerId: id, playerName: name,
             avatar: player?.avatar || name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2),
-            ton40: 0, ton60: t60, ton80: t80, tonPlus: tp,
+            ton60: t60, ton80: t80, tonPlus: tp,
             oneEighties: e, totalTons: t60 + t80 + tp + e,
             highestCheckout: hc, bestAvg: avg,
             wins: won, losses: lost, matchesPlayed: 1,
