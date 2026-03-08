@@ -138,11 +138,43 @@ async function tryAuthCodeFlow(clientId: string, redirectUri: string, email: str
     loginPageHtml = await loginPageRes.text();
   }
 
-  // Parse the form action URL from the login page
+  // Parse the form action URL - try HTML form action first, then kcContext JS
+  let formActionUrl: string | null = null;
+  
   const actionMatch = loginPageHtml.match(/action="([^"]+)"/);
-  if (!actionMatch) {
-    console.error("Login page HTML (first 2000 chars):", loginPageHtml.substring(0, 2000));
+  if (actionMatch) {
+    formActionUrl = actionMatch[1].replace(/&amp;/g, "&");
+  }
+  
+  // If not found in HTML, try parsing from Keycloak's kcContext JavaScript
+  if (!formActionUrl) {
+    const loginUrlMatch = loginPageHtml.match(/"loginAction"\s*:\s*"([^"]+)"/);
+    if (loginUrlMatch) {
+      formActionUrl = loginUrlMatch[1].replace(/\\\//, "/").replace(/\\\//g, "/");
+    }
+  }
+  
+  if (!formActionUrl) {
+    // Try the standard Keycloak login-actions URL pattern
+    const kcUrlMatch = loginPageHtml.match(/login-actions\/authenticate[^"')\s]*/);
+    if (kcUrlMatch) {
+      formActionUrl = "https://login.autodarts.io/" + kcUrlMatch[0].replace(/\\\//g, "/");
+    }
+  }
+
+  if (!formActionUrl) {
+    // Check if the page shows an error (like invalid redirect_uri)
+    if (loginPageHtml.includes("Invalid parameter: redirect_uri") || loginPageHtml.includes('"error": true')) {
+      console.log(`redirect_uri ${redirectUri} is not valid for ${clientId}`);
+      return null; // Try next candidate
+    }
+    console.error("Login page HTML (first 3000 chars):", loginPageHtml.substring(0, 3000));
     throw new Error("Could not find login form action URL in Keycloak page");
+  }
+
+  // Make sure it's absolute
+  if (formActionUrl.startsWith("/")) {
+    formActionUrl = "https://login.autodarts.io" + formActionUrl;
   }
 
   const formAction = actionMatch[1].replace(/&amp;/g, "&");
