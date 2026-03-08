@@ -285,8 +285,19 @@ async function fetchMatchData(matchId: string, token: string) {
 
   const playerIdMap: Record<string, number> = {};
   for (let i = 0; i < players.length; i++) {
-    const pid = players[i].userId || players[i].id || players[i].playerId;
-    if (pid) playerIdMap[pid] = i;
+    const ids = [
+      players[i].userId,
+      players[i].id,
+      players[i].playerId,
+      players[i].hostId,
+      players[i]?.user?.id,
+    ];
+
+    for (const id of ids) {
+      if (typeof id === "string" && id.length > 0) {
+        playerIdMap[id] = i;
+      }
+    }
   }
 
   // Extract scores
