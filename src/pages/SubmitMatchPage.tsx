@@ -216,17 +216,34 @@ const SubmitMatchPage = () => {
         .map((v) => normalizeIdentity(String(v ?? "")))
         .filter(Boolean);
 
-      const overlaps = (a: string[], b: string[]) =>
-        a.some((left) => b.some((right) => left === right));
+      const overlapCount = (a: string[], b: string[]) => {
+        const left = new Set(a);
+        const right = new Set(b);
+        let count = 0;
+        left.forEach((v) => {
+          if (right.has(v)) count += 1;
+        });
+        return count;
+      };
 
-      const directScore =
-        Number(overlaps(p1Candidates, expectedP1Candidates)) +
-        Number(overlaps(p2Candidates, expectedP2Candidates));
-      const reversedScore =
-        Number(overlaps(p1Candidates, expectedP2Candidates)) +
-        Number(overlaps(p2Candidates, expectedP1Candidates));
+      const directScore = overlapCount(p1Candidates, expectedP1Candidates) + overlapCount(p2Candidates, expectedP2Candidates);
+      const reversedScore = overlapCount(p1Candidates, expectedP2Candidates) + overlapCount(p2Candidates, expectedP1Candidates);
 
-      const isReversedOrder = reversedScore > directScore;
+      const directLoose =
+        Number(looseMatch(payload.player1_name, targetMatch?.player1Name)) +
+        Number(looseMatch(payload.player2_name, targetMatch?.player2Name));
+      const reversedLoose =
+        Number(looseMatch(payload.player1_name, targetMatch?.player2Name)) +
+        Number(looseMatch(payload.player2_name, targetMatch?.player1Name));
+
+      const isReversedOrder =
+        reversedScore > directScore ||
+        (reversedScore === directScore && reversedLoose > directLoose);
+
+      const lowConfidence =
+        targetMatch != null &&
+        directScore === reversedScore &&
+        directLoose === reversedLoose;
 
       const alignedPayload = isReversedOrder
         ? {
@@ -265,7 +282,14 @@ const SubmitMatchPage = () => {
       if (alignedPayload.autodarts_link) setAutodartsLink(alignedPayload.autodarts_link);
       const mapped = mapPayloadToStats(alignedPayload);
 
-      if (allowAutoSubmit && autoSubmitFromExtension && matchedUpcoming) {
+      if (lowConfidence) {
+        toast({
+          title: "Uwaga: niepewne mapowanie",
+          description: "Nie udało się jednoznacznie dopasować graczy po nazwie/ID. Sprawdź kolumny i w razie potrzeby użyj 'Zamień strony'.",
+        });
+      }
+
+      if (allowAutoSubmit && autoSubmitFromExtension && matchedUpcoming && !lowConfidence) {
         submitMatchResult(matchedUpcoming.id, mapped.data);
         processedAutoMatchRef.current = extMatchId;
         toast({
