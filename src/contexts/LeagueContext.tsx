@@ -433,12 +433,14 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       name: league.name, season: league.season, description: league.description,
       format: league.format, max_legs: league.max_legs, is_active: league.is_active,
       league_type: league.league_type || "league",
+      bonus_rules: league.bonus_rules as any,
     }).select().single();
     if (data) {
       const newLeague: League = {
         id: data.id, name: data.name, season: data.season, description: data.description,
         format: data.format, max_legs: data.max_legs, is_active: data.is_active,
         league_type: (data.league_type as League["league_type"]) || "league",
+        bonus_rules: { ...DEFAULT_BONUS_RULES, ...((data as any).bonus_rules || {}) } as BonusRules,
       };
       setLeagueList((prev) => [...prev, newLeague]);
       if (!activeLeagueId) setActiveLeagueId(data.id);
