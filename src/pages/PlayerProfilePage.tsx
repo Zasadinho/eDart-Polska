@@ -1,8 +1,9 @@
 import { useParams, Link } from "react-router-dom";
 import { useLeague } from "@/contexts/LeagueContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Target, Trophy, TrendingUp, Crosshair, BarChart3, Zap, Phone, MessageCircle } from "lucide-react";
+import { ArrowLeft, Target, Trophy, TrendingUp, Crosshair, BarChart3, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PlayerProgressChart from "@/components/PlayerProgressChart";
 
 const PlayerProfilePage = () => {
   const { id } = useParams();
