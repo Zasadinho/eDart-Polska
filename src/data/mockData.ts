@@ -47,7 +47,6 @@ export interface PlayerLeagueStats {
   leagueId: string;
   wins: number;
   losses: number;
-  draws: number;
   points: number;
   basePoints: number;
   bonusPoints: number;
@@ -56,7 +55,7 @@ export interface PlayerLeagueStats {
   avg: number;
   highestCheckout: number;
   oneEighties: number;
-  form: ("W" | "L" | "D")[];
+  form: ("W" | "L")[];
   badges: string[];
   matchesPlayed: number;
   bestAvg: number;
