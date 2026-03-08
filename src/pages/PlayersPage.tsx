@@ -40,7 +40,7 @@ const PlayersPage = () => {
               </div>
 
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span className="font-body">{player.stats.wins}W {player.stats.draws}R {player.stats.losses}P</span>
+                <span className="font-body">{player.stats.wins}W {player.stats.losses}P</span>
                 <div className="flex gap-0.5">
                   {player.stats.form.slice(-5).map((f, i) => (
                     <span key={i} className={`w-4 h-4 rounded-sm flex items-center justify-center text-[9px] font-bold ${
