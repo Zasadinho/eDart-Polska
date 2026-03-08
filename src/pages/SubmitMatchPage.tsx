@@ -23,6 +23,7 @@ const SubmitMatchPage = () => {
   const [score2, setScore2] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [stats, setStats] = useState<Record<string, string>>({});
+  const [fetchingAutodarts, setFetchingAutodarts] = useState(false);
 
   useEffect(() => {
     if (!user) { setLoadingPlayer(false); return; }
