@@ -177,7 +177,6 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
       darts1: String(m.dartsThrown1 ?? ""), darts2: String(m.dartsThrown2 ?? ""),
       checkoutAttempts1: String(m.checkoutAttempts1 ?? ""), checkoutAttempts2: String(m.checkoutAttempts2 ?? ""),
       checkoutHits1: String(m.checkoutHits1 ?? ""), checkoutHits2: String(m.checkoutHits2 ?? ""),
-      nineDarters1: String(m.nineDarters1 ?? ""), nineDarters2: String(m.nineDarters2 ?? ""),
     });
   };
 
@@ -204,8 +203,6 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
       checkoutAttempts2: parseInt(editStats.checkoutAttempts2) || 0,
       checkoutHits1: parseInt(editStats.checkoutHits1) || 0,
       checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
-      nineDarters1: parseInt(editStats.nineDarters1) || 0,
-      nineDarters2: parseInt(editStats.nineDarters2) || 0,
       autodartsLink: m.autodartsLink,
     });
     setEditingId(null);
@@ -262,7 +259,7 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-left flex-1">
                     <div className="font-body font-medium text-foreground">{m.player1Name}</div>
-                    {m.avg1 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg1?.toFixed(1)} · 180: {m.oneEighties1 ?? 0} · HC: {m.highCheckout1 ?? 0}{(m.nineDarters1 ?? 0) > 0 && ` · 9d: ${m.nineDarters1}`}</div>}
+                    {m.avg1 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg1?.toFixed(1)} · 180: {m.oneEighties1 ?? 0} · HC: {m.highCheckout1 ?? 0}</div>}
                   </div>
                   <div className="flex items-center gap-3 px-4">
                     <span className={`text-3xl font-display font-bold ${(m.score1 ?? 0) > (m.score2 ?? 0) ? "text-secondary" : "text-muted-foreground"}`}>{m.score1}</span>
@@ -271,7 +268,7 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
                   </div>
                   <div className="text-right flex-1">
                     <div className="font-body font-medium text-foreground">{m.player2Name}</div>
-                    {m.avg2 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg2?.toFixed(1)} · 180: {m.oneEighties2 ?? 0} · HC: {m.highCheckout2 ?? 0}{(m.nineDarters2 ?? 0) > 0 && ` · 9d: ${m.nineDarters2}`}</div>}
+                    {m.avg2 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg2?.toFixed(1)} · 180: {m.oneEighties2 ?? 0} · HC: {m.highCheckout2 ?? 0}</div>}
                   </div>
                 </div>
                 {m.autodartsLink && <div className="text-xs text-primary mb-4"><a href={m.autodartsLink} target="_blank" rel="noopener noreferrer" className="hover:underline">🔗 Link Autodarts</a></div>}
@@ -575,7 +572,6 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {([
                   { key: "per180", label: "🎯 Za każde 180", desc: "pkt za 180" },
-                  { key: "nineDarter", label: "💎 9-darter", desc: "pkt za 9-dartera" },
                   { key: "checkout100", label: "✅ Checkout 100+", desc: "pkt za checkout 100+" },
                   { key: "checkout150", label: "💫 Checkout 150+ (extra)", desc: "dodatkowe pkt za 150+" },
                   { key: "avg90", label: "📊 Średnia 90+", desc: "pkt za średnią 90+" },
@@ -1035,7 +1031,6 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
       darts1: String(m.dartsThrown1 ?? ""), darts2: String(m.dartsThrown2 ?? ""),
       checkoutAttempts1: String(m.checkoutAttempts1 ?? ""), checkoutAttempts2: String(m.checkoutAttempts2 ?? ""),
       checkoutHits1: String(m.checkoutHits1 ?? ""), checkoutHits2: String(m.checkoutHits2 ?? ""),
-      nineDarters1: String(m.nineDarters1 ?? ""), nineDarters2: String(m.nineDarters2 ?? ""),
     });
   };
 
@@ -1062,8 +1057,6 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
       checkoutAttempts2: parseInt(editStats.checkoutAttempts2) || 0,
       checkoutHits1: parseInt(editStats.checkoutHits1) || 0,
       checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
-      nineDarters1: parseInt(editStats.nineDarters1) || 0,
-      nineDarters2: parseInt(editStats.nineDarters2) || 0,
       autodartsLink: m.autodartsLink,
     });
     setEditingId(null);
@@ -1110,8 +1103,6 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
       checkoutAttempts2: parseInt(editStats.checkoutAttempts2) || 0,
       checkoutHits1: parseInt(editStats.checkoutHits1) || 0,
       checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
-      nineDarters1: parseInt(editStats.nineDarters1) || 0,
-      nineDarters2: parseInt(editStats.nineDarters2) || 0,
       autodartsLink: m.autodartsLink,
     });
     await approveMatch(m.id);

@@ -19,7 +19,6 @@ interface ExtensionSettings {
   require_checkout_stats: boolean;
   require_darts_thrown: boolean;
   require_ton_ranges: boolean;
-  require_nine_darters: boolean;
   require_autodarts_link: boolean;
   webhook_enabled: boolean;
 }
@@ -59,7 +58,6 @@ const ExtensionConfigPanel = ({ leagues }: { leagues: any[] }) => {
         require_checkout_stats: settings.require_checkout_stats,
         require_darts_thrown: settings.require_darts_thrown,
         require_ton_ranges: settings.require_ton_ranges,
-        require_nine_darters: settings.require_nine_darters,
         require_autodarts_link: settings.require_autodarts_link,
         webhook_enabled: settings.webhook_enabled,
         updated_at: new Date().toISOString(),
@@ -108,7 +106,7 @@ const ExtensionConfigPanel = ({ leagues }: { leagues: any[] }) => {
     { key: "require_checkout_stats" as const, label: "Statystyki checkoutów", desc: "Próby i trafienia checkout" },
     { key: "require_darts_thrown" as const, label: "Rzucone lotki", desc: "Łączna liczba rzuconych lotek" },
     { key: "require_ton_ranges" as const, label: "Zakresy ton (60/80/+)", desc: "Ton 60, Ton 80, Ton+" },
-    { key: "require_nine_darters" as const, label: "Nine darters", desc: "9-rzutowe zamknięcia" },
+    
     { key: "require_autodarts_link" as const, label: "Link Autodarts", desc: "Link do meczu na Autodarts" },
   ];
 

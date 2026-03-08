@@ -4,7 +4,6 @@ export interface BonusRules {
   win: number;       // points for win (default 3)
   draw: number;      // points for draw (default 1)
   per180: number;    // points per 180 scored (default 1)
-  nineDarter: number; // points per 9-darter (default 3)
   checkout100: number; // points for checkout 100+ (default 1)
   checkout150: number; // extra points for checkout 150+ (default 1)
   avg90: number;     // points for avg 90+ (default 1)
@@ -14,7 +13,7 @@ export interface BonusRules {
 }
 
 export const DEFAULT_BONUS_RULES: BonusRules = {
-  win: 3, draw: 1, per180: 1, nineDarter: 3,
+  win: 3, draw: 1, per180: 1,
   checkout100: 1, checkout150: 1, avg90: 1, avg100: 1,
   closeLoss: 1, cleanSweep: 1,
 };
@@ -58,7 +57,6 @@ export interface PlayerLeagueStats {
   avg: number;
   highestCheckout: number;
   oneEighties: number;
-  nineDarters: number;
   form: ("W" | "L" | "D")[];
   badges: string[];
   matchesPlayed: number;
@@ -109,8 +107,6 @@ export interface Match {
   bracketRound?: string;
   bracketPosition?: number;
   groupName?: string;
-  nineDarters1?: number;
-  nineDarters2?: number;
 }
 
 export interface Achievement {
@@ -204,7 +200,4 @@ export const achievements: Achievement[] = [
   { id: "x4", name: "Bonus Hunter", description: "Zdobądź ponad 10 punktów bonusowych", icon: "💫", rarity: "rare", condition: (s) => s.bonusPoints >= 10 },
   { id: "x5", name: "Bonus King", description: "Zdobądź ponad 25 punktów bonusowych", icon: "🌠", rarity: "epic", condition: (s) => s.bonusPoints >= 25 },
 
-  // ─── 9-DARTER ───
-  { id: "n1", name: "Pierwszy 9-Darter!", description: "Rzuć swojego pierwszego 9-dartera", icon: "💎", rarity: "legendary", condition: (s) => s.nineDarters >= 1 },
-  { id: "n2", name: "9-Darter x2", description: "Rzuć 2 dziewięciodartowce", icon: "💎💎", rarity: "legendary", condition: (s) => s.nineDarters >= 2 },
 ];

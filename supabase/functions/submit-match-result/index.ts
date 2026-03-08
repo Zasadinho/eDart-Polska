@@ -80,8 +80,6 @@ Deno.serve(async (req) => {
       checkout_attempts2 = 0,
       checkout_hits1 = 0,
       checkout_hits2 = 0,
-      nine_darters1 = 0,
-      nine_darters2 = 0,
       autodarts_link,
       // If admin wants to auto-complete
       auto_complete = false,
@@ -185,8 +183,6 @@ Deno.serve(async (req) => {
         checkout_attempts2,
         checkout_hits1,
         checkout_hits2,
-        nine_darters1,
-        nine_darters2,
         autodarts_link: autodarts_link ?? null,
       })
       .eq("id", matchId);

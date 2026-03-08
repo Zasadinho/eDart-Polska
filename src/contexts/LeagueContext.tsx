@@ -63,8 +63,6 @@ export interface MatchResultData {
   checkoutAttempts2?: number;
   checkoutHits1?: number;
   checkoutHits2?: number;
-  nineDarters1?: number;
-  nineDarters2?: number;
   autodartsLink?: string;
 }
 
@@ -130,8 +128,6 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
     bracketRound: m.bracket_round,
     bracketPosition: m.bracket_position,
     groupName: m.group_name,
-    nineDarters1: m.nine_darters1,
-    nineDarters2: m.nine_darters2,
   };
 };
 
@@ -149,10 +145,8 @@ const calcMatchBonusPoints = (
   const my180 = isP1 ? (m.oneEighties1 ?? 0) : (m.oneEighties2 ?? 0);
   const myHC = isP1 ? (m.highCheckout1 ?? 0) : (m.highCheckout2 ?? 0);
   const myAvg = isP1 ? (m.avg1 ?? 0) : (m.avg2 ?? 0);
-  const my9d = isP1 ? (m.nineDarters1 ?? 0) : (m.nineDarters2 ?? 0);
 
   bonus += my180 * rules.per180;
-  bonus += my9d * rules.nineDarter;
   if (myHC >= 100) bonus += rules.checkout100;
   if (myHC >= 150) bonus += rules.checkout150;
   if (myAvg >= 90) bonus += rules.avg90;
@@ -168,7 +162,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
     (m) => m.leagueId === leagueId && m.status === "completed" && (m.player1Id === playerId || m.player2Id === playerId)
   );
 
-  let wins = 0, losses = 0, draws = 0, legsWon = 0, legsLost = 0, oneEighties = 0, nineDarters = 0;
+  let wins = 0, losses = 0, draws = 0, legsWon = 0, legsLost = 0, oneEighties = 0;
   let highestCheckout = 0, bestAvg = 0, totalDarts = 0;
   let ton60 = 0, ton80 = 0, tonPlus = 0;
   let checkoutAttempts = 0, checkoutHits = 0;
@@ -186,7 +180,6 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
     legsWon += myLegs;
     legsLost += oppLegs;
     oneEighties += isP1 ? (m.oneEighties1 ?? 0) : (m.oneEighties2 ?? 0);
-    nineDarters += isP1 ? (m.nineDarters1 ?? 0) : (m.nineDarters2 ?? 0);
     const hc = isP1 ? (m.highCheckout1 ?? 0) : (m.highCheckout2 ?? 0);
     if (hc > highestCheckout) highestCheckout = hc;
     const myAvg = isP1 ? (m.avg1 ?? 0) : (m.avg2 ?? 0);
@@ -217,7 +210,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: 
     basePoints,
     bonusPoints,
     legsWon, legsLost, avg,
-    highestCheckout, oneEighties, nineDarters,
+    highestCheckout, oneEighties,
     form: form,
     badges: [],
     matchesPlayed: completed.length,
@@ -348,8 +341,6 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       checkout_hits1: data.checkoutHits1 ?? 0,
       checkout_hits2: data.checkoutHits2 ?? 0,
       autodarts_link: data.autodartsLink,
-      nine_darters1: data.nineDarters1 ?? 0,
-      nine_darters2: data.nineDarters2 ?? 0,
     }).eq("id", matchId);
 
     setMatchList((prev) =>
@@ -378,7 +369,6 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       darts_thrown1: data.dartsThrown1 ?? 0, darts_thrown2: data.dartsThrown2 ?? 0,
       checkout_attempts1: data.checkoutAttempts1 ?? 0, checkout_attempts2: data.checkoutAttempts2 ?? 0,
       checkout_hits1: data.checkoutHits1 ?? 0, checkout_hits2: data.checkoutHits2 ?? 0,
-      nine_darters1: data.nineDarters1 ?? 0, nine_darters2: data.nineDarters2 ?? 0,
       autodarts_link: data.autodartsLink,
     }).eq("id", matchId);
 
@@ -407,7 +397,6 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       darts_thrown1: 0, darts_thrown2: 0,
       checkout_attempts1: 0, checkout_attempts2: 0,
       checkout_hits1: 0, checkout_hits2: 0,
-      nine_darters1: 0, nine_darters2: 0,
       autodarts_link: null,
     }).eq("id", matchId);
 
@@ -419,7 +408,6 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       ton40_1: 0, ton40_2: 0, ton60_1: 0, ton60_2: 0, ton80_1: 0, ton80_2: 0,
       tonPlus1: 0, tonPlus2: 0, dartsThrown1: 0, dartsThrown2: 0,
       checkoutAttempts1: 0, checkoutAttempts2: 0, checkoutHits1: 0, checkoutHits2: 0,
-      nineDarters1: 0, nineDarters2: 0,
       autodartsLink: undefined,
     } : m));
   }, []);
