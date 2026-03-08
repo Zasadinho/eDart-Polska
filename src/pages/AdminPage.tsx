@@ -28,7 +28,7 @@ const AdminPage = () => {
     approvePlayer, addMatch, deleteMatch, addPlayer,
     addLeague, updateLeague, deleteLeague,
     updatePlayer, deletePlayer, assignPlayerToLeague, removePlayerFromLeague,
-    approveMatch, rejectMatch, getPendingApprovalMatches, refreshData,
+    approveMatch, rejectMatch, updateMatchResult, getPendingApprovalMatches, refreshData,
   } = useLeague();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
