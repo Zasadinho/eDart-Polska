@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { BarChart3, Trophy, Target, Crown, TrendingUp, Crosshair, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LeagueSelector from "@/components/LeagueSelector";
+import PlayerAvatar from "@/components/PlayerAvatar";
 
 type StatsTab = "tons" | "averages" | "checkouts" | "winrate";
 
@@ -85,8 +86,8 @@ const StatsPage = () => {
               return (
                 <motion.div key={entry.playerId} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.15, duration: 0.5 }} className="flex flex-col items-center">
                   <Link to={`/players/${entry.playerId}`} className="flex flex-col items-center group">
-                    <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full bg-primary/20 border-2 ${rank === 1 ? "border-accent" : "border-border"} flex items-center justify-center text-sm md:text-base font-display font-bold text-primary group-hover:scale-110 transition-transform mb-2`}>
-                      {entry.avatar}
+                    <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full bg-primary/20 border-2 ${rank === 1 ? "border-accent" : "border-border"} flex items-center justify-center text-sm md:text-base font-display font-bold text-primary group-hover:scale-110 transition-transform mb-2 overflow-hidden`}>
+                      {entry.avatarUrl ? <img src={entry.avatarUrl} alt="" className="w-full h-full object-cover" /> : entry.avatar}
                     </div>
                     <span className="font-body font-medium text-foreground text-xs md:text-sm text-center">{entry.playerName}</span>
                   </Link>
@@ -154,7 +155,7 @@ const StatsPage = () => {
                     </td>
                     <td className="px-4 py-3">
                       <Link to={`/players/${entry.playerId}`} className="flex items-center gap-3 group">
-                        <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-xs font-display font-bold text-primary group-hover:bg-primary/30 transition-colors">{entry.avatar}</div>
+                        <PlayerAvatar avatarUrl={entry.avatarUrl} initials={entry.avatar} size="sm" className="group-hover:border-primary/50 transition-colors" />
                         <span className="font-body font-medium text-foreground text-sm group-hover:text-primary transition-colors">{entry.playerName}</span>
                       </Link>
                     </td>

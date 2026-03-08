@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import LeagueSelector from "@/components/LeagueSelector";
+import PlayerAvatar from "@/components/PlayerAvatar";
 
 const HeadToHeadPage = () => {
   const { players, matches, activeLeagueId, getLeagueMatches } = useLeague();
@@ -104,9 +105,7 @@ const HeadToHeadPage = () => {
           <div className="rounded-lg border border-border bg-card p-6 card-glow">
             <div className="flex items-center justify-between mb-6">
               <div className="text-center flex-1">
-                <div className="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center text-xl font-display font-bold text-primary mx-auto mb-2">
-                  {p1.avatar}
-                </div>
+                <PlayerAvatar avatarUrl={p1.avatar_url} initials={p1.avatar} size="md" className="w-16 h-16 mx-auto mb-2" />
                 <Link to={`/players/${p1.id}`} className="font-body font-semibold text-foreground hover:text-primary transition-colors">
                   {p1.name}
                 </Link>
@@ -123,9 +122,7 @@ const HeadToHeadPage = () => {
                 </div>
               </div>
               <div className="text-center flex-1">
-                <div className="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center text-xl font-display font-bold text-primary mx-auto mb-2">
-                  {p2.avatar}
-                </div>
+                <PlayerAvatar avatarUrl={p2.avatar_url} initials={p2.avatar} size="md" className="w-16 h-16 mx-auto mb-2" />
                 <Link to={`/players/${p2.id}`} className="font-body font-semibold text-foreground hover:text-primary transition-colors">
                   {p2.name}
                 </Link>

@@ -1,5 +1,6 @@
 import { useLeague } from "@/contexts/LeagueContext";
 import { Link } from "react-router-dom";
+import PlayerAvatar from "@/components/PlayerAvatar";
 
 const PlayersPage = () => {
   const { players, activeLeagueId, getPlayerLeagueStats, getPlayerAchievements } = useLeague();
@@ -23,9 +24,7 @@ const PlayersPage = () => {
           <Link to={`/players/${player.id}`} key={player.id}>
             <div className="rounded-lg border border-border bg-card p-5 card-glow hover:border-primary/30 transition-all group cursor-pointer h-full">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm font-display font-bold text-primary group-hover:bg-primary/30 transition-colors">
-                  {player.avatar}
-                </div>
+                <PlayerAvatar avatarUrl={player.avatar_url} initials={player.avatar} size="sm" className="w-12 h-12 text-sm group-hover:border-primary/50 transition-colors" />
                 <div>
                   <div className="font-body font-semibold text-foreground">{player.name}</div>
                   <div className="text-xs text-muted-foreground font-body">

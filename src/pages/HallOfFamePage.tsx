@@ -2,11 +2,13 @@ import { useLeague } from "@/contexts/LeagueContext";
 import { Trophy, Target, Crosshair, TrendingUp, Flame, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import LeagueSelector from "@/components/LeagueSelector";
+import PlayerAvatar from "@/components/PlayerAvatar";
 
 interface RecordEntry {
   playerId: string;
   playerName: string;
   playerAvatar: string;
+  playerAvatarUrl?: string | null;
   value: string | number;
 }
 
@@ -19,36 +21,36 @@ const HallOfFamePage = () => {
   const records: { icon: React.ReactNode; title: string; entries: RecordEntry[] }[] = [];
 
   // Best single-match average
-  const avgRecords: { pid: string; name: string; avatar: string; val: number }[] = [];
+  const avgRecords: { pid: string; name: string; avatar: string; avatarUrl?: string | null; val: number }[] = [];
   leagueMatches.forEach((m) => {
     const p1 = players.find((p) => p.id === m.player1Id);
     const p2 = players.find((p) => p.id === m.player2Id);
-    if (m.avg1 != null && p1) avgRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, val: m.avg1 });
-    if (m.avg2 != null && p2) avgRecords.push({ pid: p2.id, name: p2.name, avatar: p2.avatar, val: m.avg2 });
+    if (m.avg1 != null && p1) avgRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, avatarUrl: p1.avatar_url, val: m.avg1 });
+    if (m.avg2 != null && p2) avgRecords.push({ pid: p2.id, name: p2.name, avatar: p2.avatar, avatarUrl: p2.avatar_url, val: m.avg2 });
   });
   avgRecords.sort((a, b) => b.val - a.val);
   records.push({
     icon: <TrendingUp className="h-6 w-6 text-secondary" />,
     title: "Najlepsza średnia (mecz)",
     entries: avgRecords.slice(0, 5).map((r) => ({
-      playerId: r.pid, playerName: r.name, playerAvatar: r.avatar, value: r.val.toFixed(1),
+      playerId: r.pid, playerName: r.name, playerAvatar: r.avatar, playerAvatarUrl: r.avatarUrl, value: r.val.toFixed(1),
     })),
   });
 
   // Highest checkout
-  const coRecords: { pid: string; name: string; avatar: string; val: number }[] = [];
+  const coRecords: { pid: string; name: string; avatar: string; avatarUrl?: string | null; val: number }[] = [];
   leagueMatches.forEach((m) => {
     const p1 = players.find((p) => p.id === m.player1Id);
     const p2 = players.find((p) => p.id === m.player2Id);
-    if (m.highCheckout1 && m.highCheckout1 > 0 && p1) coRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, val: m.highCheckout1 });
-    if (m.highCheckout2 && m.highCheckout2 > 0 && p2) coRecords.push({ pid: p2.id, name: p2.name, avatar: p2.avatar, val: m.highCheckout2 });
+    if (m.highCheckout1 && m.highCheckout1 > 0 && p1) coRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, avatarUrl: p1.avatar_url, val: m.highCheckout1 });
+    if (m.highCheckout2 && m.highCheckout2 > 0 && p2) coRecords.push({ pid: p2.id, name: p2.name, avatar: p2.avatar, avatarUrl: p2.avatar_url, val: m.highCheckout2 });
   });
   coRecords.sort((a, b) => b.val - a.val);
   records.push({
     icon: <Crosshair className="h-6 w-6 text-primary" />,
     title: "Najwyższy checkout",
     entries: coRecords.slice(0, 5).map((r) => ({
-      playerId: r.pid, playerName: r.name, playerAvatar: r.avatar, value: r.val,
+      playerId: r.pid, playerName: r.name, playerAvatar: r.avatar, playerAvatarUrl: r.avatarUrl, value: r.val,
     })),
   });
 
@@ -61,7 +63,7 @@ const HallOfFamePage = () => {
   const oneEightyEntries = Object.entries(oneEightyMap)
     .map(([pid, val]) => {
       const p = players.find((pl) => pl.id === pid);
-      return p ? { pid, name: p.name, avatar: p.avatar, val } : null;
+      return p ? { pid, name: p.name, avatar: p.avatar, avatarUrl: p.avatar_url, val } : null;
     })
     .filter(Boolean)
     .sort((a, b) => b!.val - a!.val)
@@ -70,7 +72,7 @@ const HallOfFamePage = () => {
     icon: <Target className="h-6 w-6 text-accent" />,
     title: "Najwięcej 180-tek",
     entries: oneEightyEntries.map((r) => ({
-      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, value: r!.val,
+      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, playerAvatarUrl: r!.avatarUrl, value: r!.val,
     })),
   });
 
@@ -83,7 +85,7 @@ const HallOfFamePage = () => {
   const winEntries = Object.entries(winMap)
     .map(([pid, val]) => {
       const p = players.find((pl) => pl.id === pid);
-      return p ? { pid, name: p.name, avatar: p.avatar, val } : null;
+      return p ? { pid, name: p.name, avatar: p.avatar, avatarUrl: p.avatar_url, val } : null;
     })
     .filter(Boolean)
     .sort((a, b) => b!.val - a!.val)
@@ -92,7 +94,7 @@ const HallOfFamePage = () => {
     icon: <Trophy className="h-6 w-6 text-accent" />,
     title: "Najwięcej zwycięstw",
     entries: winEntries.map((r) => ({
-      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, value: r!.val,
+      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, playerAvatarUrl: r!.avatarUrl, value: r!.val,
     })),
   });
 
@@ -122,7 +124,7 @@ const HallOfFamePage = () => {
   const streakEntries = Object.entries(streakMap)
     .map(([pid, val]) => {
       const p = players.find((pl) => pl.id === pid);
-      return p ? { pid, name: p.name, avatar: p.avatar, val } : null;
+      return p ? { pid, name: p.name, avatar: p.avatar, avatarUrl: p.avatar_url, val } : null;
     })
     .filter(Boolean)
     .sort((a, b) => b!.val - a!.val)
@@ -131,7 +133,7 @@ const HallOfFamePage = () => {
     icon: <Flame className="h-6 w-6 text-destructive" />,
     title: "Najdłuższa seria zwycięstw",
     entries: streakEntries.map((r) => ({
-      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, value: `${r!.val} z rzędu`,
+      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, playerAvatarUrl: r!.avatarUrl, value: `${r!.val} z rzędu`,
     })),
   });
 
@@ -171,9 +173,7 @@ const HallOfFamePage = () => {
                       <span className={`text-lg font-display w-8 text-center ${i === 0 ? "text-2xl" : ""}`}>
                         {medals[i]}
                       </span>
-                      <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-xs font-display font-bold text-primary">
-                        {entry.playerAvatar}
-                      </div>
+                      <PlayerAvatar avatarUrl={entry.playerAvatarUrl} initials={entry.playerAvatar} size="sm" />
                       <span className="flex-1 font-body font-medium text-foreground text-sm">{entry.playerName}</span>
                       <span className="font-display font-bold text-foreground text-lg">{entry.value}</span>
                     </Link>
