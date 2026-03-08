@@ -37,6 +37,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function autoSubmitLeagueMatch(matchPayload) {
   try {
+    // Get the player's autodarts token from storage
+    const stored = await new Promise((resolve) => {
+      chrome.storage.local.get(["autodarts_token"], resolve);
+    });
+    const playerToken = stored.autodarts_token || null;
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/auto-submit-league-match`, {
       method: "POST",
       headers: {
@@ -46,6 +52,7 @@ async function autoSubmitLeagueMatch(matchPayload) {
       },
       body: JSON.stringify({
         autodarts_match_id: matchPayload.match_id,
+        autodarts_token: playerToken,
         player1_name: matchPayload.player1_name,
         player2_name: matchPayload.player2_name,
         player1_autodarts_id: matchPayload.player1_autodarts_id || null,
