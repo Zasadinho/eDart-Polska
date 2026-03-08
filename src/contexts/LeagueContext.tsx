@@ -109,8 +109,6 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
     oneEighties2: m.one_eighties2,
     highCheckout1: m.high_checkout1,
     highCheckout2: m.high_checkout2,
-    ton40_1: m.ton40_1,
-    ton40_2: m.ton40_2,
     ton60_1: m.ton60_1,
     ton60_2: m.ton60_2,
     ton80_1: m.ton80_1,
