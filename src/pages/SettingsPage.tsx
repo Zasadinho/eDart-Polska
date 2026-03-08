@@ -34,11 +34,12 @@ const SettingsPage = () => {
   useEffect(() => {
     if (!user) return;
     import("@/integrations/supabase/client").then(({ supabase }) => {
-      supabase.from("players").select("id, phone, discord, avatar_url").eq("user_id", user.id).maybeSingle().then(({ data }) => {
+      supabase.from("players").select("id, phone, discord, avatar_url, autodarts_user_id").eq("user_id", user.id).maybeSingle().then(({ data }) => {
         if (data) {
-          setPlayerData({ id: data.id, phone: data.phone || "", discord: data.discord || "", avatar_url: (data as any).avatar_url || null });
+          setPlayerData({ id: data.id, phone: data.phone || "", discord: data.discord || "", avatar_url: (data as any).avatar_url || null, autodarts_user_id: (data as any).autodarts_user_id || "" });
           setPhone(data.phone || "");
           setDiscord(data.discord || "");
+          setAutodartsId((data as any).autodarts_user_id || "");
         }
       });
     });
