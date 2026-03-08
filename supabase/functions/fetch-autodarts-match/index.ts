@@ -52,6 +52,39 @@ async function fetchJson(url: string, token: string) {
   return res.json();
 }
 
+function unwrapGamePayload(payload: any) {
+  if (!payload) return null;
+  if (Array.isArray(payload)) return payload[0] ?? null;
+  if (payload.game && typeof payload.game === "object") return payload.game;
+  if (payload.data && typeof payload.data === "object") return payload.data;
+  return payload;
+}
+
+async function fetchGameDetail(matchId: string, gameId: string, token: string) {
+  const urls = [
+    `${API_BASE}/as/v0/matches/${matchId}/games/${gameId}`,
+    `${API_BASE}/gs/v0/matches/${matchId}/games/${gameId}`,
+    `${API_BASE}/as/v0/games/${gameId}`,
+    `${API_BASE}/gs/v0/games/${gameId}`,
+  ];
+
+  for (const url of urls) {
+    try {
+      const payload = await fetchJson(url, token);
+      const game = unwrapGamePayload(payload);
+      if (game && typeof game === "object") {
+        console.log("Fetched game details from:", url);
+        return game;
+      }
+    } catch (err) {
+      console.log("Failed endpoint", url, String(err));
+    }
+  }
+
+  console.log("No game detail endpoint worked for game", gameId);
+  return null;
+}
+
 async function fetchMatchData(matchId: string, token: string) {
   const match = await fetchJson(`${API_BASE}/as/v0/matches/${matchId}`, token);
 
