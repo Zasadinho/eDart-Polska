@@ -545,19 +545,10 @@ const SubmitMatchPage = () => {
               {/* Raw preview from Autodarts */}
               {rawPreview && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div>
                     <h3 className="font-display font-bold text-sm text-primary uppercase tracking-wider">
                       📊 Dane z Autodarts
                     </h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleSwapSides}
-                      className="text-xs gap-1"
-                    >
-                      <ArrowLeftRight className="h-3 w-3" /> Zamień strony
-                    </Button>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 text-center text-xs font-body">
