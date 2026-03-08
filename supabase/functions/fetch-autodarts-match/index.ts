@@ -267,18 +267,29 @@ async function fetchMatchData(matchId: string, token: string) {
       }
 
       for (const turn of turns) {
-        const pIdx = turn.player ?? turn.playerIndex ?? turn.p ?? 0;
+        // Resolve player index: use playerId UUID mapped to match.players order
+        let pIdx = 0;
+        if (turn.playerId && playerIdMap[turn.playerId] !== undefined) {
+          pIdx = playerIdMap[turn.playerId];
+        } else if (typeof turn.player === "number") {
+          pIdx = turn.player;
+        } else if (typeof turn.playerIndex === "number") {
+          pIdx = turn.playerIndex;
+        } else if (typeof turn.turn === "number") {
+          // In some Autodarts formats, turn.turn alternates 0/1 within a round
+          pIdx = turn.turn % 2;
+        }
+        // Clamp to 0 or 1
+        pIdx = pIdx === 1 ? 1 : 0;
 
-        // Extract darts array - could be in turn.darts or turn.throws
-        const dartsArr = Array.isArray(turn.darts) ? turn.darts : 
-                         Array.isArray(turn.throws) ? turn.throws : null;
+        // Extract darts array - Autodarts uses "throws" not "darts"
+        const dartsArr = Array.isArray(turn.throws) ? turn.throws :
+                         Array.isArray(turn.darts) ? turn.darts : null;
 
         // Calculate points from turn
         let points = 0;
         if (typeof turn.points === "number") {
           points = turn.points;
-        } else if (typeof turn.score === "number") {
-          points = turn.score;
         } else if (dartsArr) {
           for (const d of dartsArr) {
             const segment = d.segment || d;
@@ -289,13 +300,11 @@ async function fetchMatchData(matchId: string, token: string) {
         }
 
         // Count darts - ensure it's always a number
-        let dartsCount = 3; // default
+        let dartsCount = 3;
         if (dartsArr) {
           dartsCount = dartsArr.length;
         } else if (typeof turn.dartsThrown === "number") {
           dartsCount = turn.dartsThrown;
-        } else if (typeof turn.throws === "number") {
-          dartsCount = turn.throws;
         }
 
         const st = pIdx === 0 ? s1 : s2;
