@@ -127,15 +127,59 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
   };
 };
 
+// ─── BONUS POINTS SYSTEM ───
+// Base: Win = 3pts, Draw = 1pt, Loss = 0pts
+// Bonus (per match, per player):
+//   +1 per 180 scored
+//   +3 per 9-darter
+//   +1 for high checkout 100+
+//   +1 extra for high checkout 150+
+//   +1 for match average 90+
+//   +1 extra for match average 100+
+//   +1 for loser if close match (1 leg difference)
+//   +1 for winner if clean sweep (opponent 0 legs)
+
+const calcMatchBonusPoints = (
+  isP1: boolean,
+  m: Match,
+  myScore: number,
+  oppScore: number,
+  isWinner: boolean
+): number => {
+  let bonus = 0;
+  const my180 = isP1 ? (m.oneEighties1 ?? 0) : (m.oneEighties2 ?? 0);
+  const myHC = isP1 ? (m.highCheckout1 ?? 0) : (m.highCheckout2 ?? 0);
+  const myAvg = isP1 ? (m.avg1 ?? 0) : (m.avg2 ?? 0);
+  const my9d = isP1 ? (m.nineDarters1 ?? 0) : (m.nineDarters2 ?? 0);
+
+  // +1 per 180
+  bonus += my180;
+  // +3 per 9-darter
+  bonus += my9d * 3;
+  // High checkout bonuses
+  if (myHC >= 100) bonus += 1;
+  if (myHC >= 150) bonus += 1;
+  // Average bonuses
+  if (myAvg >= 90) bonus += 1;
+  if (myAvg >= 100) bonus += 1;
+  // Close loss: loser gets +1 if difference is exactly 1 leg
+  if (!isWinner && myScore < oppScore && (oppScore - myScore) === 1) bonus += 1;
+  // Clean sweep: winner gets +1 if opponent scored 0
+  if (isWinner && oppScore === 0) bonus += 1;
+
+  return bonus;
+};
+
 const calcStats = (playerId: string, leagueId: string, matches: Match[]): PlayerLeagueStats => {
   const completed = matches.filter(
     (m) => m.leagueId === leagueId && m.status === "completed" && (m.player1Id === playerId || m.player2Id === playerId)
   );
 
-  let wins = 0, losses = 0, draws = 0, legsWon = 0, legsLost = 0, oneEighties = 0;
+  let wins = 0, losses = 0, draws = 0, legsWon = 0, legsLost = 0, oneEighties = 0, nineDarters = 0;
   let highestCheckout = 0, bestAvg = 0, totalDarts = 0;
   let ton60 = 0, ton80 = 0, tonPlus = 0;
   let checkoutAttempts = 0, checkoutHits = 0;
+  let basePoints = 0, bonusPoints = 0;
   const avgValues: number[] = [];
   const form: ("W" | "L" | "D")[] = [];
 
@@ -149,6 +193,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[]): Player
     legsWon += myLegs;
     legsLost += oppLegs;
     oneEighties += isP1 ? (m.oneEighties1 ?? 0) : (m.oneEighties2 ?? 0);
+    nineDarters += isP1 ? (m.nineDarters1 ?? 0) : (m.nineDarters2 ?? 0);
     const hc = isP1 ? (m.highCheckout1 ?? 0) : (m.highCheckout2 ?? 0);
     if (hc > highestCheckout) highestCheckout = hc;
     const myAvg = isP1 ? (m.avg1 ?? 0) : (m.avg2 ?? 0);
@@ -160,9 +205,12 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[]): Player
     checkoutAttempts += isP1 ? (m.checkoutAttempts1 ?? 0) : (m.checkoutAttempts2 ?? 0);
     checkoutHits += isP1 ? (m.checkoutHits1 ?? 0) : (m.checkoutHits2 ?? 0);
 
-    if (myScore > oppScore) { wins++; form.push("W"); }
+    const isWinner = myScore > oppScore;
+    if (isWinner) { wins++; form.push("W"); basePoints += 3; }
     else if (myScore < oppScore) { losses++; form.push("L"); }
-    else { draws++; form.push("D"); }
+    else { draws++; form.push("D"); basePoints += 1; }
+
+    bonusPoints += calcMatchBonusPoints(isP1, m, myScore, oppScore, isWinner);
   });
 
   const avg = avgValues.length > 0 ? Math.round((avgValues.reduce((a, b) => a + b, 0) / avgValues.length) * 10) / 10 : 0;
@@ -172,9 +220,11 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[]): Player
   return {
     playerId, leagueId,
     wins, losses, draws,
-    points: wins * 3 + draws,
+    points: basePoints + bonusPoints,
+    basePoints,
+    bonusPoints,
     legsWon, legsLost, avg,
-    highestCheckout, oneEighties,
+    highestCheckout, oneEighties, nineDarters,
     form: form.slice(-5),
     badges: [],
     matchesPlayed: completed.length,
