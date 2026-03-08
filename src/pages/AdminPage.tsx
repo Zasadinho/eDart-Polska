@@ -304,6 +304,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [leagueType, setLeagueType] = useState<LeagueType>("league");
   const [bonusRules, setBonusRules] = useState<BonusRules>({ ...DEFAULT_BONUS_RULES });
+  const [meetingsPerPair, setMeetingsPerPair] = useState(1);
   
   // Tournament generation state
   const [showGenerate, setShowGenerate] = useState<string | null>(null);
@@ -319,6 +320,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
   const resetForm = () => {
     setName(""); setSeason(""); setDescription(""); setFormat("Best of 5");
     setIsActive(true); setRegistrationOpen(false); setLeagueType("league"); setBonusRules({ ...DEFAULT_BONUS_RULES });
+    setMeetingsPerPair(1);
     setShowForm(false); setEditId(null);
   };
 
@@ -328,6 +330,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     setRegistrationOpen(l.registration_open ?? false);
     setLeagueType(l.league_type || "league");
     setBonusRules({ ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) });
+    setMeetingsPerPair(l.meetings_per_pair ?? 1);
     setShowForm(true);
   };
 
@@ -336,10 +339,10 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     if (!name || !season) { toast({ title: "Błąd", description: "Wypełnij wymagane pola.", variant: "destructive" }); return; }
     const maxLegs = BEST_OF_OPTIONS.find(o => o.value === format)?.maxLegs || 5;
     if (editId) {
-      await updateLeague(editId, { name, season, description, format, is_active: isActive, registration_open: registrationOpen, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules });
+      await updateLeague(editId, { name, season, description, format, is_active: isActive, registration_open: registrationOpen, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules, meetings_per_pair: meetingsPerPair });
       toast({ title: "Zaktualizowano!", description: `${name} została zmieniona.` });
     } else {
-      const result = await addLeague({ name, season, description, format, is_active: isActive, registration_open: registrationOpen, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules });
+      const result = await addLeague({ name, season, description, format, is_active: isActive, registration_open: registrationOpen, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules, meetings_per_pair: meetingsPerPair });
       if (result?.error) {
         toast({ title: "Błąd", description: "Nie udało się utworzyć. Sprawdź uprawnienia.", variant: "destructive" });
         return;
@@ -362,9 +365,10 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     return Array.from(rounds).sort((a, b) => a - b);
   };
 
-  // Calculate total rounds for given player count
-  const getTotalRounds = (playerCount: number): number => {
-    return playerCount % 2 === 0 ? playerCount - 1 : playerCount;
+  // Calculate total rounds for given player count (with meetings_per_pair)
+  const getTotalRounds = (playerCount: number, mpp: number = 1): number => {
+    const baseRounds = playerCount % 2 === 0 ? playerCount - 1 : playerCount;
+    return baseRounds * mpp;
   };
 
   const handleGenerateSchedule = async (league: any) => {
@@ -385,8 +389,23 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
       const lt = league.league_type || "league";
 
       if (lt === "league") {
-        // Round-robin
-        const schedule = generateRoundRobin(playerIds);
+        // Round-robin with meetings_per_pair support
+        const baseSchedule = generateRoundRobin(playerIds);
+        const mpp = league.meetings_per_pair ?? 1;
+        const totalBaseRounds = Math.max(...baseSchedule.map(m => m.round), 0);
+        
+        // Duplicate schedule for each meeting cycle
+        const schedule: typeof baseSchedule = [];
+        for (let cycle = 0; cycle < mpp; cycle++) {
+          baseSchedule.forEach(m => {
+            schedule.push({
+              player1Id: cycle % 2 === 0 ? m.player1Id : m.player2Id,
+              player2Id: cycle % 2 === 0 ? m.player2Id : m.player1Id,
+              round: m.round + cycle * totalBaseRounds,
+            });
+          });
+        }
+        
         const existingRounds = getExistingRounds(league.id);
         const roundsToGenerate = generateMode === "all"
           ? [...new Set(schedule.map(m => m.round))].filter(r => !existingRounds.includes(r))
@@ -522,6 +541,19 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                   </SelectContent>
                 </Select>
               </div>
+              {leagueType === "league" && (
+                <div className="space-y-2">
+                  <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Spotkania na parę</Label>
+                  <Select value={String(meetingsPerPair)} onValueChange={(v) => setMeetingsPerPair(parseInt(v))}>
+                    <SelectTrigger className="bg-muted/30 border-border"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 4].map(n => (
+                        <SelectItem key={n} value={String(n)}>{n}x (każdy z każdym {n} {n === 1 ? "raz" : "razy"})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Opis</Label>
@@ -728,7 +760,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
 
                   {/* Round selection for league type */}
                   {l.league_type === "league" && selectedPlayers.length >= 2 && (() => {
-                    const totalRounds = getTotalRounds(selectedPlayers.length);
+                    const totalRounds = getTotalRounds(selectedPlayers.length, l.meetings_per_pair ?? 1);
                     const existingRounds = getExistingRounds(l.id);
                     const allRoundNumbers = Array.from({ length: totalRounds }, (_, i) => i + 1);
                     const availableRounds = allRoundNumbers.filter(r => !existingRounds.includes(r));

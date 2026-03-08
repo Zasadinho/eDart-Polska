@@ -248,6 +248,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       league_type: l.league_type || "league",
       bonus_rules: { ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) } as BonusRules,
       registration_open: l.registration_open ?? false,
+      meetings_per_pair: l.meetings_per_pair ?? 1,
     }));
     setLeagueList(leagues);
     if (leagues.length > 0 && !activeLeagueId) {
@@ -457,6 +458,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       league_type: league.league_type || "league",
       bonus_rules: league.bonus_rules as any,
       registration_open: league.registration_open ?? false,
+      meetings_per_pair: league.meetings_per_pair ?? 1,
     }).select().single();
     if (data) {
       const newLeague: League = {
@@ -465,6 +467,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         league_type: (data.league_type as League["league_type"]) || "league",
         bonus_rules: { ...DEFAULT_BONUS_RULES, ...((data as any).bonus_rules || {}) } as BonusRules,
         registration_open: (data as any).registration_open ?? false,
+        meetings_per_pair: (data as any).meetings_per_pair ?? 1,
       };
       setLeagueList((prev) => [...prev, newLeague]);
       if (!activeLeagueId) setActiveLeagueId(data.id);

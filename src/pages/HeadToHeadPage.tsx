@@ -4,17 +4,14 @@ import { ArrowLeft, Swords, Trophy, TrendingUp, Target, Crosshair } from "lucide
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
-import LeagueSelector from "@/components/LeagueSelector";
 import PlayerAvatar from "@/components/PlayerAvatar";
 
 const HeadToHeadPage = () => {
-  const { players, matches, activeLeagueId, getLeagueMatches } = useLeague();
+  const { players, matches, leagues } = useLeague();
   const [player1Id, setPlayer1Id] = useState<string>("");
   const [player2Id, setPlayer2Id] = useState<string>("");
 
-  const leagueMatches = getLeagueMatches(activeLeagueId);
-
-  const h2hMatches = leagueMatches.filter(
+  const h2hMatches = matches.filter(
     (m) =>
       m.status === "completed" &&
       ((m.player1Id === player1Id && m.player2Id === player2Id) ||
@@ -61,8 +58,7 @@ const HeadToHeadPage = () => {
         <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2 flex items-center gap-3">
           <Swords className="h-8 w-8 text-primary" /> Porównanie H2H
         </h1>
-        <p className="text-muted-foreground font-body mb-4">Porównaj statystyki dwóch graczy</p>
-        <LeagueSelector />
+        <p className="text-muted-foreground font-body mb-4">Porównaj statystyki dwóch graczy ze wszystkich rozgrywek</p>
       </div>
 
       {/* Player selectors */}
@@ -158,6 +154,7 @@ const HeadToHeadPage = () => {
                       <div className="text-xs text-muted-foreground font-body">
                         {new Date(match.date).toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" })}
                         {match.round && ` · Kolejka ${match.round}`}
+                        <div className="text-[10px] text-muted-foreground/70 mt-0.5">{leagues.find(l => l.id === match.leagueId)?.name}</div>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className={`font-display font-bold text-lg ${won ? "text-secondary" : draw ? "text-accent" : "text-muted-foreground"}`}>
@@ -177,7 +174,7 @@ const HeadToHeadPage = () => {
             </div>
           ) : (
             <div className="rounded-lg border border-border bg-muted/20 p-6 text-center">
-              <p className="text-muted-foreground font-body">Ci gracze nie rozegrali jeszcze meczu w tej lidze.</p>
+              <p className="text-muted-foreground font-body">Ci gracze nie rozegrali jeszcze żadnego meczu.</p>
             </div>
           )}
         </>
