@@ -12,32 +12,54 @@ const API_BASE = "https://api.autodarts.io";
 async function getAutodartsToken(): Promise<string> {
   const email = Deno.env.get("AUTODARTS_EMAIL");
   const password = Deno.env.get("AUTODARTS_PASSWORD");
+  const configuredClientId = Deno.env.get("AUTODARTS_CLIENT_ID")?.trim();
+  const clientSecret = Deno.env.get("AUTODARTS_CLIENT_SECRET")?.trim();
 
   if (!email || !password) {
     throw new Error("AUTODARTS_EMAIL or AUTODARTS_PASSWORD not configured");
   }
 
-  const body = new URLSearchParams({
-    grant_type: "password",
-    client_id: "autodarts",
-    username: email,
-    password: password,
-    scope: "openid",
-  });
+  const candidateClientIds = configuredClientId
+    ? [configuredClientId]
+    : ["autodarts", "autodarts-app"];
 
-  const res = await fetch(KEYCLOAK_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString(),
-  });
+  let lastAuthError = "";
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Keycloak auth failed (${res.status}): ${errText}`);
+  for (const clientId of candidateClientIds) {
+    const body = new URLSearchParams({
+      grant_type: "password",
+      client_id: clientId,
+      username: email,
+      password,
+      scope: "openid",
+    });
+
+    if (clientSecret) body.set("client_secret", clientSecret);
+
+    const res = await fetch(KEYCLOAK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.access_token;
+    }
+
+    lastAuthError = await res.text();
+    const invalidClient =
+      res.status === 401 &&
+      /(invalid_client|unauthorized_client)/i.test(lastAuthError);
+
+    if (!invalidClient || configuredClientId) {
+      throw new Error(`Keycloak auth failed (${res.status}): ${lastAuthError}`);
+    }
   }
 
-  const data = await res.json();
-  return data.access_token;
+  throw new Error(
+    `Keycloak auth failed for all configured clients (${candidateClientIds.join(", ")}): ${lastAuthError}`,
+  );
 }
 
 function extractMatchId(input: string): string {
