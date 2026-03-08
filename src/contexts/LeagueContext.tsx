@@ -458,6 +458,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       league_type: league.league_type || "league",
       bonus_rules: league.bonus_rules as any,
       registration_open: league.registration_open ?? false,
+      meetings_per_pair: league.meetings_per_pair ?? 1,
     }).select().single();
     if (data) {
       const newLeague: League = {
