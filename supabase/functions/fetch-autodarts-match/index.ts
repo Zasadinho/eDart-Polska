@@ -50,7 +50,6 @@ function emptyStats(): PlayerStats {
   };
 }
 
-
 function readFirstNumber(...values: unknown[]): number | null {
   for (const value of values) {
     const n = Number(value);
@@ -59,7 +58,7 @@ function readFirstNumber(...values: unknown[]): number | null {
   return null;
 }
 
-
+async function fetchJson(url: string, token: string) {
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
