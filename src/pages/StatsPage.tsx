@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { BarChart3, Trophy, Target, Crown, TrendingUp, Crosshair, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LeagueSelector from "@/components/LeagueSelector";
+import PlayerAvatar from "@/components/PlayerAvatar";
 
 type StatsTab = "tons" | "averages" | "checkouts" | "winrate";
 
