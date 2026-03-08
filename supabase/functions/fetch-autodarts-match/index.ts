@@ -264,17 +264,23 @@ function processGameTurns(
         if (runningRemaining <= 0) break; // busted or finished
       }
     } else if (!dartsArr && scoreBeforeTurn != null) {
-      // No per-dart detail available: best-effort approximation.
-      // 1) if already on a single-dart finish, all darts in visit are attempts
+      const remainingAfterNoDarts = typeof turn.score === "number" ? turn.score : null;
+      const bustedNoDarts = turn.busted === true;
+
+      // No per-dart detail available. Try best effort from start/end score of the visit.
       if (isFinishableWithOneDouble(scoreBeforeTurn)) {
+        // Already on double finish for whole visit
         st.checkoutAttempts += dartsCount;
-      } else {
-        // 2) if visit ended on a single-dart finish (without bust), count at least one attempt
-        const remainingAfterNoDarts = typeof turn.score === "number" ? turn.score : null;
-        const bustedNoDarts = turn.busted === true;
-        if (!bustedNoDarts && remainingAfterNoDarts != null && isFinishableWithOneDouble(remainingAfterNoDarts)) {
-          st.checkoutAttempts += 1;
+      } else if (!bustedNoDarts && remainingAfterNoDarts != null) {
+        // If visit moved into double-finish zone, at least one dart was likely a double attempt.
+        // Use up to 2 attempts here to reduce undercount (common missing-details case in Autodarts payloads).
+        if (isFinishableWithOneDouble(remainingAfterNoDarts)) {
+          st.checkoutAttempts += Math.min(2, dartsCount);
         }
+      }
+
+      if (pIdx === 1 && scoreBeforeTurn <= 170) {
+        console.log(`[DEBUG_CO_FALLBACK] p2 scoreBefore=${scoreBeforeTurn} scoreAfter=${remainingAfterNoDarts} darts=${dartsCount} busted=${bustedNoDarts} attemptsNow=${st.checkoutAttempts}`);
       }
     }
 
