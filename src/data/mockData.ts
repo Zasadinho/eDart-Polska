@@ -111,6 +111,7 @@ export interface Match {
   first9Avg2?: number;
   avgUntil170_1?: number;
   avgUntil170_2?: number;
+  confirmedDate?: string | null;
 }
 
 export interface Achievement {

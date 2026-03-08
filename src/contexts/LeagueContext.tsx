@@ -136,6 +136,7 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
     first9Avg2: m.first_9_avg2 ? Number(m.first_9_avg2) : undefined,
     avgUntil170_1: m.avg_until_170_1 ? Number(m.avg_until_170_1) : undefined,
     avgUntil170_2: m.avg_until_170_2 ? Number(m.avg_until_170_2) : undefined,
+    confirmedDate: m.confirmed_date ?? null,
   };
 };
 
