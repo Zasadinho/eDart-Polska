@@ -38,12 +38,12 @@ const HallOfFamePage = () => {
   });
 
   // Highest checkout
-  const coRecords: { pid: string; name: string; avatar: string; val: number }[] = [];
+  const coRecords: { pid: string; name: string; avatar: string; avatarUrl?: string | null; val: number }[] = [];
   leagueMatches.forEach((m) => {
     const p1 = players.find((p) => p.id === m.player1Id);
     const p2 = players.find((p) => p.id === m.player2Id);
-    if (m.highCheckout1 && m.highCheckout1 > 0 && p1) coRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, val: m.highCheckout1 });
-    if (m.highCheckout2 && m.highCheckout2 > 0 && p2) coRecords.push({ pid: p2.id, name: p2.name, avatar: p2.avatar, val: m.highCheckout2 });
+    if (m.highCheckout1 && m.highCheckout1 > 0 && p1) coRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, avatarUrl: p1.avatar_url, val: m.highCheckout1 });
+    if (m.highCheckout2 && m.highCheckout2 > 0 && p2) coRecords.push({ pid: p2.id, name: p2.name, avatar: p2.avatar, avatarUrl: p2.avatar_url, val: m.highCheckout2 });
   });
   coRecords.sort((a, b) => b.val - a.val);
   records.push({
