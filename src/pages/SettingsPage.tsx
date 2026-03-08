@@ -147,6 +147,13 @@ const SettingsPage = () => {
               </Label>
               <Input value={discord} onChange={(e) => setDiscord(e.target.value)} placeholder="np. username#1234" className="bg-muted/30 border-border" />
             </div>
+            <div className="space-y-2">
+              <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground flex items-center gap-1">
+                <Gamepad2 className="h-3 w-3" /> Autodarts User ID
+              </Label>
+              <Input value={autodartsId} onChange={(e) => setAutodartsId(e.target.value)} placeholder="Twój ID z autodarts.io" className="bg-muted/30 border-border" />
+              <p className="text-xs text-muted-foreground font-body">Podaj swój Autodarts User ID, aby system automatycznie pobierał wyniki Twoich meczy.</p>
+            </div>
             <Button type="submit" variant="hero" disabled={savingContact}>
               {savingContact ? "Zapisywanie..." : "Zapisz kontakt"}
             </Button>
