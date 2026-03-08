@@ -264,11 +264,9 @@ function processGameTurns(
         if (runningRemaining <= 0) break;
       }
     } else if (!dartsArr && scoreBeforeTurn != null) {
-      // No per-dart detail available: best effort fallback
+      // No per-dart detail: only count if starting score is a one-dart finish
       if (isFinishableWithOneDouble(scoreBeforeTurn)) {
         st.checkoutAttempts += dartsCount;
-      } else if (scoreBeforeTurn <= 170 && scoreBeforeTurn > 1) {
-        st.checkoutAttempts += 1;
       }
     }
 
