@@ -10,7 +10,7 @@ import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, 
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { BEST_OF_OPTIONS, type LeagueType } from "@/data/mockData";
+import { BEST_OF_OPTIONS, type LeagueType, type BonusRules, DEFAULT_BONUS_RULES } from "@/data/mockData";
 import { generateRoundRobin, generateBracket, generateGroupStage, shuffle, getRecommendedGroups } from "@/lib/tournamentUtils";
 
 type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles";
@@ -219,6 +219,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
   const [format, setFormat] = useState("Best of 5");
   const [isActive, setIsActive] = useState(true);
   const [leagueType, setLeagueType] = useState<LeagueType>("league");
+  const [bonusRules, setBonusRules] = useState<BonusRules>({ ...DEFAULT_BONUS_RULES });
   
   // Tournament generation state
   const [showGenerate, setShowGenerate] = useState<string | null>(null);
@@ -230,13 +231,16 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
 
   const resetForm = () => {
     setName(""); setSeason(""); setDescription(""); setFormat("Best of 5");
-    setIsActive(true); setLeagueType("league"); setShowForm(false); setEditId(null);
+    setIsActive(true); setLeagueType("league"); setBonusRules({ ...DEFAULT_BONUS_RULES });
+    setShowForm(false); setEditId(null);
   };
 
   const startEdit = (l: any) => {
     setEditId(l.id); setName(l.name); setSeason(l.season); setDescription(l.description);
     setFormat(l.format || "Best of 5"); setIsActive(l.is_active);
-    setLeagueType(l.league_type || "league"); setShowForm(true);
+    setLeagueType(l.league_type || "league");
+    setBonusRules({ ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) });
+    setShowForm(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -244,10 +248,10 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     if (!name || !season) { toast({ title: "Błąd", description: "Wypełnij wymagane pola.", variant: "destructive" }); return; }
     const maxLegs = BEST_OF_OPTIONS.find(o => o.value === format)?.maxLegs || 5;
     if (editId) {
-      await updateLeague(editId, { name, season, description, format, is_active: isActive, max_legs: maxLegs, league_type: leagueType });
+      await updateLeague(editId, { name, season, description, format, is_active: isActive, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules });
       toast({ title: "Zaktualizowano!", description: `${name} została zmieniona.` });
     } else {
-      const result = await addLeague({ name, season, description, format, is_active: isActive, max_legs: maxLegs, league_type: leagueType });
+      const result = await addLeague({ name, season, description, format, is_active: isActive, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules });
       if (result?.error) {
         toast({ title: "Błąd", description: "Nie udało się utworzyć. Sprawdź uprawnienia.", variant: "destructive" });
         return;
@@ -408,6 +412,65 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                 {leagueType === "group_bracket" && "🎪 Faza grupowa (round-robin w grupach), potem faza pucharowa (drabinka) z najlepszymi z każdej grupy."}
               </div>
             )}
+
+            {/* Bonus points configuration */}
+            <div className="space-y-3 rounded-lg border border-border bg-muted/10 p-4">
+              <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Punkty bonusowe — wybierz aktywne zasady</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {([
+                  { key: "per180", label: "🎯 Za każde 180", desc: "pkt za 180" },
+                  { key: "nineDarter", label: "💎 9-darter", desc: "pkt za 9-dartera" },
+                  { key: "checkout100", label: "✅ Checkout 100+", desc: "pkt za checkout 100+" },
+                  { key: "checkout150", label: "💫 Checkout 150+ (extra)", desc: "dodatkowe pkt za 150+" },
+                  { key: "avg90", label: "📊 Średnia 90+", desc: "pkt za średnią 90+" },
+                  { key: "avg100", label: "📈 Średnia 100+ (extra)", desc: "dodatkowe pkt za 100+" },
+                  { key: "closeLoss", label: "🥈 Bliska przegrana", desc: "pkt za przegraną 1 legiem" },
+                  { key: "cleanSweep", label: "💪 Clean sweep", desc: "pkt za wygraną do 0" },
+                ] as { key: keyof BonusRules; label: string; desc: string }[]).map(rule => {
+                  const val = bonusRules[rule.key];
+                  const isActive = val > 0;
+                  return (
+                    <div key={rule.key} className={`flex items-center justify-between rounded-lg border p-3 transition-all ${isActive ? "border-primary/30 bg-primary/5" : "border-border bg-muted/20 opacity-60"}`}>
+                      <label className="flex items-center gap-2 cursor-pointer flex-1">
+                        <input
+                          type="checkbox"
+                          checked={isActive}
+                          onChange={(e) => {
+                            setBonusRules(prev => ({
+                              ...prev,
+                              [rule.key]: e.target.checked ? (DEFAULT_BONUS_RULES[rule.key] || 1) : 0,
+                            }));
+                          }}
+                          className="rounded border-border"
+                        />
+                        <span className="text-sm font-body text-foreground">{rule.label}</span>
+                      </label>
+                      {isActive && (
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={val}
+                          onChange={(e) => setBonusRules(prev => ({ ...prev, [rule.key]: parseInt(e.target.value) || 0 }))}
+                          className="w-16 h-8 text-center text-sm bg-muted/30 border-border font-display"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                <div className="flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 p-3">
+                  <span className="text-sm font-body text-foreground">🏆 Wygrana</span>
+                  <Input type="number" min="0" max="10" value={bonusRules.win} onChange={(e) => setBonusRules(prev => ({ ...prev, win: parseInt(e.target.value) || 0 }))} className="w-16 h-8 text-center text-sm bg-muted/30 border-border font-display" />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 p-3">
+                  <span className="text-sm font-body text-foreground">🤝 Remis</span>
+                  <Input type="number" min="0" max="10" value={bonusRules.draw} onChange={(e) => setBonusRules(prev => ({ ...prev, draw: parseInt(e.target.value) || 0 }))} className="w-16 h-8 text-center text-sm bg-muted/30 border-border font-display" />
+                </div>
+              </div>
+            </div>
+
             <div className="flex gap-3">
               <Button type="submit" variant="hero">{editId ? "Zapisz" : "Utwórz"}</Button>
               <Button type="button" variant="outline" onClick={resetForm}>Anuluj</Button>

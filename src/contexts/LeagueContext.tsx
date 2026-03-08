@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import { supabase } from "@/integrations/supabase/client";
 import {
   Player, Match, League, PlayerLeagueStats, Achievement,
-  achievements,
+  achievements, BonusRules, DEFAULT_BONUS_RULES,
 } from "@/data/mockData";
 
 interface LeagueContextType {
@@ -131,24 +131,15 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
   };
 };
 
-// ─── BONUS POINTS SYSTEM ───
-// Base: Win = 3pts, Draw = 1pt, Loss = 0pts
-// Bonus (per match, per player):
-//   +1 per 180 scored
-//   +3 per 9-darter
-//   +1 for high checkout 100+
-//   +1 extra for high checkout 150+
-//   +1 for match average 90+
-//   +1 extra for match average 100+
-//   +1 for loser if close match (1 leg difference)
-//   +1 for winner if clean sweep (opponent 0 legs)
+// ─── BONUS POINTS SYSTEM (configurable per league) ───
 
 const calcMatchBonusPoints = (
   isP1: boolean,
   m: Match,
   myScore: number,
   oppScore: number,
-  isWinner: boolean
+  isWinner: boolean,
+  rules: BonusRules
 ): number => {
   let bonus = 0;
   const my180 = isP1 ? (m.oneEighties1 ?? 0) : (m.oneEighties2 ?? 0);
@@ -156,25 +147,19 @@ const calcMatchBonusPoints = (
   const myAvg = isP1 ? (m.avg1 ?? 0) : (m.avg2 ?? 0);
   const my9d = isP1 ? (m.nineDarters1 ?? 0) : (m.nineDarters2 ?? 0);
 
-  // +1 per 180
-  bonus += my180;
-  // +3 per 9-darter
-  bonus += my9d * 3;
-  // High checkout bonuses
-  if (myHC >= 100) bonus += 1;
-  if (myHC >= 150) bonus += 1;
-  // Average bonuses
-  if (myAvg >= 90) bonus += 1;
-  if (myAvg >= 100) bonus += 1;
-  // Close loss: loser gets +1 if difference is exactly 1 leg
-  if (!isWinner && myScore < oppScore && (oppScore - myScore) === 1) bonus += 1;
-  // Clean sweep: winner gets +1 if opponent scored 0
-  if (isWinner && oppScore === 0) bonus += 1;
+  bonus += my180 * rules.per180;
+  bonus += my9d * rules.nineDarter;
+  if (myHC >= 100) bonus += rules.checkout100;
+  if (myHC >= 150) bonus += rules.checkout150;
+  if (myAvg >= 90) bonus += rules.avg90;
+  if (myAvg >= 100) bonus += rules.avg100;
+  if (!isWinner && myScore < oppScore && (oppScore - myScore) === 1) bonus += rules.closeLoss;
+  if (isWinner && oppScore === 0) bonus += rules.cleanSweep;
 
   return bonus;
 };
 
-const calcStats = (playerId: string, leagueId: string, matches: Match[]): PlayerLeagueStats => {
+const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: BonusRules = DEFAULT_BONUS_RULES): PlayerLeagueStats => {
   const completed = matches.filter(
     (m) => m.leagueId === leagueId && m.status === "completed" && (m.player1Id === playerId || m.player2Id === playerId)
   );
@@ -210,11 +195,11 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[]): Player
     checkoutHits += isP1 ? (m.checkoutHits1 ?? 0) : (m.checkoutHits2 ?? 0);
 
     const isWinner = myScore > oppScore;
-    if (isWinner) { wins++; form.push("W"); basePoints += 3; }
+    if (isWinner) { wins++; form.push("W"); basePoints += rules.win; }
     else if (myScore < oppScore) { losses++; form.push("L"); }
-    else { draws++; form.push("D"); basePoints += 1; }
+    else { draws++; form.push("D"); basePoints += rules.draw; }
 
-    bonusPoints += calcMatchBonusPoints(isP1, m, myScore, oppScore, isWinner);
+    bonusPoints += calcMatchBonusPoints(isP1, m, myScore, oppScore, isWinner, rules);
   });
 
   const avg = avgValues.length > 0 ? Math.round((avgValues.reduce((a, b) => a + b, 0) / avgValues.length) * 10) / 10 : 0;
@@ -257,6 +242,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       id: l.id, name: l.name, season: l.season, description: l.description,
       is_active: l.is_active, format: l.format, max_legs: l.max_legs,
       league_type: l.league_type || "league",
+      bonus_rules: { ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) } as BonusRules,
     }));
     setLeagueList(leagues);
     if (leagues.length > 0 && !activeLeagueId) {
@@ -288,27 +274,33 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
   const getLeagueMatches = useCallback((leagueId: string) => matchList.filter((m) => m.leagueId === leagueId), [matchList]);
 
-  const getPlayerLeagueStats = useCallback((playerId: string, leagueId: string) => calcStats(playerId, leagueId, matchList), [matchList]);
+  const getLeagueRules = useCallback((leagueId: string): BonusRules => {
+    const league = leagueList.find(l => l.id === leagueId);
+    return league?.bonus_rules ?? DEFAULT_BONUS_RULES;
+  }, [leagueList]);
+
+  const getPlayerLeagueStats = useCallback((playerId: string, leagueId: string) => calcStats(playerId, leagueId, matchList, getLeagueRules(leagueId)), [matchList, getLeagueRules]);
 
   const getPlayerAllLeagueStats = useCallback((playerId: string) => {
     return leagueList.filter(l => {
       return matchList.some(m => m.leagueId === l.id && (m.player1Id === playerId || m.player2Id === playerId));
-    }).map(league => ({ league, stats: calcStats(playerId, league.id, matchList) }));
+    }).map(league => ({ league, stats: calcStats(playerId, league.id, matchList, league.bonus_rules) }));
   }, [matchList, leagueList]);
 
   const getPlayerAchievements = useCallback((playerId: string, leagueId: string) => {
-    const stats = calcStats(playerId, leagueId, matchList);
+    const stats = calcStats(playerId, leagueId, matchList, getLeagueRules(leagueId));
     return achievements.filter((a) => a.condition(stats));
-  }, [matchList]);
+  }, [matchList, getLeagueRules]);
 
   const getLeagueStandings = useCallback((leagueId: string) => {
+    const rules = getLeagueRules(leagueId);
     const leaguePlayers = playerList.filter((p) => p.approved && matchList.some(
       (m) => m.leagueId === leagueId && (m.player1Id === p.id || m.player2Id === p.id)
     ));
     return leaguePlayers
-      .map((p) => ({ ...p, stats: calcStats(p.id, leagueId, matchList) }))
+      .map((p) => ({ ...p, stats: calcStats(p.id, leagueId, matchList, rules) }))
       .sort((a, b) => b.stats.points - a.stats.points || (b.stats.legsWon - b.stats.legsLost) - (a.stats.legsWon - a.stats.legsLost));
-  }, [matchList, playerList]);
+  }, [matchList, playerList, getLeagueRules]);
 
   const submitMatchResult = useCallback(async (matchId: string, data: MatchResultData) => {
     // Players submit results as "pending_approval" - admin/moderator must approve
@@ -432,12 +424,14 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       name: league.name, season: league.season, description: league.description,
       format: league.format, max_legs: league.max_legs, is_active: league.is_active,
       league_type: league.league_type || "league",
+      bonus_rules: league.bonus_rules as any,
     }).select().single();
     if (data) {
       const newLeague: League = {
         id: data.id, name: data.name, season: data.season, description: data.description,
         format: data.format, max_legs: data.max_legs, is_active: data.is_active,
         league_type: (data.league_type as League["league_type"]) || "league",
+        bonus_rules: { ...DEFAULT_BONUS_RULES, ...((data as any).bonus_rules || {}) } as BonusRules,
       };
       setLeagueList((prev) => [...prev, newLeague]);
       if (!activeLeagueId) setActiveLeagueId(data.id);
@@ -446,7 +440,9 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   }, [activeLeagueId]);
 
   const updateLeague = useCallback(async (id: string, data: Partial<League>) => {
-    await supabase.from("leagues").update(data).eq("id", id);
+    const dbData: any = { ...data };
+    if (data.bonus_rules) dbData.bonus_rules = data.bonus_rules;
+    await supabase.from("leagues").update(dbData).eq("id", id);
     setLeagueList((prev) => prev.map((l) => l.id === id ? { ...l, ...data } : l));
   }, []);
 
