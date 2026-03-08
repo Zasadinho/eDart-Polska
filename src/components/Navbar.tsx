@@ -99,23 +99,11 @@ const Navbar = () => {
             </DropdownMenu>
 
             {user && (
-              <>
-                <Link to="/my-matches">
-                  <Button variant={location.pathname === "/my-matches" ? "default" : "ghost"} size="sm" className="font-display uppercase tracking-wider text-[11px] h-8 px-2.5">
-                    <Handshake className="h-3.5 w-3.5 mr-1" /> Moje
-                  </Button>
-                </Link>
-                <Link to="/chat">
-                  <Button variant={location.pathname === "/chat" ? "default" : "ghost"} size="sm" className="font-display uppercase tracking-wider text-[11px] h-8 px-2.5">
-                    <MessageCircle className="h-3.5 w-3.5" />
-                  </Button>
-                </Link>
-                <Link to="/announcements">
-                  <Button variant={location.pathname === "/announcements" ? "default" : "ghost"} size="sm" className="font-display uppercase tracking-wider text-[11px] h-8 px-2.5">
-                    <Megaphone className="h-3.5 w-3.5" />
-                  </Button>
-                </Link>
-              </>
+              <Link to="/my-matches">
+                <Button variant={location.pathname === "/my-matches" ? "default" : "ghost"} size="sm" className="font-display uppercase tracking-wider text-[11px] h-8 px-2.5">
+                  <Handshake className="h-3.5 w-3.5 mr-1" /> Moje
+                </Button>
+              </Link>
             )}
             {showAdminLink && (
               <Link to="/admin">
