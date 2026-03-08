@@ -63,6 +63,10 @@ export interface MatchResultData {
   checkoutAttempts2?: number;
   checkoutHits1?: number;
   checkoutHits2?: number;
+  first9Avg1?: number;
+  first9Avg2?: number;
+  avgUntil170_1?: number;
+  avgUntil170_2?: number;
   autodartsLink?: string;
 }
 
