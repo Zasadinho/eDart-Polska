@@ -330,16 +330,26 @@ async function fetchMatchData(matchId: string, token: string) {
   // ── Check pre-calculated stats on players ──
   const ps1 = players[0].stats || players[0].matchStats || players[0].gameStats || {};
   const ps2 = players[1].stats || players[1].matchStats || players[1].gameStats || {};
-  const hasPreCalc = Object.keys(ps1).length > 2 || Object.keys(ps2).length > 2;
+
+  const hasMeaningfulPreCalc = (ps: Record<string, any>) => {
+    const keysToCheck = [
+      "dartsThrown", "darts", "oneEighties", "180s", "180",
+      "60+", "100+", "140+", "170+",
+      "checkoutAttempts", "checkoutDarts", "checkoutHits", "checkouts",
+      "average", "avg", "ppd",
+    ];
+    return keysToCheck.some((k) => ps?.[k] != null);
+  };
+
+  const hasPreCalc1 = hasMeaningfulPreCalc(ps1);
+  const hasPreCalc2 = hasMeaningfulPreCalc(ps2);
 
   let st1 = emptyStats(), st2 = emptyStats();
   st1.legsWon = legsWon1;
   st2.legsWon = legsWon2;
 
-  if (hasPreCalc) {
-    console.log("Using pre-calculated player stats");
-    console.log("ps1:", JSON.stringify(ps1));
-    console.log("ps2:", JSON.stringify(ps2));
+  if (hasPreCalc1 && hasPreCalc2) {
+    console.log("Using pre-calculated player stats for both players");
     st1 = {
       ...st1,
       totalScore: 0, totalDarts: ps1.dartsThrown ?? ps1.darts ?? 0,
@@ -374,6 +384,10 @@ async function fetchMatchData(matchId: string, token: string) {
     const a170_2 = ps2.avgUntil170 ?? ps2.averageUntil170 ?? ps2.avg_u170 ?? null;
 
     return buildResult(st1, st2, avg1, avg2, f9a1, f9a2, a170_1, a170_2, p1Name, p2Name, p1AutoId, p2AutoId, matchId);
+  }
+
+  if (hasPreCalc1 || hasPreCalc2) {
+    console.log("Partial pre-calculated stats detected; falling back to per-turn calculation for accuracy");
   }
 
   // ── Parse from embedded games ──
