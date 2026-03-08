@@ -116,11 +116,6 @@ const Navbar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <Link to="/my-matches">
-                    <DropdownMenuItem className={`font-display uppercase tracking-wider text-xs cursor-pointer ${location.pathname === "/my-matches" ? "bg-accent" : ""}`}>
-                      <Handshake className="h-3.5 w-3.5 mr-2" /> Moje Mecze
-                    </DropdownMenuItem>
-                  </Link>
                   <Link to="/settings">
                     <DropdownMenuItem className={`font-display uppercase tracking-wider text-xs cursor-pointer ${location.pathname === "/settings" ? "bg-accent" : ""}`}>
                       <Settings className="h-3.5 w-3.5 mr-2" /> Ustawienia
