@@ -180,7 +180,7 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[]): Player
     matchesPlayed: completed.length,
     bestAvg: Math.round(bestAvg * 10) / 10,
     totalDartsThrown: totalDarts,
-    ton40, ton60, ton80, tonPlus,
+    ton40: 0, ton60, ton80, tonPlus,
     winRate,
     checkoutAttempts,
     checkoutHits,
