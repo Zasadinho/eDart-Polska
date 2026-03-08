@@ -33,6 +33,13 @@ const asNumber = (value: unknown, fallback = 0): number => {
   return Number.isFinite(n) ? n : fallback;
 };
 
+const looseMatch = (left?: string | null, right?: string | null) => {
+  const a = normalizeIdentity(left);
+  const b = normalizeIdentity(right);
+  if (!a || !b) return false;
+  return a === b || a.includes(b) || b.includes(a);
+};
+
 const readScore = (scoreLike: unknown): number => {
   if (typeof scoreLike === "number") return scoreLike;
   if (scoreLike && typeof scoreLike === "object") {
