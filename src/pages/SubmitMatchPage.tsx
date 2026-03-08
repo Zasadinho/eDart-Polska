@@ -49,6 +49,7 @@ const SubmitMatchPage = () => {
 
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [loadingPlayer, setLoadingPlayer] = useState(true);
+  const [playerAutodartsMap, setPlayerAutodartsMap] = useState<Record<string, string>>({});
   const [selectedMatchId, setSelectedMatchId] = useState("");
   const [autodartsLink, setAutodartsLink] = useState("");
   const [score1, setScore1] = useState("");
