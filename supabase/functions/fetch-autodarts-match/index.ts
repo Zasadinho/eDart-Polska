@@ -275,6 +275,11 @@ function processGameTurns(
       const remainingAfterNoDarts = typeof turn.score === "number" ? turn.score : null;
       const bustedNoDarts = turn.busted === true;
 
+      // alt heuristic for diagnostics
+      if (scoreBeforeTurn <= 61 && scoreBeforeTurn > 1) {
+        st.altAttempts61 += dartsCount;
+      }
+
       // No per-dart detail available. Try best effort from start/end score of the visit.
       if (isFinishableWithOneDouble(scoreBeforeTurn)) {
         // Already on double finish for whole visit
