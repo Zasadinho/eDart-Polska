@@ -89,8 +89,9 @@ const CalendarPage = () => {
             const dayMatches = dateStr ? matchesByDate[dateStr] || [] : [];
             const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
             const isSelected = day === selectedDay;
-            const hasUpcoming = dayMatches.some((m) => m.status === "upcoming");
+            const hasUpcoming = dayMatches.some((m) => m.status === "upcoming" && !m.confirmedDate);
             const hasCompleted = dayMatches.some((m) => m.status === "completed");
+            const hasConfirmed = dayMatches.some((m) => m.status === "upcoming" && m.confirmedDate);
 
             return (
               <button
