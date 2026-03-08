@@ -68,6 +68,20 @@ function isFinishableWithOneDouble(remaining: number): boolean {
   return false;
 }
 
+function getDartPoints(dart: any): number {
+  const seg = dart?.segment || dart || {};
+  const bed = String(seg.bed ?? "").toLowerCase();
+  const name = String(seg.name ?? "").toLowerCase();
+
+  // Autodarts can encode miss as "miss", "miss20", etc.
+  if (bed.includes("miss") || name.includes("miss")) return 0;
+
+  const number = Number(seg.number ?? seg.value ?? 0);
+  const multiplier = Number(seg.multiplier ?? 1);
+  if (!Number.isFinite(number) || !Number.isFinite(multiplier)) return 0;
+  return number * multiplier;
+}
+
 async function loginToAutodarts(): Promise<string | null> {
   const email = Deno.env.get("AUTODARTS_EMAIL");
   const password = Deno.env.get("AUTODARTS_PASSWORD");
@@ -191,8 +205,7 @@ function processGameTurns(
       points = turn.points;
     } else if (dartsArr) {
       for (const d of dartsArr) {
-        const seg = d.segment || d;
-        points += (seg.number ?? seg.value ?? 0) * (seg.multiplier ?? 1);
+        points += getDartPoints(d);
       }
     }
 
@@ -235,7 +248,7 @@ function processGameTurns(
       let runningRemaining = scoreBeforeTurn;
       for (const d of dartsArr) {
         const seg = d.segment || d;
-        const dartValue = (seg.number ?? seg.value ?? 0) * (seg.multiplier ?? 1);
+        const dartValue = getDartPoints(d);
         
         // Before this dart: is the remaining finishable with one double?
         if (isFinishableWithOneDouble(runningRemaining)) {
