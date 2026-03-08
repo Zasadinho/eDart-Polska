@@ -228,7 +228,34 @@ function processGameTurns(
     else if (points >= 100) st.ton100++;
     else if (points >= 60) st.ton60++;
 
-    // Checkout detection
+    // Checkout detection — track dart-by-dart remaining within this visit
+    // A checkout ATTEMPT = a dart thrown when the remaining score at that moment
+    // can be finished with exactly one double (remaining ≤40 even, or =50)
+    if (dartsArr && scoreBeforeTurn != null) {
+      let runningRemaining = scoreBeforeTurn;
+      for (const d of dartsArr) {
+        const seg = d.segment || d;
+        const dartValue = (seg.number ?? seg.value ?? 0) * (seg.multiplier ?? 1);
+        
+        // Before this dart: is the remaining finishable with one double?
+        if (isFinishableWithOneDouble(runningRemaining)) {
+          st.checkoutAttempts++;
+          
+          // Check if this dart actually finished (hit the double)
+          if (runningRemaining - dartValue === 0 && (seg.multiplier === 2 || (seg.number === 25 && seg.multiplier === 2))) {
+            // Checkout hit is already counted below via remainingAfter === 0
+          }
+        }
+        
+        runningRemaining -= dartValue;
+        if (runningRemaining <= 0) break; // busted or finished
+      }
+    } else if (!dartsArr && scoreBeforeTurn != null && isFinishableWithOneDouble(scoreBeforeTurn)) {
+      // No dart detail available — estimate 1 attempt if on a finish
+      st.checkoutAttempts += 1;
+    }
+
+    // Checkout hit detection
     const remainingAfter = typeof turn.score === "number" ? turn.score : null;
     const isBusted = turn.busted === true;
     const isCheckout = !isBusted && (remainingAfter === 0 || turn.isCheckout === true);
@@ -236,20 +263,6 @@ function processGameTurns(
     if (isCheckout && points > 0) {
       st.checkoutHits++;
       if (points > st.highCheckout) st.highCheckout = points;
-    }
-
-    // Checkout attempts: count darts thrown at doubles/bull when on a finishing score
-    // A "checkout attempt" = a dart aimed at a double. From the API we can detect:
-    // - Darts that HIT a double (bed contains "Double" or multiplier=2 with number 1-20)
-    // - Darts that HIT the bull (Inner/Outer Bull, number=25)
-    // - Darts that landed in single of the same number as the required double (likely a miss)
-    // Since we can't know intent perfectly, we count darts hitting double segments or bull
-    const canAttemptCheckout = scoreBeforeTurn != null && scoreBeforeTurn <= 170 && scoreBeforeTurn > 1;
-
-    if (canAttemptCheckout) {
-      // Every dart thrown when on a finishing score counts as a checkout attempt
-      // (miss at S20 when aiming D20, miss at S1, hitting D10 — all are attempts)
-      st.checkoutAttempts += dartsCount;
     }
   }
 }
