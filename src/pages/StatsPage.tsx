@@ -216,10 +216,11 @@ const StatsPage = () => {
         )}
 
         {activeTab === "tons" && (
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-            <LegendItem label="Ton 60" desc="Rzuty 60-79 pkt" color="bg-secondary/10 border-secondary/20 text-secondary" />
-            <LegendItem label="Ton 80" desc="Rzuty 80-99 pkt" color="bg-primary/10 border-primary/20 text-primary" />
-            <LegendItem label="Ton+" desc="Rzuty 100+ pkt" color="bg-muted border-border text-foreground" />
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-5 gap-3">
+            <LegendItem label="60+" desc="Rzuty 60-99 pkt" color="bg-secondary/10 border-secondary/20 text-secondary" />
+            <LegendItem label="100+" desc="Rzuty 100-139 pkt" color="bg-primary/10 border-primary/20 text-primary" />
+            <LegendItem label="140+" desc="Rzuty 140-169 pkt" color="bg-muted border-border text-foreground" />
+            <LegendItem label="170+" desc="Rzuty 170-179 pkt" color="bg-accent/10 border-accent/20 text-accent" />
             <LegendItem label="180" desc="Maksymalny wynik" color="bg-destructive/10 border-destructive/20 text-destructive" />
           </div>
         )}
