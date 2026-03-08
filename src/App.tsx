@@ -16,6 +16,7 @@ import AdminPage from "./pages/AdminPage";
 import StatsPage from "./pages/StatsPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import SettingsPage from "./pages/SettingsPage";
+import MyMatchesPage from "./pages/MyMatchesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
