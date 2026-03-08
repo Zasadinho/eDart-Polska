@@ -43,6 +43,17 @@ const Navbar = () => {
                 </Button>
               </Link>
             ))}
+            {user && (
+              <Link to="/my-matches">
+                <Button
+                  variant={location.pathname === "/my-matches" ? "default" : "ghost"}
+                  size="sm"
+                  className="font-display uppercase tracking-wider text-xs"
+                >
+                  <Handshake className="h-3.5 w-3.5 mr-1" /> Moje Mecze
+                </Button>
+              </Link>
+            )}
             {showAdminLink && (
               <Link to="/admin">
                 <Button
