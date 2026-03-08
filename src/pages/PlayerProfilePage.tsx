@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 const PlayerProfilePage = () => {
   const { id } = useParams();
   const { players, matches, getPlayerAllLeagueStats, getPlayerAchievements } = useLeague();
+  const { user } = useAuth();
   const player = players.find((p) => p.id === id);
+  const isLoggedIn = !!user;
 
   if (!player) {
     return (
