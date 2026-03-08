@@ -154,6 +154,7 @@ const HeadToHeadPage = () => {
                       <div className="text-xs text-muted-foreground font-body">
                         {new Date(match.date).toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" })}
                         {match.round && ` · Kolejka ${match.round}`}
+                        <div className="text-[10px] text-muted-foreground/70 mt-0.5">{leagues.find(l => l.id === match.leagueId)?.name}</div>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className={`font-display font-bold text-lg ${won ? "text-secondary" : draw ? "text-accent" : "text-muted-foreground"}`}>
