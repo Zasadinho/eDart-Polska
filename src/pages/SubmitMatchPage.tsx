@@ -36,6 +36,8 @@ const SubmitMatchPage = () => {
   const [checkoutAttempts2, setCheckoutAttempts2] = useState("");
   const [checkoutHits1, setCheckoutHits1] = useState("");
   const [checkoutHits2, setCheckoutHits2] = useState("");
+  const [nineDarters1, setNineDarters1] = useState("");
+  const [nineDarters2, setNineDarters2] = useState("");
 
   if (loading) return null;
 
