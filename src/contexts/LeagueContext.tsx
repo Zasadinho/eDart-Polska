@@ -35,6 +35,8 @@ interface LeagueContextType {
   getGlobalTonStats: () => TonLeaderEntry[];
   getLeagueTonStats: (leagueId: string) => TonLeaderEntry[];
   getPendingApprovalMatches: () => Match[];
+  joinLeague: (leagueId: string) => Promise<{ error: string | null }>;
+  leaveLeague: (leagueId: string) => Promise<void>;
   loading: boolean;
   refreshData: () => void;
 }
