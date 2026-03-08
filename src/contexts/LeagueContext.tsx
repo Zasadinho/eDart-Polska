@@ -159,7 +159,7 @@ const calcMatchBonusPoints = (
   return bonus;
 };
 
-const calcStats = (playerId: string, leagueId: string, matches: Match[]): PlayerLeagueStats => {
+const calcStats = (playerId: string, leagueId: string, matches: Match[], rules: BonusRules = DEFAULT_BONUS_RULES): PlayerLeagueStats => {
   const completed = matches.filter(
     (m) => m.leagueId === leagueId && m.status === "completed" && (m.player1Id === playerId || m.player2Id === playerId)
   );
@@ -195,11 +195,11 @@ const calcStats = (playerId: string, leagueId: string, matches: Match[]): Player
     checkoutHits += isP1 ? (m.checkoutHits1 ?? 0) : (m.checkoutHits2 ?? 0);
 
     const isWinner = myScore > oppScore;
-    if (isWinner) { wins++; form.push("W"); basePoints += 3; }
+    if (isWinner) { wins++; form.push("W"); basePoints += rules.win; }
     else if (myScore < oppScore) { losses++; form.push("L"); }
-    else { draws++; form.push("D"); basePoints += 1; }
+    else { draws++; form.push("D"); basePoints += rules.draw; }
 
-    bonusPoints += calcMatchBonusPoints(isP1, m, myScore, oppScore, isWinner);
+    bonusPoints += calcMatchBonusPoints(isP1, m, myScore, oppScore, isWinner, rules);
   });
 
   const avg = avgValues.length > 0 ? Math.round((avgValues.reduce((a, b) => a + b, 0) / avgValues.length) * 10) / 10 : 0;
