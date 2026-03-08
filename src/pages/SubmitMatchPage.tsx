@@ -243,7 +243,7 @@ const SubmitMatchPage = () => {
         setSelectedMatchId(targetMatch.id);
       }
 
-      // Robust swap detection: prefer autodarts IDs, fallback to normalized names
+      // Robust swap detection + strict participant validation
       let finalPayload = payload;
       if (targetMatch) {
         const m1 = normalizeName(targetMatch.player1Name);
@@ -254,18 +254,27 @@ const SubmitMatchPage = () => {
         const payloadP1Auto = (payload.player1_autodarts_id as string | undefined) || null;
         const payloadP2Auto = (payload.player2_autodarts_id as string | undefined) || null;
 
-        let shouldSwap = false;
+        const sameByName = m1 === p1 && m2 === p2;
+        const reversedByName = m1 === p2 && m2 === p1;
 
+        let sameById = false;
+        let reversedById = false;
         if (targetP1Auto && targetP2Auto && payloadP1Auto && payloadP2Auto) {
-          const sameById = targetP1Auto === payloadP1Auto && targetP2Auto === payloadP2Auto;
-          const reversedById = targetP1Auto === payloadP2Auto && targetP2Auto === payloadP1Auto;
-          shouldSwap = reversedById && !sameById;
-        } else {
-          const sameByName = m1 === p1 && m2 === p2;
-          const reversedByName = m1 === p2 && m2 === p1;
-          shouldSwap = reversedByName && !sameByName;
+          sameById = targetP1Auto === payloadP1Auto && targetP2Auto === payloadP2Auto;
+          reversedById = targetP1Auto === payloadP2Auto && targetP2Auto === payloadP1Auto;
         }
 
+        const participantMatch = sameById || reversedById || sameByName || reversedByName;
+        if (!participantMatch) {
+          toast({
+            title: "Mecz nie pasuje",
+            description: "Dane z Autodarts są dla innych graczy niż wybrany mecz ligowy.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const shouldSwap = reversedById || (!sameById && reversedByName && !sameByName);
         if (shouldSwap) {
           finalPayload = swapPayload(payload);
         }
