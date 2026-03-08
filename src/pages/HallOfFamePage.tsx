@@ -94,7 +94,7 @@ const HallOfFamePage = () => {
     icon: <Trophy className="h-6 w-6 text-accent" />,
     title: "Najwięcej zwycięstw",
     entries: winEntries.map((r) => ({
-      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, value: r!.val,
+      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, playerAvatarUrl: r!.avatarUrl, value: r!.val,
     })),
   });
 
