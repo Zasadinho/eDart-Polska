@@ -248,7 +248,7 @@ function processGameTurns(
       let runningRemaining = scoreBeforeTurn;
       for (const d of dartsArr) {
         const seg = d.segment || d;
-        const dartValue = (seg.number ?? seg.value ?? 0) * (seg.multiplier ?? 1);
+        const dartValue = getDartPoints(d);
         
         // Before this dart: is the remaining finishable with one double?
         if (isFinishableWithOneDouble(runningRemaining)) {
