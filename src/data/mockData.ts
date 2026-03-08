@@ -69,6 +69,8 @@ export interface PlayerLeagueStats {
   checkoutAttempts: number;
   checkoutHits: number;
   checkoutRate: number;
+  bestFirst9Avg: number;
+  bestAvgUntil170: number;
 }
 
 export interface Match {
