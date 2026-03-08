@@ -70,8 +70,16 @@ const SubmitMatchPage = () => {
     }
     const fetchPlayerId = async () => {
       setLoadingPlayer(true);
-      const { data } = await supabase.from("players").select("id").eq("user_id", user.id).maybeSingle();
-      setMyPlayerId(data?.id ?? null);
+      const [{ data: me }, { data: allPlayers }] = await Promise.all([
+        supabase.from("players").select("id").eq("user_id", user.id).maybeSingle(),
+        supabase.from("players").select("id, autodarts_user_id").not("autodarts_user_id", "is", null),
+      ]);
+      setMyPlayerId(me?.id ?? null);
+      const map: Record<string, string> = {};
+      (allPlayers || []).forEach((p: any) => {
+        if (p.id && p.autodarts_user_id) map[p.id] = p.autodarts_user_id;
+      });
+      setPlayerAutodartsMap(map);
       setLoadingPlayer(false);
     };
     fetchPlayerId();
