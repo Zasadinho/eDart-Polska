@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLeague } from "@/contexts/LeagueContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,13 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, Settings, X, Check, Clock, CheckCircle2, XCircle, UserPlus, Award } from "lucide-react";
+import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, Settings, Check, Clock, CheckCircle2, XCircle, UserPlus, Award, Shuffle, Brackets, Layers } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { BEST_OF_OPTIONS } from "@/data/mockData";
+import { BEST_OF_OPTIONS, type LeagueType } from "@/data/mockData";
+import { generateRoundRobin, generateBracket, generateGroupStage, shuffle, getRecommendedGroups } from "@/lib/tournamentUtils";
 
 type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles";
+
+const LEAGUE_TYPE_LABELS: Record<LeagueType, string> = {
+  league: "Liga (Round-Robin)",
+  bracket: "Turniej (Drabinka)",
+  group_bracket: "Grupy + Drabinka",
+};
 
 const AdminPage = () => {
   const { user, isAdmin, isModerator, loading } = useAuth();
@@ -21,7 +28,7 @@ const AdminPage = () => {
     approvePlayer, addMatch, deleteMatch, addPlayer,
     addLeague, updateLeague, deleteLeague,
     updatePlayer, deletePlayer, assignPlayerToLeague, removePlayerFromLeague,
-    approveMatch, rejectMatch, getPendingApprovalMatches,
+    approveMatch, rejectMatch, getPendingApprovalMatches, refreshData,
   } = useLeague();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
@@ -53,7 +60,7 @@ const AdminPage = () => {
   const tabs: { id: AdminTab; label: string; icon: React.ReactNode; adminOnly?: boolean }[] = [
     { id: "overview", label: "Podsumowanie", icon: <Settings className="h-4 w-4" /> },
     { id: "approval", label: `Zatwierdzanie (${pendingApproval.length})`, icon: <CheckCircle2 className="h-4 w-4" /> },
-    { id: "leagues", label: "Ligi", icon: <Trophy className="h-4 w-4" />, adminOnly: true },
+    { id: "leagues", label: "Ligi / Turnieje", icon: <Trophy className="h-4 w-4" />, adminOnly: true },
     { id: "players", label: "Gracze", icon: <Users className="h-4 w-4" />, adminOnly: true },
     { id: "matches", label: "Mecze", icon: <Calendar className="h-4 w-4" />, adminOnly: true },
     { id: "roles", label: "Role", icon: <Award className="h-4 w-4" />, adminOnly: true },
@@ -75,7 +82,7 @@ const AdminPage = () => {
             {isAdmin ? "Panel Admina" : "Panel Moderatora"}
           </h1>
           <p className="text-muted-foreground font-body text-sm">
-            {isAdmin ? "Pełne zarządzanie ligami, graczami i meczami" : "Zatwierdzanie wyników meczów"}
+            {isAdmin ? "Pełne zarządzanie ligami, turniejami, graczami i meczami" : "Zatwierdzanie wyników meczów"}
           </p>
         </div>
       </div>
@@ -93,7 +100,7 @@ const AdminPage = () => {
         <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
           {activeTab === "overview" && <OverviewTab leagues={leagues} players={players} completedCount={completedCount} upcomingCount={upcomingCount} pendingPlayers={pendingPlayers} pendingApproval={pendingApproval} approvePlayer={approvePlayer} toast={toast} isAdmin={isAdmin} />}
           {activeTab === "approval" && <ApprovalTab pendingApproval={pendingApproval} approveMatch={approveMatch} rejectMatch={rejectMatch} toast={toast} />}
-          {activeTab === "leagues" && isAdmin && <LeaguesTab leagues={leagues} addLeague={addLeague} updateLeague={updateLeague} deleteLeague={deleteLeague} toast={toast} />}
+          {activeTab === "leagues" && isAdmin && <LeaguesTab leagues={leagues} players={players} addLeague={addLeague} updateLeague={updateLeague} deleteLeague={deleteLeague} addMatch={addMatch} refreshData={refreshData} assignPlayerToLeague={assignPlayerToLeague} toast={toast} />}
           {activeTab === "players" && isAdmin && <PlayersTab players={players} leagues={leagues} pendingPlayers={pendingPlayers} approvePlayer={approvePlayer} updatePlayer={updatePlayer} deletePlayer={deletePlayer} assignPlayerToLeague={assignPlayerToLeague} removePlayerFromLeague={removePlayerFromLeague} addPlayer={addPlayer} toast={toast} />}
           {activeTab === "matches" && isAdmin && <MatchesTab matches={matches} players={players} leagues={leagues} addMatch={addMatch} deleteMatch={deleteMatch} toast={toast} />}
           {activeTab === "roles" && isAdmin && <RolesTab toast={toast} />}
@@ -119,7 +126,7 @@ const OverviewTab = ({ leagues, players, completedCount, upcomingCount, pendingP
         <h2 className="text-lg font-display font-bold text-foreground mb-2 flex items-center gap-2">
           <CheckCircle2 className="h-5 w-5 text-accent" /> Mecze do zatwierdzenia ({pendingApproval.length})
         </h2>
-        <p className="text-sm text-muted-foreground mb-3">Gracze zgłosili wyniki — przejdź do zakładki "Zatwierdzanie" aby je zaakceptować lub odrzucić.</p>
+        <p className="text-sm text-muted-foreground mb-3">Gracze zgłosili wyniki — przejdź do zakładki "Zatwierdzanie".</p>
       </section>
     )}
     {isAdmin && pendingPlayers.length > 0 && (
@@ -167,16 +174,14 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, toast }: any)
               <Clock className="h-3.5 w-3.5" />
               <span className="font-body">{new Date(m.date).toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" })}</span>
               {m.round && <span className="text-[10px] font-display uppercase">Kolejka {m.round}</span>}
+              {m.bracketRound && <span className="text-[10px] font-display uppercase text-primary">{m.bracketRound}</span>}
+              {m.groupName && <span className="text-[10px] font-display uppercase text-accent">{m.groupName}</span>}
               <span className="ml-auto text-accent font-display text-[10px] uppercase border border-accent/30 rounded-full px-2 py-0.5">Oczekuje</span>
             </div>
             <div className="flex items-center justify-between mb-4">
               <div className="text-left flex-1">
                 <div className="font-body font-medium text-foreground">{m.player1Name}</div>
-                {m.avg1 != null && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Śr. {m.avg1?.toFixed(1)} · 180: {m.oneEighties1 ?? 0} · HC: {m.highCheckout1 ?? 0}
-                  </div>
-                )}
+                {m.avg1 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg1?.toFixed(1)} · 180: {m.oneEighties1 ?? 0} · HC: {m.highCheckout1 ?? 0}</div>}
               </div>
               <div className="flex items-center gap-3 px-4">
                 <span className={`text-3xl font-display font-bold ${(m.score1 ?? 0) > (m.score2 ?? 0) ? "text-secondary" : "text-muted-foreground"}`}>{m.score1}</span>
@@ -185,23 +190,15 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, toast }: any)
               </div>
               <div className="text-right flex-1">
                 <div className="font-body font-medium text-foreground">{m.player2Name}</div>
-                {m.avg2 != null && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Śr. {m.avg2?.toFixed(1)} · 180: {m.oneEighties2 ?? 0} · HC: {m.highCheckout2 ?? 0}
-                  </div>
-                )}
+                {m.avg2 != null && <div className="text-xs text-muted-foreground mt-1">Śr. {m.avg2?.toFixed(1)} · 180: {m.oneEighties2 ?? 0} · HC: {m.highCheckout2 ?? 0}</div>}
               </div>
             </div>
-            {m.autodartsLink && (
-              <div className="text-xs text-primary mb-4">
-                <a href={m.autodartsLink} target="_blank" rel="noopener noreferrer" className="hover:underline">🔗 Link Autodarts</a>
-              </div>
-            )}
+            {m.autodartsLink && <div className="text-xs text-primary mb-4"><a href={m.autodartsLink} target="_blank" rel="noopener noreferrer" className="hover:underline">🔗 Link Autodarts</a></div>}
             <div className="flex gap-3">
               <Button variant="default" size="sm" className="flex-1" onClick={() => { approveMatch(m.id); toast({ title: "✅ Mecz zatwierdzony!", description: `${m.player1Name} vs ${m.player2Name}` }); }}>
                 <CheckCircle2 className="h-4 w-4 mr-1" /> Zatwierdź
               </Button>
-              <Button variant="destructive" size="sm" className="flex-1" onClick={() => { rejectMatch(m.id); toast({ title: "❌ Mecz odrzucony", description: "Wynik został odrzucony, mecz wrócił do zaplanowanych." }); }}>
+              <Button variant="destructive" size="sm" className="flex-1" onClick={() => { rejectMatch(m.id); toast({ title: "❌ Mecz odrzucony", description: "Wynik został odrzucony." }); }}>
                 <XCircle className="h-4 w-4 mr-1" /> Odrzuć
               </Button>
             </div>
@@ -213,7 +210,7 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, toast }: any)
 };
 
 // ─── LEAGUES TAB ───
-const LeaguesTab = ({ leagues, addLeague, updateLeague, deleteLeague, toast }: any) => {
+const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, addMatch, refreshData, assignPlayerToLeague, toast }: any) => {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -221,12 +218,25 @@ const LeaguesTab = ({ leagues, addLeague, updateLeague, deleteLeague, toast }: a
   const [description, setDescription] = useState("");
   const [format, setFormat] = useState("Best of 5");
   const [isActive, setIsActive] = useState(true);
+  const [leagueType, setLeagueType] = useState<LeagueType>("league");
+  
+  // Tournament generation state
+  const [showGenerate, setShowGenerate] = useState<string | null>(null);
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+  const [numGroups, setNumGroups] = useState(2);
+  const [generating, setGenerating] = useState(false);
+  const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
+  const [doShuffle, setDoShuffle] = useState(true);
 
-  const resetForm = () => { setName(""); setSeason(""); setDescription(""); setFormat("Best of 5"); setIsActive(true); setShowForm(false); setEditId(null); };
+  const resetForm = () => {
+    setName(""); setSeason(""); setDescription(""); setFormat("Best of 5");
+    setIsActive(true); setLeagueType("league"); setShowForm(false); setEditId(null);
+  };
 
   const startEdit = (l: any) => {
     setEditId(l.id); setName(l.name); setSeason(l.season); setDescription(l.description);
-    setFormat(l.format || "Best of 5"); setIsActive(l.is_active); setShowForm(true);
+    setFormat(l.format || "Best of 5"); setIsActive(l.is_active);
+    setLeagueType(l.league_type || "league"); setShowForm(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -234,31 +244,118 @@ const LeaguesTab = ({ leagues, addLeague, updateLeague, deleteLeague, toast }: a
     if (!name || !season) { toast({ title: "Błąd", description: "Wypełnij wymagane pola.", variant: "destructive" }); return; }
     const maxLegs = BEST_OF_OPTIONS.find(o => o.value === format)?.maxLegs || 5;
     if (editId) {
-      await updateLeague(editId, { name, season, description, format, is_active: isActive, max_legs: maxLegs });
-      toast({ title: "Liga zaktualizowana!", description: `${name} została zmieniona.` });
+      await updateLeague(editId, { name, season, description, format, is_active: isActive, max_legs: maxLegs, league_type: leagueType });
+      toast({ title: "Zaktualizowano!", description: `${name} została zmieniona.` });
     } else {
-      const result = await addLeague({ name, season, description, format, is_active: isActive, max_legs: maxLegs });
+      const result = await addLeague({ name, season, description, format, is_active: isActive, max_legs: maxLegs, league_type: leagueType });
       if (result?.error) {
-        toast({ title: "Błąd", description: "Nie udało się utworzyć ligi. Sprawdź uprawnienia.", variant: "destructive" });
+        toast({ title: "Błąd", description: "Nie udało się utworzyć. Sprawdź uprawnienia.", variant: "destructive" });
         return;
       }
-      toast({ title: "Liga dodana!", description: `${name} została utworzona.` });
+      toast({ title: "Utworzono!", description: `${name} została utworzona.` });
     }
     resetForm();
   };
 
+  const togglePlayer = (pid: string) => {
+    setSelectedPlayers(prev => prev.includes(pid) ? prev.filter(id => id !== pid) : [...prev, pid]);
+  };
+
+  const handleGenerateSchedule = async (league: any) => {
+    if (selectedPlayers.length < 2) {
+      toast({ title: "Błąd", description: "Wybierz co najmniej 2 graczy.", variant: "destructive" });
+      return;
+    }
+    setGenerating(true);
+
+    const playerIds = doShuffle ? shuffle(selectedPlayers) : selectedPlayers;
+
+    try {
+      // Assign players to league
+      for (const pid of playerIds) {
+        await assignPlayerToLeague(pid, league.id);
+      }
+
+      const lt = league.league_type || "league";
+
+      if (lt === "league") {
+        // Round-robin
+        const schedule = generateRoundRobin(playerIds);
+        for (const m of schedule) {
+          const matchDate = new Date(startDate);
+          matchDate.setDate(matchDate.getDate() + (m.round - 1) * 7);
+          await supabase.from("matches").insert({
+            league_id: league.id,
+            player1_id: m.player1Id,
+            player2_id: m.player2Id,
+            date: matchDate.toISOString().split("T")[0],
+            round: m.round,
+            status: "upcoming",
+          });
+        }
+        toast({ title: "🎯 Harmonogram wygenerowany!", description: `${schedule.length} meczów round-robin.` });
+
+      } else if (lt === "bracket") {
+        // Single elimination bracket
+        const bracket = generateBracket(playerIds);
+        for (const m of bracket) {
+          if (m.player1Id === "TBD" || !m.player2Id) continue;
+          await supabase.from("matches").insert({
+            league_id: league.id,
+            player1_id: m.player1Id,
+            player2_id: m.player2Id,
+            date: startDate,
+            status: "upcoming",
+            bracket_round: m.bracketRound,
+            bracket_position: m.bracketPosition,
+          });
+        }
+        toast({ title: "🏆 Drabinka wygenerowana!", description: `Turniej dla ${playerIds.length} graczy.` });
+
+      } else if (lt === "group_bracket") {
+        // Group stage + bracket
+        const groupCount = Math.min(numGroups, Math.floor(playerIds.length / 2));
+        const { groups, matches: groupMatches } = generateGroupStage(playerIds, groupCount);
+        
+        for (const m of groupMatches) {
+          await supabase.from("matches").insert({
+            league_id: league.id,
+            player1_id: m.player1Id,
+            player2_id: m.player2Id,
+            date: startDate,
+            round: m.round,
+            status: "upcoming",
+            group_name: m.groupName,
+          });
+        }
+        toast({ title: "🎪 Faza grupowa wygenerowana!", description: `${groupCount} grup, ${groupMatches.length} meczów. Drabinka zostanie wygenerowana po zakończeniu fazy grupowej.` });
+      }
+
+      await refreshData();
+    } catch (error) {
+      toast({ title: "Błąd", description: "Nie udało się wygenerować harmonogramu.", variant: "destructive" });
+    }
+
+    setGenerating(false);
+    setShowGenerate(null);
+    setSelectedPlayers([]);
+  };
+
+  const approvedPlayers = players.filter((p: any) => p.approved);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-display font-bold text-foreground">Zarządzanie Ligami ({leagues.length})</h2>
+        <h2 className="text-xl font-display font-bold text-foreground">Ligi i Turnieje ({leagues.length})</h2>
         <Button size="sm" variant="hero" onClick={() => { resetForm(); setShowForm(!showForm); }}>
-          <Plus className="h-4 w-4 mr-1" /> Nowa Liga
+          <Plus className="h-4 w-4 mr-1" /> Nowa Liga / Turniej
         </Button>
       </div>
+
       <AnimatePresence>
         {showForm && (
           <motion.form initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} onSubmit={handleSubmit} className="rounded-lg border border-border bg-card p-6 card-glow space-y-4">
-            <h3 className="font-display font-bold text-foreground">{editId ? "Edytuj Ligę" : "Nowa Liga"}</h3>
+            <h3 className="font-display font-bold text-foreground">{editId ? "Edytuj" : "Nowa Liga / Turniej"}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Nazwa *</Label>
@@ -267,6 +364,17 @@ const LeaguesTab = ({ leagues, addLeague, updateLeague, deleteLeague, toast }: a
               <div className="space-y-2">
                 <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Sezon *</Label>
                 <Input value={season} onChange={(e) => setSeason(e.target.value)} placeholder="Wiosna 2026" className="bg-muted/30 border-border" required />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Typ rozgrywek</Label>
+                <Select value={leagueType} onValueChange={(v) => setLeagueType(v as LeagueType)}>
+                  <SelectTrigger className="bg-muted/30 border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="league">🏟️ Liga (Round-Robin)</SelectItem>
+                    <SelectItem value="bracket">🏆 Turniej (Drabinka)</SelectItem>
+                    <SelectItem value="group_bracket">🎪 Grupy + Drabinka</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Format gry</Label>
@@ -292,8 +400,14 @@ const LeaguesTab = ({ leagues, addLeague, updateLeague, deleteLeague, toast }: a
             </div>
             <div className="space-y-2">
               <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Opis</Label>
-              <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Opis ligi..." className="bg-muted/30 border-border" />
+              <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Opis..." className="bg-muted/30 border-border" />
             </div>
+            {leagueType !== "league" && (
+              <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground font-body">
+                {leagueType === "bracket" && "🏆 Turniej z drabinką eliminacyjną. Przegrana = odpadnięcie. Możesz wylosować kolejność graczy."}
+                {leagueType === "group_bracket" && "🎪 Faza grupowa (round-robin w grupach), potem faza pucharowa (drabinka) z najlepszymi z każdej grupy."}
+              </div>
+            )}
             <div className="flex gap-3">
               <Button type="submit" variant="hero">{editId ? "Zapisz" : "Utwórz"}</Button>
               <Button type="button" variant="outline" onClick={resetForm}>Anuluj</Button>
@@ -301,35 +415,128 @@ const LeaguesTab = ({ leagues, addLeague, updateLeague, deleteLeague, toast }: a
           </motion.form>
         )}
       </AnimatePresence>
+
       <div className="space-y-3">
         {leagues.map((l: any) => (
-          <div key={l.id} className="rounded-lg border border-border bg-card p-5 card-glow flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className={`w-3 h-3 rounded-full ${l.is_active ? "bg-secondary" : "bg-muted-foreground"}`} />
-              <div>
-                <div className="font-display font-bold text-foreground">{l.name}</div>
-                <div className="text-xs text-muted-foreground font-body">
-                  {l.season} · {l.format || "Best of 5"} · {l.is_active ? "Aktywna" : "Zakończona"} {l.description && `· ${l.description}`}
+          <div key={l.id} className="rounded-lg border border-border bg-card p-5 card-glow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-4">
+                <div className={`w-3 h-3 rounded-full ${l.is_active ? "bg-secondary" : "bg-muted-foreground"}`} />
+                <div>
+                  <div className="font-display font-bold text-foreground flex items-center gap-2">
+                    {l.name}
+                    <span className="text-[10px] font-display uppercase px-2 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary">
+                      {LEAGUE_TYPE_LABELS[l.league_type as LeagueType] || "Liga"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground font-body">
+                    {l.season} · {l.format || "Best of 5"} · {l.is_active ? "Aktywna" : "Zakończona"} {l.description && `· ${l.description}`}
+                  </div>
                 </div>
               </div>
+              <div className="flex gap-2 flex-wrap justify-end">
+                {l.is_active && (
+                  <Button size="sm" variant="hero" onClick={() => {
+                    setShowGenerate(showGenerate === l.id ? null : l.id);
+                    setSelectedPlayers([]);
+                    setNumGroups(getRecommendedGroups(approvedPlayers.length));
+                  }}>
+                    <Shuffle className="h-3.5 w-3.5 mr-1" /> Generuj mecze
+                  </Button>
+                )}
+                {l.is_active ? (
+                  <Button size="sm" variant="outline" onClick={() => { updateLeague(l.id, { is_active: false }); toast({ title: "Zakończona", description: l.name }); }}>Zakończ</Button>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={() => { updateLeague(l.id, { is_active: true }); toast({ title: "Reaktywowana", description: l.name }); }}>Reaktywuj</Button>
+                )}
+                <Button size="sm" variant="ghost" onClick={() => startEdit(l)}><Edit2 className="h-4 w-4" /></Button>
+                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { deleteLeague(l.id); toast({ title: "Usunięta", description: l.name }); }}><Trash2 className="h-4 w-4" /></Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              {l.is_active && (
-                <Button size="sm" variant="outline" onClick={() => { updateLeague(l.id, { is_active: false }); toast({ title: "Liga zakończona", description: `${l.name} została oznaczona jako zakończona.` }); }}>
-                  Zakończ
-                </Button>
+
+            {/* Generate matches panel */}
+            <AnimatePresence>
+              {showGenerate === l.id && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="border-t border-border pt-4 mt-3 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-display font-bold text-foreground text-sm">
+                      {l.league_type === "bracket" ? "🏆 Generuj drabinkę" : l.league_type === "group_bracket" ? "🎪 Generuj grupy + drabinkę" : "🎯 Generuj harmonogram round-robin"}
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDoShuffle(!doShuffle)}
+                        className={`text-xs font-display uppercase px-3 py-1.5 rounded-full border transition-all ${doShuffle ? "bg-primary/20 border-primary/30 text-primary" : "bg-muted/30 border-border text-muted-foreground"}`}
+                      >
+                        <Shuffle className="h-3 w-3 inline mr-1" /> {doShuffle ? "Losowanie ON" : "Losowanie OFF"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Data startu</Label>
+                    <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="bg-muted/30 border-border w-48" />
+                  </div>
+
+                  {l.league_type === "group_bracket" && (
+                    <div className="space-y-2">
+                      <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Liczba grup</Label>
+                      <Input type="number" min={1} max={8} value={numGroups} onChange={e => setNumGroups(parseInt(e.target.value) || 2)} className="bg-muted/30 border-border w-32" />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">
+                        Wybierz graczy ({selectedPlayers.length})
+                      </Label>
+                      <div className="flex gap-2">
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setSelectedPlayers(approvedPlayers.map((p: any) => p.id))} className="text-xs">
+                          Zaznacz wszystkich
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setSelectedPlayers([])} className="text-xs">
+                          Odznacz
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+                      {approvedPlayers.map((p: any) => {
+                        const selected = selectedPlayers.includes(p.id);
+                        return (
+                          <button key={p.id} type="button" onClick={() => togglePlayer(p.id)}
+                            className={`text-xs font-display uppercase tracking-wider px-3 py-1.5 rounded-full border transition-all ${selected ? "bg-secondary/20 border-secondary/30 text-secondary" : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30"}`}>
+                            {selected ? <Check className="h-3 w-3 inline mr-1" /> : <Plus className="h-3 w-3 inline mr-1" />}
+                            {p.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {selectedPlayers.length >= 2 && (
+                    <div className="rounded-lg bg-muted/30 border border-border p-3 text-xs text-muted-foreground font-body">
+                      {l.league_type === "league" && (() => {
+                        const matchCount = (selectedPlayers.length * (selectedPlayers.length - 1)) / 2;
+                        const rounds = selectedPlayers.length % 2 === 0 ? selectedPlayers.length - 1 : selectedPlayers.length;
+                        return `📊 ${selectedPlayers.length} graczy → ${matchCount} meczów w ${rounds} kolejkach`;
+                      })()}
+                      {l.league_type === "bracket" && `🏆 ${selectedPlayers.length} graczy → drabinka eliminacyjna`}
+                      {l.league_type === "group_bracket" && `🎪 ${selectedPlayers.length} graczy w ${numGroups} grupach → faza grupowa + drabinka`}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <Button variant="hero" disabled={generating || selectedPlayers.length < 2} onClick={() => handleGenerateSchedule(l)}>
+                      {generating ? "Generowanie..." : "⚡ Generuj harmonogram"}
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowGenerate(null)}>Anuluj</Button>
+                  </div>
+                </motion.div>
               )}
-              {!l.is_active && (
-                <Button size="sm" variant="outline" onClick={() => { updateLeague(l.id, { is_active: true }); toast({ title: "Liga reaktywowana", description: `${l.name} jest ponownie aktywna.` }); }}>
-                  Reaktywuj
-                </Button>
-              )}
-              <Button size="sm" variant="ghost" onClick={() => startEdit(l)}><Edit2 className="h-4 w-4" /></Button>
-              <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { deleteLeague(l.id); toast({ title: "Liga usunięta", description: `${l.name} została usunięta.` }); }}><Trash2 className="h-4 w-4" /></Button>
-            </div>
+            </AnimatePresence>
           </div>
         ))}
-        {leagues.length === 0 && <p className="text-muted-foreground font-body text-center py-8">Brak lig. Kliknij "Nowa Liga" aby utworzyć pierwszą.</p>}
+        {leagues.length === 0 && <p className="text-muted-foreground font-body text-center py-8">Brak lig. Kliknij "Nowa Liga / Turniej" aby utworzyć pierwszą.</p>}
       </div>
     </div>
   );
@@ -357,7 +564,6 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
 
   return (
     <div className="space-y-6">
-      {/* Add player form */}
       <div className="rounded-lg border border-border bg-card p-5 card-glow">
         <h3 className="font-display font-bold text-foreground mb-3">Dodaj nowego gracza</h3>
         <form onSubmit={handleAddPlayer} className="flex gap-3">
@@ -383,6 +589,7 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
           </div>
         </section>
       )}
+
       <h2 className="text-xl font-display font-bold text-foreground">Zatwierdzeni gracze ({approved.length})</h2>
       <div className="space-y-3">
         {approved.map((p: any) => (
@@ -443,10 +650,18 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
   const approvedPlayers = players.filter((p: any) => p.approved);
   const leagueMatches = selectedLeague ? matches.filter((m: any) => m.leagueId === selectedLeague) : matches;
 
+  // Group matches by bracket round or group name for display
+  const groupedByBracket = leagueMatches.reduce((acc: any, m: any) => {
+    const key = m.bracketRound || m.groupName || (m.round ? `Kolejka ${m.round}` : "Inne");
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(m);
+    return acc;
+  }, {} as Record<string, any[]>);
+
   return (
     <div className="space-y-6">
       <div className="rounded-lg border border-border bg-card p-6 card-glow space-y-4">
-        <h3 className="font-display font-bold text-foreground">Dodaj mecz</h3>
+        <h3 className="font-display font-bold text-foreground">Dodaj mecz ręcznie</h3>
         <form onSubmit={handleAddMatch} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -499,70 +714,53 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
         </div>
       )}
 
-      <div className="space-y-2">
-        {leagueMatches.map((m: any) => (
-          <div key={m.id} className="rounded-lg border border-border bg-card p-4 card-glow flex items-center justify-between">
-            <div>
-              <div className="font-body text-sm text-foreground">{m.player1Name} vs {m.player2Name}</div>
-              <div className="text-xs text-muted-foreground">
-                {new Date(m.date).toLocaleDateString("pl-PL")} ·{" "}
-                {m.status === "completed" ? `${m.score1}:${m.score2} ✅` : m.status === "pending_approval" ? `${m.score1}:${m.score2} ⏳ Do zatwierdzenia` : "📅 Zaplanowany"}
-                {m.round && ` · Kolejka ${m.round}`}
+      {Object.keys(groupedByBracket).length > 0 ? (
+        Object.entries(groupedByBracket).map(([key, groupMatches]: [string, any]) => (
+          <div key={key} className="space-y-2">
+            <h3 className="text-sm font-display font-bold text-primary uppercase tracking-wider">{key}</h3>
+            {groupMatches.map((m: any) => (
+              <div key={m.id} className="rounded-lg border border-border bg-card p-4 card-glow flex items-center justify-between">
+                <div>
+                  <div className="font-body text-sm text-foreground">{m.player1Name} vs {m.player2Name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(m.date).toLocaleDateString("pl-PL")} ·{" "}
+                    {m.status === "completed" ? `${m.score1}:${m.score2} ✅` : m.status === "pending_approval" ? `${m.score1}:${m.score2} ⏳` : "📅 Zaplanowany"}
+                  </div>
+                </div>
+                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { deleteMatch(m.id); toast({ title: "Mecz usunięty" }); }}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-            </div>
-            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { deleteMatch(m.id); toast({ title: "Mecz usunięty" }); }}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            ))}
           </div>
-        ))}
-        {leagueMatches.length === 0 && <p className="text-muted-foreground font-body text-center py-4">Brak meczów w tej lidze.</p>}
-      </div>
+        ))
+      ) : (
+        <p className="text-muted-foreground font-body text-center py-4">Brak meczów w tej lidze.</p>
+      )}
     </div>
   );
 };
 
 // ─── ROLES TAB ───
 const RolesTab = ({ toast }: any) => {
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<string>("moderator");
-  const [submitting, setSubmitting] = useState(false);
   const [rolesList, setRolesList] = useState<any[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
+
+  useEffect(() => {
+    loadRoles();
+  }, []);
 
   const loadRoles = async () => {
     setLoadingRoles(true);
     const { data } = await supabase.from("user_roles").select("*");
     if (data) {
-      // Get profile info for each role
       const enriched = await Promise.all(data.map(async (r: any) => {
-        const { data: profile } = await supabase.from("profiles").select("name").eq("user_id", r.user_id).single();
+        const { data: profile } = await supabase.from("profiles").select("name").eq("user_id", r.user_id).maybeSingle();
         return { ...r, name: profile?.name || "Nieznany" };
       }));
       setRolesList(enriched);
     }
     setLoadingRoles(false);
-  };
-
-  useState(() => { loadRoles(); });
-
-  const handleAssignRole = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setSubmitting(true);
-
-    // Find user by email via profiles - we need to look up by auth
-    // Since we can't query auth.users, we'll use a workaround
-    const { data: profiles } = await supabase.from("profiles").select("user_id, name");
-    // We need to match by checking auth - let's query all profiles and try to find by name/email match
-    // Actually, let's use the edge function approach or just use user_id directly
-    // For simplicity, let's search by name in profiles
-    toast({ title: "Info", description: "Wyszukiwanie użytkownika..." });
-
-    // Try to find the user - this is a limitation, we need to match email somehow
-    // The best approach: admin provides user_id or we look up by profile name
-    // Let's just insert by the email approach using a simple lookup
-    setSubmitting(false);
-    toast({ title: "Uwaga", description: "Aby nadać rolę, użyj ID użytkownika z bazy danych. Skontaktuj się z supportem.", variant: "destructive" });
   };
 
   const handleDeleteRole = async (roleId: string) => {
