@@ -1,3 +1,5 @@
+export type LeagueType = "league" | "bracket" | "group_bracket";
+
 export interface League {
   id: string;
   name: string;
@@ -6,6 +8,7 @@ export interface League {
   is_active: boolean;
   format?: string;
   max_legs?: number;
+  league_type: LeagueType;
 }
 
 export interface Player {
