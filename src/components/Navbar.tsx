@@ -36,6 +36,7 @@ const allMobileItems = [
   { label: "Mecze", href: "/matches", icon: <Swords className="h-4 w-4" /> },
   { label: "Gracze", href: "/players", icon: <Trophy className="h-4 w-4" /> },
   { label: "Dodaj Wynik", href: "/submit", icon: <ClipboardEdit className="h-4 w-4" /> },
+  { label: "Moje Mecze", href: "/my-matches", icon: <Handshake className="h-4 w-4" />, authOnly: true },
   { label: "Statystyki", href: "/stats", icon: <BarChart3 className="h-4 w-4" /> },
   { label: "H2H", href: "/h2h", icon: <Swords className="h-4 w-4" /> },
   { label: "Kalendarz", href: "/calendar", icon: <Calendar className="h-4 w-4" /> },
