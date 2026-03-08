@@ -80,6 +80,7 @@ export interface TonLeaderEntry {
   ton60: number;
   ton80: number;
   tonPlus: number;
+  ton40: number;
   oneEighties: number;
   totalTons: number;
   highestCheckout: number;
