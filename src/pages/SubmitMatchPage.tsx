@@ -196,6 +196,8 @@ const SubmitMatchPage = () => {
           ton80_2: asNumber(payload.ton80_2),
           tonPlus1: asNumber(payload.ton_plus1),
           tonPlus2: asNumber(payload.ton_plus2),
+          ton40_1: asNumber(payload.ton40_1),
+          ton40_2: asNumber(payload.ton40_2),
           dartsThrown1: asNumber(payload.darts_thrown1),
           dartsThrown2: asNumber(payload.darts_thrown2),
           checkoutAttempts1: asNumber(payload.checkout_attempts1),
