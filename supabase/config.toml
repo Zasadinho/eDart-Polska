@@ -2,3 +2,6 @@ project_id = "uiolhzctnbskdjteufkj"
 
 [functions.check-league-match]
 verify_jwt = false
+
+[functions.auto-submit-league-match]
+verify_jwt = false
