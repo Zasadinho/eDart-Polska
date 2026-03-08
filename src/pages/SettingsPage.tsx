@@ -134,6 +134,10 @@ const SettingsPage = () => {
             </Button>
           </form>
         </div>
+      ) : (
+        <div className="rounded-lg border border-border bg-muted/20 p-4 mb-6 text-sm text-muted-foreground font-body">
+          Twoje konto nie jest jeszcze powiązane z profilem gracza. Skontaktuj się z administratorem.
+        </div>
       )}
 
       {/* Change password */}
