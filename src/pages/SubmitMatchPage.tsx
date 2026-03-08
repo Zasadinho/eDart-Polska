@@ -24,8 +24,6 @@ const SubmitMatchPage = () => {
   const [oneEighties2, setOneEighties2] = useState("");
   const [hc1, setHc1] = useState("");
   const [hc2, setHc2] = useState("");
-  const [ton40_1, setTon40_1] = useState("");
-  const [ton40_2, setTon40_2] = useState("");
   const [ton60_1, setTon60_1] = useState("");
   const [ton60_2, setTon60_2] = useState("");
   const [ton80_1, setTon80_1] = useState("");
