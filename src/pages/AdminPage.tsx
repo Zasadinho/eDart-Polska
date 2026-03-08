@@ -235,7 +235,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
 
   const resetForm = () => {
     setName(""); setSeason(""); setDescription(""); setFormat("Best of 5");
-    setIsActive(true); setLeagueType("league"); setBonusRules({ ...DEFAULT_BONUS_RULES });
+    setIsActive(true); setRegistrationOpen(false); setLeagueType("league"); setBonusRules({ ...DEFAULT_BONUS_RULES });
     setShowForm(false); setEditId(null);
   };
 
