@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Target, Menu, X, LogIn, LogOut, Shield, BarChart3, Settings } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield, BarChart3, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,9 +24,9 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
-            <Target className="h-8 w-8 text-primary transition-transform group-hover:rotate-45" />
+            <img src="/pwa-192x192.png" alt="eDART Polska" className="h-8 w-8 rounded-full transition-transform group-hover:rotate-12" />
             <span className="font-display text-xl tracking-wider text-foreground">
-              DART<span className="text-primary">LIGA</span>
+              e<span className="text-primary">DART</span> <span className="text-sm text-primary">Polska</span>
             </span>
           </Link>
 

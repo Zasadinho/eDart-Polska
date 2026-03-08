@@ -39,7 +39,7 @@ const LoginPage = () => {
     if (error) {
       toast({ title: "Błąd logowania", description: error, variant: "destructive" });
     } else {
-      toast({ title: "Zalogowano!", description: "Witaj w DartLiga." });
+      toast({ title: "Zalogowano!", description: "Witaj w eDART Polska." });
       navigate("/");
     }
   };
@@ -83,9 +83,9 @@ const LoginPage = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <Target className="h-10 w-10 text-primary" />
+            <img src="/pwa-192x192.png" alt="eDART Polska" className="h-10 w-10 rounded-full" />
             <span className="font-display text-2xl tracking-wider text-foreground">
-              DART<span className="text-primary">LIGA</span>
+              e<span className="text-primary">DART</span> <span className="text-sm text-primary">Polska</span>
             </span>
           </Link>
           <h1 className="text-2xl font-display font-bold text-foreground">

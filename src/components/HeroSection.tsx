@@ -1,4 +1,4 @@
-import { Target, TrendingUp, Trophy, BarChart3 } from "lucide-react";
+import { TrendingUp, Trophy, BarChart3 } from "lucide-react";
 import { useLeague } from "@/contexts/LeagueContext";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -29,23 +29,23 @@ const HeroSection = () => {
       <div className="container mx-auto px-4 py-16 md:py-24 relative">
         <div className="max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="flex items-center gap-3 mb-4">
-            <Target className="h-10 w-10 text-primary animate-pulse-glow rounded-full" />
+            <img src="/pwa-192x192.png" alt="eDART Polska" className="h-12 w-12 rounded-full animate-pulse-glow" />
             <span className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground">Sezon 2026</span>
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="text-4xl md:text-6xl lg:text-7xl font-display font-bold leading-tight mb-4">
-            <span className="text-gradient">Dart</span><span className="text-foreground">Liga</span>
+            <span className="text-foreground">e</span><span className="text-gradient">DART</span> <span className="text-primary">Polska</span>
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="text-lg md:text-xl text-muted-foreground font-body max-w-xl mb-8">
-            Profesjonalna liga darta. 
+            Polska Liga Darta. 
             Śledź wyniki, statystyki i ranking w czasie rzeczywistym.
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className="flex flex-wrap gap-4 mb-6">
             <StatChip icon={<Trophy className="h-4 w-4" />} label="Graczy" value={totalPlayers.toString()} />
             <StatChip icon={<TrendingUp className="h-4 w-4" />} label="Rozegranych" value={totalCompleted.toString()} />
-            <StatChip icon={<Target className="h-4 w-4" />} label="180-tek" value={total180s.toString()} />
+            <StatChip icon={<img src="/pwa-192x192.png" alt="" className="h-4 w-4 rounded-full" />} label="180-tek" value={total180s.toString()} />
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} className="flex flex-wrap gap-3">

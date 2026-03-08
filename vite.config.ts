@@ -24,9 +24,9 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
       },
       manifest: {
-        name: "DartLiga",
-        short_name: "DartLiga",
-        description: "Dart league management app",
+        name: "eDART Polska",
+        short_name: "eDART Polska",
+        description: "Polska Liga Darta",
         theme_color: "#111827",
         background_color: "#111827",
         display: "standalone",
