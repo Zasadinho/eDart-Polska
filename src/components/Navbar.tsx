@@ -70,10 +70,8 @@ const Navbar = () => {
                 </Button>
               </Link>
             )}
-            <ThemeToggle />
             {user ? (
               <div className="flex items-center gap-1 ml-2">
-                <NotificationBell />
                 <Link to="/settings">
                   <Button variant="ghost" size="sm" className="font-display uppercase tracking-wider text-xs">
                     <Settings className="h-3.5 w-3.5 mr-1" /> {profile?.name || user.email}
@@ -92,9 +90,13 @@ const Navbar = () => {
             )}
           </div>
 
-          <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            {user && <NotificationBell />}
+            <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+              {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
 
         {mobileOpen && (
@@ -124,12 +126,8 @@ const Navbar = () => {
                 </Button>
               </Link>
             )}
-            <div className="flex items-center gap-2 mb-2 px-2">
-              <ThemeToggle />
-            </div>
             {user ? (
               <>
-                <div className="px-2 mb-2"><NotificationBell /></div>
                 <Link to="/settings" onClick={() => setMobileOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start font-display uppercase tracking-wider text-sm mb-1">
                     <Settings className="h-4 w-4 mr-1" /> Ustawienia
