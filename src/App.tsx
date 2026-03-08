@@ -18,6 +18,8 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import SettingsPage from "./pages/SettingsPage";
 import MyMatchesPage from "./pages/MyMatchesPage";
 import HeadToHeadPage from "./pages/HeadToHeadPage";
+import CalendarPage from "./pages/CalendarPage";
+import HallOfFamePage from "./pages/HallOfFamePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
