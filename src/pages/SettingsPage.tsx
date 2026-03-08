@@ -98,12 +98,22 @@ const SettingsPage = () => {
       {/* Profile info */}
       <div className="rounded-lg border border-border bg-card p-6 card-glow mb-6">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-14 h-14 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-lg font-display font-bold text-primary">
-            {profile?.avatar || "?"}
-          </div>
+          {playerData ? (
+            <AvatarUpload
+              currentAvatarUrl={playerData.avatar_url}
+              currentInitials={profile?.avatar || "?"}
+              playerId={playerData.id}
+              onUploaded={(url) => setPlayerData({ ...playerData, avatar_url: url })}
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-lg font-display font-bold text-primary">
+              {profile?.avatar || "?"}
+            </div>
+          )}
           <div>
             <div className="font-body font-semibold text-foreground">{profile?.name || "Użytkownik"}</div>
             <div className="text-sm text-muted-foreground font-body">{user.email}</div>
+            {playerData && <div className="text-xs text-muted-foreground font-body mt-1">Najedź na zdjęcie, aby zmienić avatar</div>}
           </div>
         </div>
       </div>
