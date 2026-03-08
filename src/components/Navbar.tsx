@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Target, Menu, X, LogIn, LogOut, Shield } from "lucide-react";
+import { Target, Menu, X, LogIn, LogOut, Shield, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,7 @@ const navItems = [
   { label: "Tabela Ligi", href: "/" },
   { label: "Mecze", href: "/matches" },
   { label: "Gracze", href: "/players" },
+  { label: "Wtryski", href: "/ton-stats", icon: <Flame className="h-3.5 w-3.5" /> },
   { label: "Dodaj Wynik", href: "/submit" },
 ];
 
@@ -35,6 +36,7 @@ const Navbar = () => {
                   size="sm"
                   className="font-display uppercase tracking-wider text-xs"
                 >
+                  {item.icon && item.icon}
                   {item.label}
                 </Button>
               </Link>
@@ -79,6 +81,7 @@ const Navbar = () => {
                   variant={location.pathname === item.href ? "default" : "ghost"}
                   className="w-full justify-start font-display uppercase tracking-wider text-sm mb-1"
                 >
+                  {item.icon && item.icon}
                   {item.label}
                 </Button>
               </Link>

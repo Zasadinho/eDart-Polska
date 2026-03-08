@@ -13,6 +13,7 @@ import PlayerProfilePage from "./pages/PlayerProfilePage";
 import SubmitMatchPage from "./pages/SubmitMatchPage";
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
+import TonStatsPage from "./pages/TonStatsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/submit" element={<SubmitMatchPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/ton-stats" element={<TonStatsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

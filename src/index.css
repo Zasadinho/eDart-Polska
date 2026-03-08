@@ -80,7 +80,7 @@
 
   .card-glow {
     box-shadow: var(--shadow-card);
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
   }
 
   .card-glow:hover {
@@ -88,7 +88,31 @@
   }
 
   .glass {
-    backdrop-filter: blur(12px);
-    background: hsl(220 18% 11% / 0.8);
+    backdrop-filter: blur(16px);
+    background: hsl(220 18% 11% / 0.85);
+  }
+
+  .glass-subtle {
+    backdrop-filter: blur(8px);
+    background: hsl(220 18% 11% / 0.5);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(220 18% 9%);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(220 15% 25%);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(0 72% 51% / 0.5);
   }
 }
