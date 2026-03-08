@@ -126,6 +126,9 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
     checkoutAttempts2: m.checkout_attempts2,
     checkoutHits1: m.checkout_hits1,
     checkoutHits2: m.checkout_hits2,
+    bracketRound: m.bracket_round,
+    bracketPosition: m.bracket_position,
+    groupName: m.group_name,
   };
 };
 
@@ -205,6 +208,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     const leagues: League[] = (leaguesData || []).map((l: any) => ({
       id: l.id, name: l.name, season: l.season, description: l.description,
       is_active: l.is_active, format: l.format, max_legs: l.max_legs,
+      league_type: l.league_type || "league",
     }));
     setLeagueList(leagues);
     if (leagues.length > 0 && !activeLeagueId) {
@@ -375,9 +379,14 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     const { data, error } = await supabase.from("leagues").insert({
       name: league.name, season: league.season, description: league.description,
       format: league.format, max_legs: league.max_legs, is_active: league.is_active,
+      league_type: league.league_type || "league",
     }).select().single();
     if (data) {
-      const newLeague = { id: data.id, name: data.name, season: data.season, description: data.description, format: data.format, max_legs: data.max_legs, is_active: data.is_active };
+      const newLeague: League = {
+        id: data.id, name: data.name, season: data.season, description: data.description,
+        format: data.format, max_legs: data.max_legs, is_active: data.is_active,
+        league_type: (data.league_type as League["league_type"]) || "league",
+      };
       setLeagueList((prev) => [...prev, newLeague]);
       if (!activeLeagueId) setActiveLeagueId(data.id);
     }
