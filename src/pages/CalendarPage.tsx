@@ -21,10 +21,11 @@ const CalendarPage = () => {
 
   const leagueMatches = getLeagueMatches(activeLeagueId);
 
-  // Group matches by date string
+  // Group matches by date - use confirmedDate if available, else date (deadline)
   const matchesByDate: Record<string, typeof leagueMatches> = {};
   leagueMatches.forEach((m) => {
-    const key = m.date.slice(0, 10);
+    const displayDate = m.confirmedDate || m.date;
+    const key = displayDate.slice(0, 10);
     if (!matchesByDate[key]) matchesByDate[key] = [];
     matchesByDate[key].push(m);
   });
@@ -88,8 +89,9 @@ const CalendarPage = () => {
             const dayMatches = dateStr ? matchesByDate[dateStr] || [] : [];
             const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
             const isSelected = day === selectedDay;
-            const hasUpcoming = dayMatches.some((m) => m.status === "upcoming");
+            const hasUpcoming = dayMatches.some((m) => m.status === "upcoming" && !m.confirmedDate);
             const hasCompleted = dayMatches.some((m) => m.status === "completed");
+            const hasConfirmed = dayMatches.some((m) => m.status === "upcoming" && m.confirmedDate);
 
             return (
               <button
@@ -110,6 +112,7 @@ const CalendarPage = () => {
                     {dayMatches.length > 0 && (
                       <div className="flex gap-1 mt-1 flex-wrap">
                         {hasUpcoming && <span className="h-2 w-2 rounded-full bg-accent" />}
+                        {hasConfirmed && <span className="h-2 w-2 rounded-full bg-primary" />}
                         {hasCompleted && <span className="h-2 w-2 rounded-full bg-secondary" />}
                         {dayMatches.length > 1 && (
                           <span className="text-[9px] text-muted-foreground font-display">{dayMatches.length}</span>
@@ -127,6 +130,7 @@ const CalendarPage = () => {
       {/* Legend */}
       <div className="flex gap-4 text-xs text-muted-foreground font-body">
         <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-accent" /> Zaplanowany</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" /> Termin ustalony</span>
         <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-secondary" /> Rozegrany</span>
       </div>
 
@@ -151,9 +155,13 @@ const CalendarPage = () => {
                   <div className="flex items-center gap-2">
                     {m.status === "completed" ? (
                       <span className="text-xl font-display font-bold text-foreground">{m.score1}:{m.score2}</span>
+                    ) : m.confirmedDate ? (
+                      <Badge variant="outline" className="text-primary border-primary/30 text-[10px] font-display uppercase">
+                        Termin ustalony
+                      </Badge>
                     ) : (
                       <Badge variant="outline" className="text-accent border-accent/30 text-[10px] font-display uppercase">
-                        Zaplanowany
+                        Do rozegrania
                       </Badge>
                     )}
                   </div>
