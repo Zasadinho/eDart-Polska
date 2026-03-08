@@ -449,6 +449,7 @@ function buildResult(
     player1_autodarts_id: p1AutoId,
     player2_autodarts_id: p2AutoId,
     autodarts_link: `https://play.autodarts.io/history/matches/${matchId}`,
+  };
   console.log("Final result:", JSON.stringify(result));
   return result;
 }
