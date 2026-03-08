@@ -1,7 +1,6 @@
 import { useLeague } from "@/contexts/LeagueContext";
 import { Trophy, Target, Crosshair, TrendingUp, Flame, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
-import LeagueSelector from "@/components/LeagueSelector";
 import PlayerAvatar from "@/components/PlayerAvatar";
 
 interface RecordEntry {
@@ -13,16 +12,16 @@ interface RecordEntry {
 }
 
 const HallOfFamePage = () => {
-  const { players, matches, activeLeagueId, getLeagueMatches, getPlayerLeagueStats } = useLeague();
+  const { players, matches } = useLeague();
 
-  const leagueMatches = getLeagueMatches(activeLeagueId).filter((m) => m.status === "completed");
+  const allCompleted = matches.filter((m) => m.status === "completed");
 
   // Compute records
   const records: { icon: React.ReactNode; title: string; entries: RecordEntry[] }[] = [];
 
   // Best single-match average
   const avgRecords: { pid: string; name: string; avatar: string; avatarUrl?: string | null; val: number }[] = [];
-  leagueMatches.forEach((m) => {
+  allCompleted.forEach((m) => {
     const p1 = players.find((p) => p.id === m.player1Id);
     const p2 = players.find((p) => p.id === m.player2Id);
     if (m.avg1 != null && p1) avgRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, avatarUrl: p1.avatar_url, val: m.avg1 });
@@ -39,7 +38,7 @@ const HallOfFamePage = () => {
 
   // Highest checkout
   const coRecords: { pid: string; name: string; avatar: string; avatarUrl?: string | null; val: number }[] = [];
-  leagueMatches.forEach((m) => {
+  allCompleted.forEach((m) => {
     const p1 = players.find((p) => p.id === m.player1Id);
     const p2 = players.find((p) => p.id === m.player2Id);
     if (m.highCheckout1 && m.highCheckout1 > 0 && p1) coRecords.push({ pid: p1.id, name: p1.name, avatar: p1.avatar, avatarUrl: p1.avatar_url, val: m.highCheckout1 });
@@ -56,7 +55,7 @@ const HallOfFamePage = () => {
 
   // Most 180s (cumulative per player)
   const oneEightyMap: Record<string, number> = {};
-  leagueMatches.forEach((m) => {
+  allCompleted.forEach((m) => {
     oneEightyMap[m.player1Id] = (oneEightyMap[m.player1Id] || 0) + (m.oneEighties1 ?? 0);
     oneEightyMap[m.player2Id] = (oneEightyMap[m.player2Id] || 0) + (m.oneEighties2 ?? 0);
   });
@@ -78,7 +77,7 @@ const HallOfFamePage = () => {
 
   // Most wins
   const winMap: Record<string, number> = {};
-  leagueMatches.forEach((m) => {
+  allCompleted.forEach((m) => {
     if ((m.score1 ?? 0) > (m.score2 ?? 0)) winMap[m.player1Id] = (winMap[m.player1Id] || 0) + 1;
     else if ((m.score2 ?? 0) > (m.score1 ?? 0)) winMap[m.player2Id] = (winMap[m.player2Id] || 0) + 1;
   });
@@ -100,8 +99,8 @@ const HallOfFamePage = () => {
 
   // Longest win streak
   const streakMap: Record<string, number> = {};
-  const playerMatchesSorted: Record<string, typeof leagueMatches> = {};
-  leagueMatches
+  const playerMatchesSorted: Record<string, typeof allCompleted> = {};
+  allCompleted
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .forEach((m) => {
       [m.player1Id, m.player2Id].forEach((pid) => {
@@ -145,13 +144,12 @@ const HallOfFamePage = () => {
         <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2 flex items-center gap-3">
           <Trophy className="h-8 w-8 text-accent" /> Hall of Fame
         </h1>
-        <p className="text-muted-foreground font-body mb-4">Rekordy i najlepsi gracze ligi</p>
-        <LeagueSelector />
+        <p className="text-muted-foreground font-body mb-4">Rekordy i najlepsi gracze ze wszystkich rozgrywek</p>
       </div>
 
-      {leagueMatches.length === 0 ? (
+      {allCompleted.length === 0 ? (
         <div className="rounded-lg border border-border bg-muted/20 p-8 text-center">
-          <p className="text-muted-foreground font-body">Brak rozegranych meczów w tej lidze.</p>
+          <p className="text-muted-foreground font-body">Brak rozegranych meczów.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
