@@ -529,6 +529,9 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                     setShowGenerate(showGenerate === l.id ? null : l.id);
                     setSelectedPlayers([]);
                     setNumGroups(getRecommendedGroups(approvedPlayers.length));
+                    setGenerateMode("all");
+                    setSelectedRounds([]);
+                    setRoundDeadlines({});
                   }}>
                     <Shuffle className="h-3.5 w-3.5 mr-1" /> Generuj mecze
                   </Button>
