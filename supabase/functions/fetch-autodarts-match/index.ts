@@ -353,6 +353,9 @@ async function fetchMatchData(matchId: string, token: string) {
   st[0].legsWon = legsWon1;
   st[1].legsWon = legsWon2;
 
+  const directCo1 = extractDirectCheckoutStats(players[0]);
+  const directCo2 = extractDirectCheckoutStats(players[1]);
+
   // Process embedded games (legs)
   const games = Array.isArray(match.games) ? match.games.filter((g: any) => g && typeof g === "object") : [];
   console.log("Games count:", games.length);
