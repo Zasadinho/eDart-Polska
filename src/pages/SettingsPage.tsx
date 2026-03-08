@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLeague } from "@/contexts/LeagueContext";
+import AvatarUpload from "@/components/AvatarUpload";
 
 const SettingsPage = () => {
   const { toast } = useToast();
