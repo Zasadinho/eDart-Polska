@@ -171,14 +171,7 @@ async function fetchMatchData(matchId: string, token: string) {
   
   if (gameIds.length > 0) {
     console.log("Fetching", gameIds.length, "individual games...");
-    // Fetch each game for detailed turn data
-    const gamePromises = gameIds.map(gid =>
-      fetchJson(`${API_BASE}/as/v0/matches/${matchId}/games/${gid}`, token)
-        .catch(err => {
-          console.log("Failed to fetch game", gid, err.message);
-          return null;
-        })
-    );
+    const gamePromises = gameIds.map((gid) => fetchGameDetail(matchId, gid, token));
     const games = await Promise.all(gamePromises);
 
     let legIdx = 0;
