@@ -72,7 +72,7 @@ const HallOfFamePage = () => {
     icon: <Target className="h-6 w-6 text-accent" />,
     title: "Najwięcej 180-tek",
     entries: oneEightyEntries.map((r) => ({
-      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, value: r!.val,
+      playerId: r!.pid, playerName: r!.name, playerAvatar: r!.avatar, playerAvatarUrl: r!.avatarUrl, value: r!.val,
     })),
   });
 
