@@ -22,7 +22,7 @@ const HeadToHeadPage = () => {
   const p2 = players.find((p) => p.id === player2Id);
 
   // Calculate H2H stats
-  let p1Wins = 0, p2Wins = 0, draws = 0;
+  let p1Wins = 0, p2Wins = 0;
   let p1AvgSum = 0, p2AvgSum = 0, avgCount = 0;
   let p1_180 = 0, p2_180 = 0;
   let p1Legs = 0, p2Legs = 0;
@@ -33,8 +33,7 @@ const HeadToHeadPage = () => {
     const s2 = p1IsPlayer1 ? m.score2 : m.score1;
 
     if ((s1 ?? 0) > (s2 ?? 0)) p1Wins++;
-    else if ((s2 ?? 0) > (s1 ?? 0)) p2Wins++;
-    else draws++;
+    else p2Wins++;
 
     const a1 = p1IsPlayer1 ? m.avg1 : m.avg2;
     const a2 = p1IsPlayer1 ? m.avg2 : m.avg1;
