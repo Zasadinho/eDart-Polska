@@ -253,6 +253,9 @@ function processGameTurns(
         // Before this dart: is the remaining finishable with one double?
         if (isFinishableWithOneDouble(runningRemaining)) {
           st.checkoutAttempts++;
+          if (pIdx === 1) {
+            console.log(`[DEBUG_P2_DART] rem_before=${runningRemaining} dart=${JSON.stringify(seg)} val=${dartValue} attempts=${st.checkoutAttempts}`);
+          }
           
           // Check if this dart actually finished (hit the double)
           if (runningRemaining - dartValue === 0 && (seg.multiplier === 2 || (seg.number === 25 && seg.multiplier === 2))) {
