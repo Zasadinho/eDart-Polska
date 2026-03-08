@@ -356,17 +356,46 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!autodarts_token) {
-      return new Response(JSON.stringify({ 
-        error: "autodarts_token is required",
-        message: "Zainstaluj rozszerzenie Chrome eDART, które automatycznie pobiera token z Twojej sesji Autodarts."
-      }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const matchId = extractMatchId(input);
+
+    // Try user-provided token first, then fallback to server-side login
+    let adToken = autodarts_token || null;
+    let tokenSource = "extension";
+
+    if (adToken) {
+      // Test if token is still valid
+      try {
+        const testRes = await fetch(`${API_BASE}/as/v0/matches/${matchId}`, {
+          headers: { Authorization: `Bearer ${adToken}` },
+        });
+        if (testRes.status === 401) {
+          console.log("Extension token expired, falling back to server-side login");
+          adToken = null;
+        } else {
+          // consume the body so we don't leak
+          await testRes.text();
+        }
+      } catch {
+        adToken = null;
+      }
     }
 
-    const matchId = extractMatchId(input);
-    const stats = await fetchMatchData(matchId, autodarts_token);
+    if (!adToken) {
+      // Server-side login to Autodarts using stored credentials
+      adToken = await loginToAutodarts();
+      tokenSource = "server";
+      if (!adToken) {
+        return new Response(JSON.stringify({ 
+          error: "Nie udało się zalogować do Autodarts",
+          message: "Token z rozszerzenia wygasł, a logowanie serwerowe nie powiodło się. Odśwież play.autodarts.io i spróbuj ponownie."
+        }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    console.log("Using token from:", tokenSource);
+    const stats = await fetchMatchData(matchId, adToken);
 
     return new Response(JSON.stringify({ success: true, data: stats }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
