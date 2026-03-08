@@ -304,6 +304,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [leagueType, setLeagueType] = useState<LeagueType>("league");
   const [bonusRules, setBonusRules] = useState<BonusRules>({ ...DEFAULT_BONUS_RULES });
+  const [meetingsPerPair, setMeetingsPerPair] = useState(1);
   
   // Tournament generation state
   const [showGenerate, setShowGenerate] = useState<string | null>(null);
