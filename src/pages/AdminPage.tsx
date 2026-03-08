@@ -203,8 +203,6 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
       checkoutAttempts2: parseInt(editStats.checkoutAttempts2) || 0,
       checkoutHits1: parseInt(editStats.checkoutHits1) || 0,
       checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
-      nineDarters1: parseInt(editStats.nineDarters1) || 0,
-      nineDarters2: parseInt(editStats.nineDarters2) || 0,
       autodartsLink: m.autodartsLink,
     });
     setEditingId(null);
