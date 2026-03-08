@@ -205,13 +205,13 @@ export const achievements: Achievement[] = [
   { id: "u6", name: "Kosmiczny Scoring", description: "Średnia do 170 powyżej 140", icon: "🌠", rarity: "legendary", condition: (s) => s.bestAvgUntil170 >= 140 },
 
   // ─── TONY / SCORING (t1-t7) ───
-  { id: "t1", name: "Ton 60 Początkujący", description: "Zbierz 10 wyników Ton 60", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 10 },
-  { id: "t2", name: "Ton 80 Kolekcjoner", description: "Zbierz 15 wyników Ton 80", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 15 },
-  { id: "t3", name: "Ton+ Łowca", description: "Rzuć 20 wyników powyżej 100", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 20 },
-  { id: "t4", name: "Ton Kolekcjoner", description: "Zbierz łącznie 50 tonów (60+80+100+)", icon: "💰", rarity: "epic", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus) >= 50 },
-  { id: "t5", name: "Ton Milioner", description: "Zbierz łącznie 100 tonów", icon: "💎", rarity: "legendary", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus) >= 100 },
-  { id: "t6", name: "Ton 60 Mistrz", description: "Zbierz 30 wyników Ton 60", icon: "🎯", rarity: "rare", condition: (s) => s.ton60 >= 30 },
-  { id: "t7", name: "Ton 80 Mistrz", description: "Zbierz 30 wyników Ton 80", icon: "🎯", rarity: "epic", condition: (s) => s.ton80 >= 30 },
+  { id: "t1", name: "60+ Początkujący", description: "Zbierz 10 wyników 60+", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 10 },
+  { id: "t2", name: "100+ Kolekcjoner", description: "Zbierz 15 wyników 100+", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 15 },
+  { id: "t3", name: "140+ Łowca", description: "Rzuć 20 wyników 140+", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 20 },
+  { id: "t4", name: "Ton Kolekcjoner", description: "Zbierz łącznie 50 tonów (60+100+140+170+)", icon: "💰", rarity: "epic", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 50 },
+  { id: "t5", name: "Ton Milioner", description: "Zbierz łącznie 100 tonów", icon: "💎", rarity: "legendary", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 100 },
+  { id: "t6", name: "60+ Mistrz", description: "Zbierz 30 wyników 60+", icon: "🎯", rarity: "rare", condition: (s) => s.ton60 >= 30 },
+  { id: "t7", name: "100+ Mistrz", description: "Zbierz 30 wyników 100+", icon: "🎯", rarity: "epic", condition: (s) => s.ton80 >= 30 },
 
   // ─── PROCENT WYGRANYCH (r1-r4) ───
   { id: "r1", name: "Ponad Połowa", description: "Procent wygranych powyżej 50% (min. 5 meczów)", icon: "📊", rarity: "common", condition: (s) => s.winRate > 50 && s.matchesPlayed >= 5 },
@@ -251,7 +251,7 @@ export const achievements: Achievement[] = [
   { id: "x14", name: "Pierwszy Punkty", description: "Zdobądź pierwsze punkty w lidze", icon: "⭐", rarity: "common", condition: (s) => s.points >= 1 },
   { id: "x15", name: "Pierwszy Bonus", description: "Zdobądź pierwszy punkt bonusowy", icon: "🎁", rarity: "common", condition: (s) => s.bonusPoints >= 1 },
   { id: "x16", name: "180 i Checkout 100+", description: "Rzuć 180 i zamknij checkoutem 100+ w jednej lidze", icon: "🎯", rarity: "epic", condition: (s) => s.oneEighties >= 1 && s.highestCheckout >= 100 },
-  { id: "x17", name: "Wszechstronny", description: "Tony 60, 80 i 100+ w jednej lidze", icon: "🌈", rarity: "rare", condition: (s) => s.ton60 >= 1 && s.ton80 >= 1 && s.tonPlus >= 1 },
+  { id: "x17", name: "Wszechstronny", description: "Tony 60+, 100+, 140+ i 170+ w jednej lidze", icon: "🌈", rarity: "rare", condition: (s) => s.ton60 >= 1 && s.ton80 >= 1 && s.tonPlus >= 1 && s.ton40 >= 1 },
   { id: "x18", name: "Ligowy Weteran", description: "Rozegraj 20 meczów i zdobądź 20 punktów", icon: "🎖️", rarity: "rare", condition: (s) => s.matchesPlayed >= 20 && s.points >= 20 },
   { id: "x19", name: "Punkty za Wszystko", description: "Zdobądź punkty bazowe i bonusowe", icon: "🎯", rarity: "common", condition: (s) => s.basePoints >= 3 && s.bonusPoints >= 1 },
   { id: "x20", name: "Leg Dominator", description: "Stosunek legów wygranych do przegranych 2:1 (min. 30 legów)", icon: "⚖️", rarity: "epic", condition: (s) => s.legsWon >= 30 && s.legsLost > 0 && (s.legsWon / s.legsLost) >= 2 },
