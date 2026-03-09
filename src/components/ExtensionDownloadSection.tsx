@@ -63,9 +63,21 @@ const ExtensionDownloadSection = () => {
 
           {/* Download + Install toggle */}
           <div className="flex flex-wrap gap-3 pt-2">
-            <a href="/chrome-extension/eDART_Polska_Chrome.zip" download>
+            <a href="/chrome-extension" target="_blank" rel="noopener noreferrer" onClick={(e) => {
+              e.preventDefault();
+              // Download all extension files as individual links
+              const files = ["manifest.json","background.js","content.js","inject-token.js","popup.html","popup.js","icon48.png","icon128.png"];
+              files.forEach(f => {
+                const a = document.createElement("a");
+                a.href = `/chrome-extension/${f}`;
+                a.download = f;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              });
+            }}>
               <Button variant="hero" size="lg" className="gap-2">
-                <Download className="h-4 w-4" /> Pobierz wtyczkę (ZIP)
+                <Download className="h-4 w-4" /> Pobierz wtyczkę
               </Button>
             </a>
             <Button
