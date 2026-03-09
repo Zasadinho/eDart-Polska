@@ -63,7 +63,6 @@ const MyNextMatchWidget = () => {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1">
           <PlayerAvatar
-            name={opponentName}
             avatarUrl={opponent?.avatar_url}
             initials={opponent?.avatar || opponentName.slice(0, 2).toUpperCase()}
             size="lg"
