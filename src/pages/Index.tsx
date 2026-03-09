@@ -23,8 +23,8 @@ const Index = () => {
       <div className="container mx-auto px-4 py-8 space-y-8">
         <MyNextMatchWidget />
         <LiveMatchesWidget />
-        <ApkDownloadSection />
         <ExtensionDownloadSection />
+        <ApkDownloadSection />
         <LeagueWinners />
         <OpenLeagues />
         <LeagueSelector />
