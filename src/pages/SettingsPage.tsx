@@ -43,6 +43,10 @@ const SettingsPage = () => {
         }
       });
     });
+    // Send user ID to extension for auto-fill
+    if (typeof window !== "undefined") {
+      window.postMessage({ type: "EDART_STORE_USER_ID", userId: user.id }, "*");
+    }
   }, [user]);
 
   if (loading) return null;
