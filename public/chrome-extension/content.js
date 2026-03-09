@@ -1,5 +1,5 @@
 // Content script - runs on play.autodarts.io
-// Captures auth token + finished match stats
+// Captures auth token + finished match stats + live match tracking
 // After a finished match, sends to background for auto-submission to eDART
 
 (function () {
@@ -87,6 +87,11 @@
     return a > 0 || b > 0;
   }
 
+  function isLiveMatch(match) {
+    const state = String(match?.state || "").toLowerCase();
+    return ["playing", "started", "running", "in_progress", "active"].includes(state);
+  }
+
   // Track already-processed match IDs
   const processedMatches = new Set();
 
@@ -123,6 +128,62 @@
         }
       );
     }
+  }
+
+  // ─── Live match tracking ───
+  function handleMatchData(match, sourceUrl) {
+    if (!match) return;
+
+    if (isFinishedMatch(match)) {
+      captureFinishedMatch(match, sourceUrl);
+      // Notify background to remove live match
+      const matchId = match?.id || sourceUrl?.match(/matches\/([a-f0-9-]+)/i)?.[1];
+      if (matchId) {
+        chrome.runtime.sendMessage({ type: "LIVE_MATCH_ENDED", matchId });
+      }
+    } else if (isLiveMatch(match)) {
+      const players = Array.isArray(match?.players) ? match.players : [];
+      if (players.length < 2) return;
+      const p1 = players[0] || {};
+      const p2 = players[1] || {};
+      const matchId = match?.id || sourceUrl?.match(/matches\/([a-f0-9-]+)/i)?.[1];
+
+      chrome.runtime.sendMessage({
+        type: "LIVE_MATCH_UPDATE",
+        payload: {
+          autodarts_match_id: matchId,
+          autodarts_link: `https://play.autodarts.io/matches/${matchId}`,
+          player1_name: p1.name || p1.username || p1.displayName || "Player 1",
+          player2_name: p2.name || p2.username || p2.displayName || "Player 2",
+          player1_autodarts_id: p1.userId || p1.user_id || p1.id || null,
+          player2_autodarts_id: p2.userId || p2.user_id || p2.id || null,
+          player1_score: normalizeScoreValue(match?.scores?.[0]),
+          player2_score: normalizeScoreValue(match?.scores?.[1]),
+        },
+      });
+    }
+  }
+
+  // ─── Auto-detect Autodarts User ID ───
+  function detectAutodartsUserId() {
+    const storages = [localStorage, sessionStorage];
+    for (const storage of storages) {
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (!key) continue;
+        const value = storage.getItem(key);
+        if (!value) continue;
+        const parsed = safeJsonParse(value);
+        // OIDC user objects contain profile with sub (user ID)
+        if (parsed?.profile?.sub) {
+          return parsed.profile.sub;
+        }
+        if (key.startsWith("oidc.user:") && parsed?.profile?.sub) {
+          return parsed.profile.sub;
+        }
+      }
+    }
+    return null;
   }
 
   function getAutodartsToken() {
@@ -174,7 +235,7 @@
         .then(async (res) => {
           if (!res.ok) return;
           const data = await res.clone().json().catch(() => null);
-          if (data) captureFinishedMatch(data, url);
+          if (data) handleMatchData(data, url);
         })
         .catch(() => {});
     }
@@ -198,15 +259,27 @@
     return originalSetRequestHeader.apply(this, arguments);
   };
 
+  // Initial token + user ID capture
   const token = getAutodartsToken();
   if (token) {
     chrome.storage.local.set({ autodarts_token: token, token_timestamp: Date.now() });
+  }
+
+  const userId = detectAutodartsUserId();
+  if (userId) {
+    chrome.storage.local.set({ autodarts_user_id: userId });
+    chrome.runtime.sendMessage({ type: "AUTODARTS_USER_ID_DETECTED", userId });
+    console.log("[eDART] Detected Autodarts User ID:", userId);
   }
 
   setInterval(() => {
     const t = getAutodartsToken();
     if (t) {
       chrome.storage.local.set({ autodarts_token: t, token_timestamp: Date.now() });
+    }
+    const uid = detectAutodartsUserId();
+    if (uid) {
+      chrome.storage.local.set({ autodarts_user_id: uid });
     }
   }, 10000);
 })();
