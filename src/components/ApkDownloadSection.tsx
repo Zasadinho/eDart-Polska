@@ -1,4 +1,4 @@
-import { Smartphone, Download, Shield, Wifi, Bell, Zap, ChevronDown } from "lucide-react";
+import { Smartphone, Download, Shield, Zap, Bell, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useState } from "react";
