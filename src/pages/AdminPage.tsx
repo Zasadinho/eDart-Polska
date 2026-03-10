@@ -116,6 +116,7 @@ const AdminPage = () => {
           {activeTab === "integrations" && isAdmin && <ExtensionConfigPanel leagues={leagues} />}
           {activeTab === "audit" && isAdmin && <AuditLogPanel />}
           {activeTab === "export" && isAdmin && <ExportPanel />}
+          {activeTab === "bugs" && <BugReportsPanel />}
         </motion.div>
       </AnimatePresence>
     </div>

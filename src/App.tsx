@@ -62,6 +62,7 @@ const App = () => (
               <Route path="/stats" element={<StatsPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/report-bug" element={<ReportBugPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
