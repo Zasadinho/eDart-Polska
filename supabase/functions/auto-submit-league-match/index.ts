@@ -304,7 +304,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ─── Step 2: Find upcoming match between them (only status='upcoming' = not yet submitted) ───
+    // ─── Verify caller is one of the match participants ───
+    const { data: callerPlayer } = await supabase
+      .from("players")
+      .select("id")
+      .eq("user_id", callerUserId)
+      .maybeSingle();
+
+    if (!callerPlayer || (callerPlayer.id !== p1Id && callerPlayer.id !== p2Id)) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden: you are not a participant of this match" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { data: matches } = await supabase
       .from("matches")
       .select("id, league_id, round, date, confirmed_date, player1_id, player2_id, status, leagues!inner(name)")
