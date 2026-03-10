@@ -62,7 +62,9 @@ Platforma do zarządzania ligami darts z integracją [Autodarts](https://autodar
 **Stack technologiczny:**
 - Frontend: React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
 - Backend: Supabase (PostgreSQL + Auth + Edge Functions + Realtime + Storage)
-- Integracja: Autodarts API (REST + OIDC), wtyczki Chrome/Firefox
+- AI: Lovable AI Gateway (Google Gemini 2.5 Flash) — analiza screenshotów
+- Integracja: Autodarts API (REST + OIDC), DartCounter (OCR), DartsMind (OCR), wtyczki Chrome/Firefox
+- Auth: Email/hasło + Google OAuth (Lovable Cloud managed)
 
 ---
 
