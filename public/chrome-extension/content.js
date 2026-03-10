@@ -76,7 +76,6 @@
     };
   }
 
-  // More precise finished match detection - requires explicit state
   function isFinishedMatch(match) {
     const state = String(match?.state || "").toLowerCase();
     if (["finished", "complete", "completed", "done", "ended"].includes(state)) return true;
@@ -86,12 +85,10 @@
 
   function isLiveMatch(match) {
     const state = String(match?.state || "").toLowerCase();
-    return ["playing", "started", "running", "in_progress", "active"].includes(state);
+    return ["playing", "started", "running", "in_progress", "active", "order"].includes(state);
   }
 
-  // Track already-processed match IDs
   const processedMatches = new Set();
-  // Track matches where we already notified about league detection
   const notifiedLeagueMatches = new Set();
 
   function captureFinishedMatch(match, sourceUrl) {
@@ -103,13 +100,11 @@
 
     console.log("[eDART] 🏁 Captured finished match:", payload.match_id, payload.player1_name, "vs", payload.player2_name, "Score:", payload.score1, "-", payload.score2);
 
-    // Store last match for manual use
     chrome.storage.local.set({
       autodarts_last_match: payload,
       autodarts_last_match_timestamp: Date.now(),
     });
 
-    // Auto-submit to eDART (only once per match)
     if (!processedMatches.has(payload.match_id)) {
       processedMatches.add(payload.match_id);
       console.log("[eDART] 📤 Sending to server for league match check + auto-submit...");
@@ -133,7 +128,6 @@
     }
   }
 
-  // ─── Live match tracking ───
   function handleMatchData(match, sourceUrl) {
     if (!match) return;
 
@@ -142,7 +136,6 @@
 
     if (isFinishedMatch(match)) {
       captureFinishedMatch(match, sourceUrl);
-      // Notify background to remove live match
       const matchId = match?.id || sourceUrl?.match(/matches\/([a-f0-9-]+)/i)?.[1];
       if (matchId) {
         chrome.runtime.sendMessage({ type: "LIVE_MATCH_ENDED", matchId });
@@ -166,7 +159,6 @@
     const p1AdId = p1.userId || p1.user_id || p1.id || null;
     const p2AdId = p2.userId || p2.user_id || p2.id || null;
 
-    // Notify about league match detection (once per match)
     if (matchId && !notifiedLeagueMatches.has(matchId)) {
       notifiedLeagueMatches.add(matchId);
       console.log("[eDART] 🔍 Checking if live match is a league match:", matchId, p1Name, "vs", p2Name);
@@ -211,14 +203,15 @@
     });
   }
 
-  // ─── Detect navigation to match pages (live OR history) ───
+  // ─── Detect navigation to match pages ───
   let lastUrl = location.href;
   const detectedMatchIds = new Set();
   let activeMatchPollInterval = null;
   let activeMatchId = null;
+  // Map lobby IDs to real match IDs discovered from API interception
+  const lobbyToMatchId = {};
 
   function extractMatchIdFromUrl(url) {
-    // Match both /matches/{id} and /history/matches/{id}
     const m = url.match(/\/(?:history\/)?matches\/([a-f0-9-]+)/i);
     return m ? m[1] : null;
   }
@@ -230,7 +223,6 @@
 
     const matchId = extractMatchIdFromUrl(url);
     if (!matchId) {
-      // Left match page — stop polling
       stopMatchPolling();
       return;
     }
@@ -241,12 +233,10 @@
       detectedMatchIds.add(matchId);
       console.log("[eDART] 📍 Detected match page:", matchId, isHistoryPage ? "(history)" : "(live)");
 
-      // Fetch match data after a short delay (let Autodarts load)
       const delay = isHistoryPage ? 2000 : 1500;
       setTimeout(() => fetchAndProcessMatch(matchId), delay);
     }
 
-    // For live match pages, start polling to detect when match ends
     if (!isHistoryPage) {
       startMatchPolling(matchId);
     }
@@ -259,7 +249,7 @@
 
     activeMatchPollInterval = setInterval(() => {
       fetchAndProcessMatch(matchId);
-    }, 10000); // Poll every 10 seconds
+    }, 10000);
   }
 
   function stopMatchPolling() {
@@ -271,7 +261,8 @@
     }
   }
 
-  async function fetchAndProcessMatch(matchId) {
+  // Try multiple Autodarts API endpoints since the URL ID can be a lobby ID
+  async function fetchAndProcessMatch(urlId) {
     try {
       const stored = await new Promise((resolve) => {
         chrome.storage.local.get(["autodarts_token"], resolve);
@@ -282,24 +273,74 @@
         return;
       }
 
-      const res = await fetch(`https://api.autodarts.io/as/v0/matches/${matchId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // If we already know the real match ID for this lobby, use it
+      const realMatchId = lobbyToMatchId[urlId] || null;
 
-      if (!res.ok) {
-        console.log("[eDART] Match fetch failed:", res.status, "for:", matchId);
+      // Try endpoints in order: matches (direct), lobbies, then match by known real ID
+      const endpoints = [
+        `https://api.autodarts.io/as/v0/matches/${urlId}`,
+        `https://api.autodarts.io/gs/v0/lobbies/${urlId}`,
+      ];
+      if (realMatchId && realMatchId !== urlId) {
+        endpoints.unshift(`https://api.autodarts.io/as/v0/matches/${realMatchId}`);
+      }
+
+      let matchData = null;
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            
+            // For lobby response, extract match info
+            if (endpoint.includes("/lobbies/")) {
+              console.log("[eDART] 📋 Lobby data loaded, looking for match info...");
+              // Lobbies may contain a matchId or match reference
+              if (data.matchId || data.match_id) {
+                const mId = data.matchId || data.match_id;
+                lobbyToMatchId[urlId] = mId;
+                console.log("[eDART] 🔗 Lobby->Match mapping:", urlId, "->", mId);
+                // Now fetch the actual match
+                const matchRes = await fetch(`https://api.autodarts.io/as/v0/matches/${mId}`, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                if (matchRes.ok) {
+                  matchData = await matchRes.json();
+                  break;
+                }
+              }
+              // If lobby has players info directly, use it
+              if (data.players && Array.isArray(data.players) && data.players.length >= 2) {
+                matchData = data;
+                break;
+              }
+              continue;
+            }
+            
+            matchData = data;
+            break;
+          } else {
+            console.log("[eDART] Endpoint returned", res.status, "for:", endpoint.split("/").pop());
+          }
+        } catch (e) {
+          console.log("[eDART] Endpoint error:", endpoint, e.message);
+        }
+      }
+
+      if (!matchData) {
+        console.log("[eDART] ⚠️ Could not load match data for:", urlId, "— waiting for intercepted data");
         return;
       }
 
-      const matchData = await res.json();
       const state = String(matchData?.state || "").toLowerCase();
       const players = Array.isArray(matchData?.players) ? matchData.players : [];
       console.log("[eDART] 📊 Match data loaded — state:", state, "players:", players.length,
         players.map(p => p.name || p.username || "?").join(" vs "));
 
-      handleMatchData(matchData, `https://play.autodarts.io/matches/${matchId}`);
+      handleMatchData(matchData, `https://play.autodarts.io/matches/${urlId}`);
 
-      // If match is finished, stop polling
       if (isFinishedMatch(matchData)) {
         console.log("[eDART] 🏁 Match finished, stopping poll");
         stopMatchPolling();
@@ -312,7 +353,6 @@
   // Monitor URL changes (SPA navigation)
   setInterval(checkForMatchPage, 1000);
 
-  // Also detect via popstate/pushstate
   const origPushState = history.pushState;
   history.pushState = function () {
     origPushState.apply(this, arguments);
@@ -391,6 +431,7 @@
 
     const fetchPromise = originalFetch.apply(this, args);
 
+    // Intercept match API responses
     if (url && /api\.autodarts\.io\/as\/v0\/matches\/[a-f0-9-]+/i.test(url)) {
       fetchPromise
         .then(async (res) => {
@@ -399,6 +440,29 @@
           if (data) {
             console.log("[eDART] 🔎 Intercepted fetch match data, state:", data?.state);
             handleMatchData(data, url);
+          }
+        })
+        .catch(() => {});
+    }
+
+    // Intercept lobby API responses — extract match ID mapping
+    if (url && /api\.autodarts\.io\/gs\/v0\/lobbies\/[a-f0-9-]+/i.test(url)) {
+      fetchPromise
+        .then(async (res) => {
+          if (!res.ok) return;
+          const data = await res.clone().json().catch(() => null);
+          if (data) {
+            const lobbyId = url.match(/lobbies\/([a-f0-9-]+)/i)?.[1];
+            const mId = data.matchId || data.match_id;
+            if (lobbyId && mId) {
+              lobbyToMatchId[lobbyId] = mId;
+              console.log("[eDART] 🔗 Intercepted lobby->match mapping:", lobbyId, "->", mId);
+            }
+            // If lobby has player data, try to use it for league check
+            if (data.players && Array.isArray(data.players) && data.players.length >= 2) {
+              console.log("[eDART] 🔎 Intercepted lobby player data, checking league...");
+              handleMatchData(data, url);
+            }
           }
         })
         .catch(() => {});
@@ -440,7 +504,6 @@
     console.log("[eDART] ✅ Detected Autodarts User ID:", userId);
   }
 
-  // Periodic token + user ID refresh
   setInterval(() => {
     const t = getAutodartsToken();
     if (t) {
@@ -452,7 +515,7 @@
     }
   }, 10000);
 
-  // Check for match page on initial load (user may already be on a match page)
+  // Check for match page on initial load
   const initialMatchId = extractMatchIdFromUrl(location.href);
   if (initialMatchId) {
     console.log("[eDART] 📍 Initial load on match page:", initialMatchId);
