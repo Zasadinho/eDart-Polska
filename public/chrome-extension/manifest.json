@@ -8,6 +8,7 @@
     "https://login.autodarts.io/*",
     "https://play.autodarts.io/*",
     "https://api.autodarts.io/*",
+    "https://api.autodarts.io/gs/*",
     "https://ace-darts-arena.lovable.app/*",
     "https://*.lovableproject.com/*",
     "https://*.lovable.app/*",
