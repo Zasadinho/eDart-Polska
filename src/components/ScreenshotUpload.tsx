@@ -12,7 +12,7 @@ interface ScreenshotUploadProps {
   matchContext?: { player1_name: string; player2_name: string };
 }
 
-const ScreenshotUpload = ({ onStatsExtracted, matchId, disabled }: ScreenshotUploadProps) => {
+const ScreenshotUpload = ({ onStatsExtracted, matchId, disabled, matchContext }: ScreenshotUploadProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
