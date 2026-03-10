@@ -65,6 +65,8 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/report-bug" element={<ReportBugPage />} />
+              <Route path="/downloads" element={<DownloadsPage />} />
+              <Route path="/how-to-play" element={<HowToPlayPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
