@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const token = await getAutodartsToken();
+    const adToken = await getAutodartsToken();
     let synced = 0;
 
     // Get upcoming matches in our system
@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
       try {
         const res = await fetch(
           `${API_BASE}/as/v0/users/${player.autodarts_user_id}/matches?limit=5&finished=true`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${adToken}` } }
         );
 
         if (!res.ok) continue;
@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
           // Match found! Fetch full details and update
           const matchDetailRes = await fetch(
             `${API_BASE}/as/v0/matches/${adMatch.id}`,
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: { Authorization: `Bearer ${adToken}` } }
           );
 
           if (!matchDetailRes.ok) continue;

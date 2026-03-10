@@ -59,6 +59,7 @@ interface PlayerStats {
   ton60: number; ton100: number; ton140: number; ton170: number;
   checkoutAttempts: number; checkoutHits: number;
   legsWon: number;
+  nineDarters: number;
 }
 
 function emptyStats(): PlayerStats {
@@ -70,6 +71,7 @@ function emptyStats(): PlayerStats {
     ton60: 0, ton100: 0, ton140: 0, ton170: 0,
     checkoutAttempts: 0, checkoutHits: 0,
     legsWon: 0,
+    nineDarters: 0,
   };
 }
 
@@ -212,6 +214,31 @@ function processGameTurns(
     if (isCheckout && points > 0) {
       st.checkoutHits++;
       if (points > st.highCheckout) st.highCheckout = points;
+      // Nine-darter detection: checkout with exactly 9 darts in the leg
+      if (st.totalDarts > 0 && dartsCount <= 3) {
+        // Check if this leg was completed in 9 darts (3 visits × 3 darts)
+        const legDarts = turnCount[pIdx] <= 3 ? st.totalDarts : dartsCount;
+        // Simple heuristic: if we're on the 3rd turn or less and total points = 501
+        if (turnCount[pIdx] <= 3 && scoreBeforeTurn != null && scoreBeforeTurn <= points && dartsCount <= 3) {
+          // Count darts in this leg based on turn count
+          let legTotalDarts = 0;
+          let checkIdx = i;
+          let counted = 0;
+          while (checkIdx >= 0 && counted < turnCount[pIdx]) {
+            const t = turns[checkIdx];
+            const tIdx = indices[checkIdx] === 0 || indices[checkIdx] === 1 ? indices[checkIdx] : checkIdx % 2;
+            if (tIdx === pIdx) {
+              const tDarts = Array.isArray(t.throws) ? t.throws.length : Array.isArray(t.darts) ? t.darts.length : (typeof t.dartsThrown === "number" ? t.dartsThrown : 3);
+              legTotalDarts += tDarts;
+              counted++;
+            }
+            checkIdx--;
+          }
+          if (legTotalDarts === 9) {
+            st.nineDarters++;
+          }
+        }
+      }
     }
   }
 }
@@ -563,6 +590,8 @@ Deno.serve(async (req) => {
               checkout_hits1: numOrNull((swapped ? p2ApiStats : p1ApiStats).checkoutHits, (swapped ? p2ApiStats : p1ApiStats).checkouts) ?? st[i1].checkoutHits,
               checkout_hits2: numOrNull((swapped ? p1ApiStats : p2ApiStats).checkoutHits, (swapped ? p1ApiStats : p2ApiStats).checkouts) ?? st[i2].checkoutHits,
               autodarts_link: `https://play.autodarts.io/history/matches/${autodarts_match_id}`,
+              nine_darters1: st[i1].nineDarters,
+              nine_darters2: st[i2].nineDarters,
             };
 
             console.log(`[auto-submit] Stats computed. Swapped=${swapped}. Score: ${statsData.score1}-${statsData.score2}`);
@@ -632,6 +661,8 @@ Deno.serve(async (req) => {
         checkout_hits1: statsData.checkout_hits1,
         checkout_hits2: statsData.checkout_hits2,
         autodarts_link: statsData.autodarts_link,
+        nine_darters1: statsData.nine_darters1,
+        nine_darters2: statsData.nine_darters2,
       })
       .eq("id", edartMatch.id);
 

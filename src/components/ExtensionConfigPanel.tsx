@@ -46,30 +46,29 @@ const ExtensionConfigPanel = ({ leagues }: { leagues: any[] }) => {
     if (data) setSettings(data as unknown as ExtensionSettings);
   };
 
-  const saveSettings = async () => {
-    if (!settings) return;
+  const saveSettings = async (updatedSettings?: ExtensionSettings) => {
+    const s = updatedSettings || settings;
+    if (!s) return;
     setSaving(true);
     const { error } = await supabase
       .from("extension_settings")
       .update({
-        auto_approve: settings.auto_approve,
-        auto_approve_manual: settings.auto_approve_manual,
-        require_avg: settings.require_avg,
-        require_180s: settings.require_180s,
-        require_high_checkout: settings.require_high_checkout,
-        require_checkout_stats: settings.require_checkout_stats,
-        require_darts_thrown: settings.require_darts_thrown,
-        require_ton_ranges: settings.require_ton_ranges,
-        require_autodarts_link: settings.require_autodarts_link,
-        webhook_enabled: settings.webhook_enabled,
+        auto_approve: s.auto_approve,
+        auto_approve_manual: s.auto_approve_manual,
+        require_avg: s.require_avg,
+        require_180s: s.require_180s,
+        require_high_checkout: s.require_high_checkout,
+        require_checkout_stats: s.require_checkout_stats,
+        require_darts_thrown: s.require_darts_thrown,
+        require_ton_ranges: s.require_ton_ranges,
+        require_autodarts_link: s.require_autodarts_link,
+        webhook_enabled: s.webhook_enabled,
         updated_at: new Date().toISOString(),
       } as any)
-      .eq("id", settings.id);
+      .eq("id", s.id);
     setSaving(false);
     if (error) {
       toast({ title: "Błąd", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "✅ Zapisano!", description: "Ustawienia wtyczki zostały zaktualizowane." });
     }
   };
 
@@ -96,7 +95,9 @@ const ExtensionConfigPanel = ({ leagues }: { leagues: any[] }) => {
 
   const updateSetting = (key: keyof ExtensionSettings, value: any) => {
     if (!settings) return;
-    setSettings({ ...settings, [key]: value });
+    const updated = { ...settings, [key]: value };
+    setSettings(updated);
+    saveSettings(updated);
   };
 
   if (!settings) return null;
@@ -345,7 +346,7 @@ const ExtensionConfigPanel = ({ leagues }: { leagues: any[] }) => {
 
       {/* Save */}
       <div className="flex justify-end">
-        <Button variant="hero" size="lg" onClick={saveSettings} disabled={saving}>
+        <Button variant="hero" size="lg" onClick={() => saveSettings()} disabled={saving}>
           {saving ? "Zapisywanie..." : "💾 Zapisz ustawienia"}
         </Button>
       </div>
