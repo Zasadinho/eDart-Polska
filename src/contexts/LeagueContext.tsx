@@ -144,6 +144,8 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
     avgUntil170_1: m.avg_until_170_1 ? Number(m.avg_until_170_1) : undefined,
     avgUntil170_2: m.avg_until_170_2 ? Number(m.avg_until_170_2) : undefined,
     confirmedDate: m.confirmed_date ?? null,
+    screenshotUrls: m.screenshot_urls ?? [],
+    sourcePlatform: m.source_platform ?? 'autodarts',
   };
 };
 
