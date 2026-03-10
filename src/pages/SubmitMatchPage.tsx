@@ -326,8 +326,8 @@ const SubmitMatchPage = () => {
   );
 
   const requestExtensionData = useCallback(() => {
-    window.postMessage({ type: "EDART_REQUEST_TOKEN" }, "*");
-    window.postMessage({ type: "EDART_REQUEST_LAST_MATCH" }, "*");
+    window.postMessage({ type: "EDART_REQUEST_TOKEN" }, window.location.origin);
+    window.postMessage({ type: "EDART_REQUEST_LAST_MATCH" }, window.location.origin);
   }, []);
 
   useEffect(() => {
