@@ -69,7 +69,7 @@ const LoginPage = () => {
       return;
     }
     setSubmitting(true);
-    const { error } = await register(name, email, password);
+    const { error } = await register(name, email, password, gamingNick || undefined);
     setSubmitting(false);
     if (error) {
       toast({ title: "Błąd rejestracji", description: error, variant: "destructive" });
