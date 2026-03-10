@@ -214,6 +214,31 @@ function processGameTurns(
     if (isCheckout && points > 0) {
       st.checkoutHits++;
       if (points > st.highCheckout) st.highCheckout = points;
+      // Nine-darter detection: checkout with exactly 9 darts in the leg
+      if (st.totalDarts > 0 && dartsCount <= 3) {
+        // Check if this leg was completed in 9 darts (3 visits × 3 darts)
+        const legDarts = turnCount[pIdx] <= 3 ? st.totalDarts : dartsCount;
+        // Simple heuristic: if we're on the 3rd turn or less and total points = 501
+        if (turnCount[pIdx] <= 3 && scoreBeforeTurn != null && scoreBeforeTurn <= points && dartsCount <= 3) {
+          // Count darts in this leg based on turn count
+          let legTotalDarts = 0;
+          let checkIdx = i;
+          let counted = 0;
+          while (checkIdx >= 0 && counted < turnCount[pIdx]) {
+            const t = turns[checkIdx];
+            const tIdx = indices[checkIdx] === 0 || indices[checkIdx] === 1 ? indices[checkIdx] : checkIdx % 2;
+            if (tIdx === pIdx) {
+              const tDarts = Array.isArray(t.throws) ? t.throws.length : Array.isArray(t.darts) ? t.darts.length : (typeof t.dartsThrown === "number" ? t.dartsThrown : 3);
+              legTotalDarts += tDarts;
+              counted++;
+            }
+            checkIdx--;
+          }
+          if (legTotalDarts === 9) {
+            st.nineDarters++;
+          }
+        }
+      }
     }
   }
 }
