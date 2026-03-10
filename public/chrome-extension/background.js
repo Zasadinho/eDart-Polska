@@ -29,7 +29,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       })
       .catch((err) => {
         console.error("[eDART] Auto-submit failed:", err);
-        sendResponse({ is_league_match: false, submitted: false, error: String(err) });
+        const errorResult = { is_league_match: false, submitted: false, error: String(err) };
+        sendResponse(errorResult);
+        // Show error notification with manual submission fallback
+        showManualFallbackNotification(message.payload, String(err));
+      });
+    return true;
+  }
+
+  // ─── Check if live match is a league match (notification) ───
+  if (message.type === 'CHECK_LEAGUE_MATCH_LIVE') {
+    checkLeagueMatchLive(message.payload)
+      .then((result) => {
+        sendResponse(result);
+      })
+      .catch((err) => {
+        console.error("[eDART] League match check failed:", err);
+        sendResponse({ is_league_match: false });
       });
     return true;
   }
@@ -61,6 +77,75 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+// ─── Check if a live match is a league match and notify ───
+async function checkLeagueMatchLive(payload) {
+  try {
+    const checkRes = await fetch(`${SUPABASE_URL}/functions/v1/check-league-match`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        player1_autodarts_id: payload.player1_autodarts_id,
+        player2_autodarts_id: payload.player2_autodarts_id,
+        player1_name: payload.player1_name,
+        player2_name: payload.player2_name,
+      }),
+    });
+
+    if (!checkRes.ok) return { is_league_match: false };
+    const checkData = await checkRes.json();
+
+    if (checkData.is_league_match) {
+      const p1 = payload.player1_name || "Gracz 1";
+      const p2 = payload.player2_name || "Gracz 2";
+
+      chrome.notifications.create(`league-live-${payload.autodarts_match_id}`, {
+        type: "basic",
+        iconUrl: "icon128.png",
+        title: "🎯 Mecz ligowy rozpoczęty!",
+        message: `${p1} vs ${p2}\n${checkData.league_name || "Liga"}\nWynik zostanie wysłany automatycznie po zakończeniu meczu.`,
+        priority: 2,
+        requireInteraction: false,
+      });
+
+      console.log("[eDART] League match detected live:", checkData.league_name);
+    }
+
+    return checkData;
+  } catch (err) {
+    console.error("[eDART] Check league match error:", err);
+    return { is_league_match: false };
+  }
+}
+
+// ─── Show manual fallback notification on error ───
+function showManualFallbackNotification(matchPayload, errorMsg) {
+  const p1 = matchPayload?.player1_name || "Gracz 1";
+  const p2 = matchPayload?.player2_name || "Gracz 2";
+  const matchId = matchPayload?.match_id || "";
+
+  // Store the autodarts link for when user clicks notification
+  chrome.storage.local.set({
+    edart_manual_fallback: {
+      autodarts_link: `https://play.autodarts.io/history/matches/${matchId}`,
+      player1_name: p1,
+      player2_name: p2,
+    }
+  });
+
+  chrome.notifications.create(`league-error-${Date.now()}`, {
+    type: "basic",
+    iconUrl: "icon128.png",
+    title: "⚠️ Błąd wysyłania wyniku",
+    message: `${p1} vs ${p2}\nNie udało się automatycznie wysłać wyniku.\nKliknij aby wprowadzić wynik ręcznie.`,
+    priority: 2,
+    requireInteraction: true,
+  });
+}
+
 // ─── Live match: upsert to live_matches table ───
 async function handleLiveMatchUpdate(payload) {
   try {
@@ -85,10 +170,6 @@ async function handleLiveMatchUpdate(payload) {
     if (!checkData.is_league_match) return;
 
     // It's a league match - send live update
-    const stored = await new Promise((resolve) => {
-      chrome.storage.local.get(["autodarts_token"], resolve);
-    });
-
     await fetch(`${SUPABASE_URL}/rest/v1/live_matches`, {
       method: "POST",
       headers: {
@@ -115,7 +196,6 @@ async function handleLiveMatchUpdate(payload) {
 
 async function handleLiveMatchEnded(autodartsMatchId) {
   try {
-    // Delete from live_matches using service role via edge function
     await fetch(`${SUPABASE_URL}/functions/v1/check-league-match`, {
       method: "POST",
       headers: {
@@ -141,7 +221,6 @@ async function saveAutodartsUserId(autodartsUserId) {
       chrome.storage.local.get(["edart_user_id", "autodarts_id_saved"], resolve);
     });
 
-    // Skip if already saved for this user
     if (stored.autodarts_id_saved === autodartsUserId) return;
 
     const edartUserId = stored.edart_user_id;
@@ -150,7 +229,6 @@ async function saveAutodartsUserId(autodartsUserId) {
       return;
     }
 
-    // Update player's autodarts_user_id via REST API
     await fetch(`${SUPABASE_URL}/rest/v1/players?user_id=eq.${edartUserId}`, {
       method: "PATCH",
       headers: {
@@ -203,13 +281,13 @@ async function autoSubmitLeagueMatch(matchPayload) {
 
     if (!response.ok) {
       console.error("[eDART] auto-submit HTTP error:", response.status);
-      return { is_league_match: false, submitted: false };
+      return { is_league_match: false, submitted: false, error: `HTTP ${response.status}` };
     }
 
     return await response.json();
   } catch (err) {
     console.error("[eDART] auto-submit fetch error:", err);
-    return { is_league_match: false, submitted: false };
+    return { is_league_match: false, submitted: false, error: String(err) };
   }
 }
 
@@ -256,19 +334,36 @@ function handleAutoSubmitResult(result, matchPayload) {
     });
 
   } else if (result.is_league_match && !result.submitted) {
+    // League match detected but not submitted — show manual fallback
+    const reason = result.reason || "Wynik nie został wysłany automatycznie.";
+
     chrome.notifications.create(`league-detected-${Date.now()}`, {
       type: "basic",
       iconUrl: "icon128.png",
-      title: "🎯 Mecz ligowy wykryty",
-      message: `${p1} vs ${p2}\n${result.league_name || "Liga"}\n${result.reason || "Wynik nie został wysłany automatycznie."}`,
-      priority: 1,
+      title: "⚠️ Mecz ligowy — wymagane ręczne zgłoszenie",
+      message: `${p1} vs ${p2}\n${result.league_name || "Liga"}\n${reason}\nKliknij aby wprowadzić wynik ręcznie.`,
+      priority: 2,
+      requireInteraction: true,
     });
+
+    // Store fallback data
+    chrome.storage.local.set({
+      edart_manual_fallback: {
+        autodarts_link: `https://play.autodarts.io/history/matches/${matchPayload.match_id}`,
+        match_id: result.match_id,
+        player1_name: p1,
+        player2_name: p2,
+      }
+    });
+  } else if (!result.is_league_match) {
+    // Not a league match - no notification needed
+    console.log("[eDART] Match is not a league match, skipping notification");
   }
 }
 
 // Handle notification click — open eDART
 chrome.notifications.onClicked.addListener((notificationId) => {
-  if (notificationId.startsWith("league-")) {
+  if (notificationId.startsWith("league-submitted-") || notificationId.startsWith("league-already-")) {
     chrome.storage.local.get(["autodarts_league_match"], (result) => {
       const data = result.autodarts_league_match;
       if (data?.edart_match_id) {
@@ -280,6 +375,24 @@ chrome.notifications.onClicked.addListener((notificationId) => {
         chrome.tabs.create({ url: `${EDART_URL}/matches`, active: true });
       }
     });
+    chrome.notifications.clear(notificationId);
+  } else if (notificationId.startsWith("league-error-") || notificationId.startsWith("league-detected-")) {
+    // Error or unsubmitted — open manual submission page with autodarts link pre-filled
+    chrome.storage.local.get(["edart_manual_fallback"], (result) => {
+      const fallback = result.edart_manual_fallback;
+      if (fallback?.autodarts_link) {
+        const encoded = encodeURIComponent(fallback.autodarts_link);
+        chrome.tabs.create({
+          url: `${EDART_URL}/submit-match?autodarts_link=${encoded}`,
+          active: true,
+        });
+      } else {
+        chrome.tabs.create({ url: `${EDART_URL}/submit-match`, active: true });
+      }
+    });
+    chrome.notifications.clear(notificationId);
+  } else if (notificationId.startsWith("league-live-")) {
+    chrome.tabs.create({ url: `${EDART_URL}/matches`, active: true });
     chrome.notifications.clear(notificationId);
   }
 });

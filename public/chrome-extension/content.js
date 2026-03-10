@@ -94,6 +94,8 @@
 
   // Track already-processed match IDs
   const processedMatches = new Set();
+  // Track matches where we already notified about league detection
+  const notifiedLeagueMatches = new Set();
 
   function captureFinishedMatch(match, sourceUrl) {
     if (!match || !isFinishedMatch(match)) return;
@@ -148,6 +150,21 @@
       const p2 = players[1] || {};
       const matchId = match?.id || sourceUrl?.match(/matches\/([a-f0-9-]+)/i)?.[1];
 
+      // Notify about league match detection (once per match)
+      if (matchId && !notifiedLeagueMatches.has(matchId)) {
+        notifiedLeagueMatches.add(matchId);
+        chrome.runtime.sendMessage({
+          type: "CHECK_LEAGUE_MATCH_LIVE",
+          payload: {
+            autodarts_match_id: matchId,
+            player1_name: p1.name || p1.username || p1.displayName || "Player 1",
+            player2_name: p2.name || p2.username || p2.displayName || "Player 2",
+            player1_autodarts_id: p1.userId || p1.user_id || p1.id || null,
+            player2_autodarts_id: p2.userId || p2.user_id || p2.id || null,
+          },
+        });
+      }
+
       chrome.runtime.sendMessage({
         type: "LIVE_MATCH_UPDATE",
         payload: {
@@ -164,6 +181,70 @@
     }
   }
 
+  // ─── Detect navigation to history page (user clicked "Finish/Final") ───
+  let lastUrl = location.href;
+  const historyMatchIds = new Set();
+
+  function checkForHistoryPage() {
+    const url = location.href;
+    if (url === lastUrl) return;
+    lastUrl = url;
+
+    const historyMatch = url.match(/\/history\/matches\/([a-f0-9-]+)/i);
+    if (historyMatch && !historyMatchIds.has(historyMatch[1])) {
+      const matchId = historyMatch[1];
+      historyMatchIds.add(matchId);
+      console.log("[eDART] Detected history page for match:", matchId);
+
+      // Wait a moment for Autodarts to load the match data, then fetch it
+      setTimeout(() => fetchHistoryMatch(matchId), 2000);
+    }
+  }
+
+  async function fetchHistoryMatch(matchId) {
+    try {
+      const stored = await new Promise((resolve) => {
+        chrome.storage.local.get(["autodarts_token"], resolve);
+      });
+      const token = stored.autodarts_token;
+      if (!token) {
+        console.log("[eDART] No token available to fetch history match");
+        return;
+      }
+
+      const res = await fetch(`https://api.autodarts.io/as/v0/matches/${matchId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        console.log("[eDART] History match fetch failed:", res.status);
+        return;
+      }
+
+      const matchData = await res.json();
+      console.log("[eDART] History match data loaded, state:", matchData?.state);
+      handleMatchData(matchData, `https://play.autodarts.io/history/matches/${matchId}`);
+    } catch (err) {
+      console.error("[eDART] Error fetching history match:", err);
+    }
+  }
+
+  // Monitor URL changes (SPA navigation)
+  setInterval(checkForHistoryPage, 1000);
+
+  // Also detect via popstate/pushstate
+  const origPushState = history.pushState;
+  history.pushState = function () {
+    origPushState.apply(this, arguments);
+    setTimeout(checkForHistoryPage, 500);
+  };
+  const origReplaceState = history.replaceState;
+  history.replaceState = function () {
+    origReplaceState.apply(this, arguments);
+    setTimeout(checkForHistoryPage, 500);
+  };
+  window.addEventListener("popstate", () => setTimeout(checkForHistoryPage, 500));
+
   // ─── Auto-detect Autodarts User ID ───
   function detectAutodartsUserId() {
     const storages = [localStorage, sessionStorage];
@@ -174,7 +255,6 @@
         const value = storage.getItem(key);
         if (!value) continue;
         const parsed = safeJsonParse(value);
-        // OIDC user objects contain profile with sub (user ID)
         if (parsed?.profile?.sub) {
           return parsed.profile.sub;
         }
@@ -282,4 +362,7 @@
       chrome.storage.local.set({ autodarts_user_id: uid });
     }
   }, 10000);
+
+  // Check for history page on initial load
+  checkForHistoryPage();
 })();
