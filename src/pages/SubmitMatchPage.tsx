@@ -893,6 +893,10 @@ const SubmitMatchPage = () => {
                 <ScreenshotUpload
                   onStatsExtracted={handleScreenshotStats}
                   matchId={selectedMatchId}
+                  matchContext={selectedMatch ? {
+                    player1_name: selectedMatch.player1Name,
+                    player2_name: selectedMatch.player2Name,
+                  } : undefined}
                 />
               )}
 
