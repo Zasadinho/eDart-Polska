@@ -24,6 +24,7 @@ import HallOfFamePage from "./pages/HallOfFamePage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ChatPage from "./pages/ChatPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
+import ReportBugPage from "./pages/ReportBugPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
