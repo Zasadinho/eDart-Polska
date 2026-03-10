@@ -174,6 +174,55 @@ INSERT INTO public.user_roles (user_id, role)
 VALUES ('TWOJE_USER_ID', 'admin');
 ```
 
+### 11. Logowanie przez Google (OAuth)
+
+Logowanie przez Google działa automatycznie na platformie Lovable Cloud — nie wymaga konfiguracji.
+
+**Jak to działa:**
+- Aplikacja używa `lovable.auth.signInWithOAuth("google")` z pakietu `@lovable.dev/cloud-auth-js`
+- Token Google jest automatycznie wymieniany na sesję Supabase
+- PWA jest skonfigurowane z `navigateFallbackDenylist: [/^\/~oauth/]` aby nie cache'ować redirectów OAuth
+
+**Self-hosting (własne credentials Google):**
+
+1. Utwórz projekt w [Google Cloud Console](https://console.cloud.google.com/)
+2. Włącz **Google Identity / OAuth 2.0**
+3. Dodaj **Authorized redirect URL**: `https://twoja-domena.pl/~oauth` (lub URL z dashboardu Lovable Cloud)
+4. Skonfiguruj `Client ID` i `Client Secret` w panelu Lovable Cloud → Authentication Settings → Google
+5. Lub w Supabase Dashboard → Authentication → Providers → Google
+
+**Bez Lovable Cloud (czysty Supabase):**
+
+Zamień `lovable.auth.signInWithOAuth()` na `supabase.auth.signInWithOAuth()`:
+
+```typescript
+// src/pages/LoginPage.tsx — zamień handleGoogleSignIn na:
+const { error } = await supabase.auth.signInWithOAuth({
+  provider: "google",
+  options: { redirectTo: window.location.origin },
+});
+```
+
+### 12. Powiązanie kont z platformami dartowymi
+
+Gracze mogą podać swoje nicki z platform dartowych w **Ustawienia konta**:
+
+| Pole | Opis | Zastosowanie |
+|------|------|-------------|
+| **Autodarts User ID** | UUID z autodarts.io | Automatyczne pobieranie statystyk z API |
+| **Nick DartCounter** | Nick z aplikacji DartCounter | Dopasowywanie graczy na screenshotach AI |
+| **Nick DartsMind** | Nick z aplikacji DartsMind | Dopasowywanie graczy na screenshotach AI |
+
+**Jak podać nick:**
+1. Gracz: Ustawienia → Dane kontaktowe → wpisz nick
+2. Przy rejestracji: opcjonalne pole "Nick w grze" (zapisuje się jako dartcounter_id i dartsmind_id)
+3. Admin: Panel admina → Gracze → pola Autodarts ID / DartCounter / DartsMind przy każdym graczu
+
+**Jak AI używa nicków:**
+- Przy analizie screenshotów AI otrzymuje kontekst meczu (nazwy graczy z formularza)
+- AI porównuje nicki ze screena z nazwami z kontekstu i automatycznie mapuje statystyki do właściwego gracza
+- Niezależnie od pozycji na screenie (lewa/prawa), dane trafiają do poprawnego gracza
+
 ---
 
 ## 🗄 Baza danych — schemat
