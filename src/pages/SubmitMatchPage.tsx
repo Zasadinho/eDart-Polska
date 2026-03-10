@@ -599,6 +599,8 @@ const SubmitMatchPage = () => {
       avgUntil170_1: optNum("avgUntil170_1"),
       avgUntil170_2: optNum("avgUntil170_2"),
       autodartsLink: autodartsLink || undefined,
+      screenshotUrls: screenshotUrls.length > 0 ? screenshotUrls : undefined,
+      sourcePlatform,
     };
 
     submitMatchResult(selectedMatchId, data);
