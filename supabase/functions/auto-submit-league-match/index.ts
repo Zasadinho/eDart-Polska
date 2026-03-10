@@ -283,6 +283,7 @@ Deno.serve(async (req) => {
       player2_name,
       player1_autodarts_id,
       player2_autodarts_id,
+      client_stats,
     } = await req.json();
 
     if (!autodarts_match_id && !player1_name) {
@@ -612,6 +613,62 @@ Deno.serve(async (req) => {
       } else {
         console.error("[auto-submit] Failed to login to Autodarts");
       }
+    }
+
+    // Fallback to client-captured stats if API fetch failed
+    if (!statsData && client_stats) {
+      console.log("[auto-submit] Using client-captured stats as fallback");
+      
+      // Determine player mapping: client stats are in Autodarts order (player[0], player[1])
+      // We need to map to eDART order (edartMatch.player1_id, edartMatch.player2_id)
+      let cSwapped = false;
+      if (player1_autodarts_id) {
+        const { data: cp1 } = await supabase.from("players").select("id").eq("autodarts_user_id", player1_autodarts_id).maybeSingle();
+        if (cp1) cSwapped = cp1.id !== edartMatch.player1_id;
+      } else if (player1_name) {
+        const { data: cp1 } = await supabase.from("players").select("id").ilike("name", player1_name).maybeSingle();
+        if (cp1) cSwapped = cp1.id !== edartMatch.player1_id;
+      }
+
+      const cs = client_stats;
+      if (cSwapped) {
+        statsData = {
+          score1: cs.score2 ?? 0, score2: cs.score1 ?? 0,
+          avg1: cs.avg2, avg2: cs.avg1,
+          first_9_avg1: cs.first_9_avg2, first_9_avg2: cs.first_9_avg1,
+          one_eighties1: cs.one_eighties2 ?? 0, one_eighties2: cs.one_eighties1 ?? 0,
+          high_checkout1: cs.high_checkout2 ?? 0, high_checkout2: cs.high_checkout1 ?? 0,
+          ton60_1: cs.ton60_2 ?? 0, ton60_2: cs.ton60_1 ?? 0,
+          ton80_1: cs.ton80_2 ?? 0, ton80_2: cs.ton80_1 ?? 0,
+          ton_plus1: cs.ton_plus2 ?? 0, ton_plus2: cs.ton_plus1 ?? 0,
+          ton40_1: 0, ton40_2: 0,
+          darts_thrown1: cs.darts_thrown2 ?? 0, darts_thrown2: cs.darts_thrown1 ?? 0,
+          checkout_attempts1: cs.checkout_attempts2 ?? 0, checkout_attempts2: cs.checkout_attempts1 ?? 0,
+          checkout_hits1: cs.checkout_hits2 ?? 0, checkout_hits2: cs.checkout_hits1 ?? 0,
+          autodarts_link: `https://play.autodarts.io/history/matches/${autodarts_match_id}`,
+          nine_darters1: 0, nine_darters2: 0,
+          avg_until_170_1: null, avg_until_170_2: null,
+        };
+      } else {
+        statsData = {
+          score1: cs.score1 ?? 0, score2: cs.score2 ?? 0,
+          avg1: cs.avg1, avg2: cs.avg2,
+          first_9_avg1: cs.first_9_avg1, first_9_avg2: cs.first_9_avg2,
+          one_eighties1: cs.one_eighties1 ?? 0, one_eighties2: cs.one_eighties2 ?? 0,
+          high_checkout1: cs.high_checkout1 ?? 0, high_checkout2: cs.high_checkout2 ?? 0,
+          ton60_1: cs.ton60_1 ?? 0, ton60_2: cs.ton60_2 ?? 0,
+          ton80_1: cs.ton80_1 ?? 0, ton80_2: cs.ton80_2 ?? 0,
+          ton_plus1: cs.ton_plus1 ?? 0, ton_plus2: cs.ton_plus2 ?? 0,
+          ton40_1: 0, ton40_2: 0,
+          darts_thrown1: cs.darts_thrown1 ?? 0, darts_thrown2: cs.darts_thrown2 ?? 0,
+          checkout_attempts1: cs.checkout_attempts1 ?? 0, checkout_attempts2: cs.checkout_attempts2 ?? 0,
+          checkout_hits1: cs.checkout_hits1 ?? 0, checkout_hits2: cs.checkout_hits2 ?? 0,
+          autodarts_link: `https://play.autodarts.io/history/matches/${autodarts_match_id}`,
+          nine_darters1: 0, nine_darters2: 0,
+          avg_until_170_1: null, avg_until_170_2: null,
+        };
+      }
+      console.log(`[auto-submit] Client fallback stats: score=${statsData.score1}-${statsData.score2}, avg1=${statsData.avg1}, avg2=${statsData.avg2}, swapped=${cSwapped}`);
     }
 
     if (!statsData) {
