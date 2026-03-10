@@ -9,6 +9,7 @@ interface ScreenshotUploadProps {
   onStatsExtracted: (stats: Record<string, any>) => void;
   matchId?: string;
   disabled?: boolean;
+  matchContext?: { player1_name: string; player2_name: string };
 }
 
 const ScreenshotUpload = ({ onStatsExtracted, matchId, disabled }: ScreenshotUploadProps) => {
