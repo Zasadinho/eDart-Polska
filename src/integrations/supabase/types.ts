@@ -71,6 +71,7 @@ export type Database = {
       extension_settings: {
         Row: {
           auto_approve: boolean
+          auto_approve_manual: boolean
           created_at: string
           id: string
           league_id: string | null
@@ -87,6 +88,7 @@ export type Database = {
         }
         Insert: {
           auto_approve?: boolean
+          auto_approve_manual?: boolean
           created_at?: string
           id?: string
           league_id?: string | null
@@ -103,6 +105,7 @@ export type Database = {
         }
         Update: {
           auto_approve?: boolean
+          auto_approve_manual?: boolean
           created_at?: string
           id?: string
           league_id?: string | null
