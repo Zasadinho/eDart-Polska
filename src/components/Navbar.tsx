@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogIn, LogOut, Shield, BarChart3, Settings, Handshake, Swords, Calendar, Trophy, Zap, MessageCircle, Megaphone, MoreHorizontal, ClipboardEdit, Target } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield, BarChart3, Settings, Handshake, Swords, Calendar, Trophy, Zap, MessageCircle, Megaphone, MoreHorizontal, ClipboardEdit, Target, Bug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,8 +27,9 @@ const moreNavItems = [
   { label: "Kalendarz", href: "/calendar", icon: <Calendar className="h-3.5 w-3.5" /> },
   { label: "Hall of Fame", href: "/hall-of-fame", icon: <Trophy className="h-3.5 w-3.5" /> },
   { label: "Osiągnięcia", href: "/achievements", icon: <Zap className="h-3.5 w-3.5" /> },
-  { label: "Czat", href: "/chat", icon: <MessageCircle className="h-3.5 w-3.5" /> },
+  { label: "Czat", href: "/chat", icon: <MessageCircle className="h-3.5 w-3.5" />, authOnly: true },
   { label: "Ogłoszenia", href: "/announcements", icon: <Megaphone className="h-3.5 w-3.5" /> },
+  { label: "Zgłoś błąd", href: "/report-bug", icon: <Bug className="h-3.5 w-3.5" />, authOnly: true },
 ];
 
 const allMobileItems = [
@@ -42,8 +43,9 @@ const allMobileItems = [
   { label: "Kalendarz", href: "/calendar", icon: <Calendar className="h-4 w-4" /> },
   { label: "Hall of Fame", href: "/hall-of-fame", icon: <Trophy className="h-4 w-4" /> },
   { label: "Osiągnięcia", href: "/achievements", icon: <Zap className="h-4 w-4" /> },
-  { label: "Czat", href: "/chat", icon: <MessageCircle className="h-4 w-4" /> },
+  { label: "Czat", href: "/chat", icon: <MessageCircle className="h-4 w-4" />, authOnly: true },
   { label: "Ogłoszenia", href: "/announcements", icon: <Megaphone className="h-4 w-4" /> },
+  { label: "Zgłoś błąd", href: "/report-bug", icon: <Bug className="h-4 w-4" />, authOnly: true },
 ];
 
 const Navbar = () => {
@@ -147,6 +149,20 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-1">
+            {user && (
+              <>
+                <Link to="/my-matches">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Handshake className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link to="/chat">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </>
+            )}
             <ThemeToggle />
             {user && <NotificationBell />}
             <button className="lg:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
