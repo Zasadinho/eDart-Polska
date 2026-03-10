@@ -211,16 +211,64 @@ const SubmitMatchPage = () => {
     player1_autodarts_id: p.player2_autodarts_id, player2_autodarts_id: p.player1_autodarts_id,
   });
 
+  // Check if payload has meaningful stats (not just score)
+  const hasStats = (p: AutoPayload): boolean => {
+    return !!(p.avg1 || p.avg2 || p.darts_thrown1 || p.darts_thrown2 || 
+              p.first_9_avg1 || p.first_9_avg2 || p.one_eighties1 || p.one_eighties2 ||
+              p.high_checkout1 || p.high_checkout2);
+  };
+
+  // Fetch full stats from edge function when extension payload lacks stats
+  const fetchFullStats = useCallback(async (matchId: string, adToken: string | null): Promise<AutoPayload | null> => {
+    try {
+      const body: Record<string, any> = { autodarts_link: `https://play.autodarts.io/history/matches/${matchId}` };
+      if (adToken) body.autodarts_token = adToken;
+
+      const { data: fnData, error: fnError } = await supabase.functions.invoke(
+        "fetch-autodarts-match",
+        { body },
+      );
+
+      if (fnError || !fnData?.success) {
+        console.log("[eDART] Failed to fetch full stats:", fnError?.message || fnData?.error);
+        return null;
+      }
+      return fnData.data;
+    } catch (err) {
+      console.error("[eDART] Error fetching full stats:", err);
+      return null;
+    }
+  }, []);
+
   const applyAutoPayload = useCallback(
-    (payload: AutoPayload, allowAutoSubmit: boolean) => {
+    async (payload: AutoPayload, allowAutoSubmit: boolean) => {
       if (!payload) return;
 
+      // If payload has autodarts link/match_id but no stats, fetch full stats from server
+      const autodartsMatchId = payload.match_id || payload.autodarts_link?.match(/matches\/([a-f0-9-]+)/i)?.[1];
+      let enrichedPayload = payload;
+      
+      if (autodartsMatchId && !hasStats(payload)) {
+        console.log("[eDART] Extension payload lacks stats, fetching full stats for:", autodartsMatchId);
+        const fullStats = await fetchFullStats(autodartsMatchId, extensionToken);
+        if (fullStats && hasStats(fullStats)) {
+          // Preserve player names/IDs from original payload, use stats from full fetch
+          enrichedPayload = { ...fullStats, 
+            player1_name: fullStats.player1_name || payload.player1_name,
+            player2_name: fullStats.player2_name || payload.player2_name,
+            player1_autodarts_id: fullStats.player1_autodarts_id || payload.player1_autodarts_id,
+            player2_autodarts_id: fullStats.player2_autodarts_id || payload.player2_autodarts_id,
+          };
+          console.log("[eDART] Full stats fetched successfully");
+        }
+      }
+
       const extMatchId =
-        payload.match_id || payload.autodarts_link || `${payload.player1_name}-${payload.player2_name}`;
+        enrichedPayload.match_id || enrichedPayload.autodarts_link || `${enrichedPayload.player1_name}-${enrichedPayload.player2_name}`;
       if (allowAutoSubmit && processedAutoMatchRef.current === extMatchId) return;
 
-      const p1Raw = (payload.player1_name || "").trim();
-      const p2Raw = (payload.player2_name || "").trim();
+      const p1Raw = (enrichedPayload.player1_name || "").trim();
+      const p2Raw = (enrichedPayload.player2_name || "").trim();
       const p1 = normalizeName(p1Raw);
       const p2 = normalizeName(p2Raw);
 
@@ -244,15 +292,15 @@ const SubmitMatchPage = () => {
       }
 
       // Robust swap detection + strict participant validation
-      let finalPayload = payload;
+      let finalPayload = enrichedPayload;
       if (targetMatch) {
         const m1 = normalizeName(targetMatch.player1Name);
         const m2 = normalizeName(targetMatch.player2Name);
 
         const targetP1Auto = playerAutodartsMap[targetMatch.player1Id] || null;
         const targetP2Auto = playerAutodartsMap[targetMatch.player2Id] || null;
-        const payloadP1Auto = (payload.player1_autodarts_id as string | undefined) || null;
-        const payloadP2Auto = (payload.player2_autodarts_id as string | undefined) || null;
+        const payloadP1Auto = (enrichedPayload.player1_autodarts_id as string | undefined) || null;
+        const payloadP2Auto = (enrichedPayload.player2_autodarts_id as string | undefined) || null;
 
         const sameByName = m1 === p1 && m2 === p2;
         const reversedByName = m1 === p2 && m2 === p1;
@@ -276,7 +324,7 @@ const SubmitMatchPage = () => {
 
         const shouldSwap = reversedById || (!sameById && reversedByName && !sameByName);
         if (shouldSwap) {
-          finalPayload = swapPayload(payload);
+          finalPayload = swapPayload(enrichedPayload);
         }
       }
 
@@ -322,7 +370,7 @@ const SubmitMatchPage = () => {
         });
       }
     },
-    [autoSubmitFromExtension, playerAutodartsMap, populateForm, selectedMatch, submitMatchResult, toast, upcomingMatches],
+    [autoSubmitFromExtension, extensionToken, fetchFullStats, playerAutodartsMap, populateForm, selectedMatch, submitMatchResult, toast, upcomingMatches],
   );
 
   const requestExtensionData = useCallback(() => {
