@@ -86,7 +86,7 @@
 
   function isLiveMatch(match) {
     const state = String(match?.state || "").toLowerCase();
-    return ["playing", "started", "running", "in_progress", "active"].includes(state);
+    return ["playing", "started", "running", "in_progress", "active", "order"].includes(state);
   }
 
   const processedMatches = new Set();
@@ -196,11 +196,12 @@
     });
   }
 
-  // ─── Detect navigation to match pages (live OR history) ───
+  // ─── Detect navigation to match pages ───
   let lastUrl = location.href;
   const detectedMatchIds = new Set();
   let activeMatchPollInterval = null;
   let activeMatchId = null;
+  const lobbyToMatchId = {};
 
   function extractMatchIdFromUrl(url) {
     const m = url.match(/\/(?:history\/)?matches\/([a-f0-9-]+)/i);
@@ -252,7 +253,7 @@
     }
   }
 
-  async function fetchAndProcessMatch(matchId) {
+  async function fetchAndProcessMatch(urlId) {
     try {
       const stored = await browserAPI.storage.local.get(["autodarts_token"]);
       const token = stored.autodarts_token;
@@ -261,22 +262,67 @@
         return;
       }
 
-      const res = await fetch(`https://api.autodarts.io/as/v0/matches/${matchId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const realMatchId = lobbyToMatchId[urlId] || null;
 
-      if (!res.ok) {
-        console.log("[eDART] Match fetch failed:", res.status, "for:", matchId);
+      const endpoints = [
+        `https://api.autodarts.io/as/v0/matches/${urlId}`,
+        `https://api.autodarts.io/gs/v0/lobbies/${urlId}`,
+      ];
+      if (realMatchId && realMatchId !== urlId) {
+        endpoints.unshift(`https://api.autodarts.io/as/v0/matches/${realMatchId}`);
+      }
+
+      let matchData = null;
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            
+            if (endpoint.includes("/lobbies/")) {
+              console.log("[eDART] 📋 Lobby data loaded, looking for match info...");
+              if (data.matchId || data.match_id) {
+                const mId = data.matchId || data.match_id;
+                lobbyToMatchId[urlId] = mId;
+                console.log("[eDART] 🔗 Lobby->Match mapping:", urlId, "->", mId);
+                const matchRes = await fetch(`https://api.autodarts.io/as/v0/matches/${mId}`, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                if (matchRes.ok) {
+                  matchData = await matchRes.json();
+                  break;
+                }
+              }
+              if (data.players && Array.isArray(data.players) && data.players.length >= 2) {
+                matchData = data;
+                break;
+              }
+              continue;
+            }
+            
+            matchData = data;
+            break;
+          } else {
+            console.log("[eDART] Endpoint returned", res.status, "for:", endpoint.split("/").pop());
+          }
+        } catch (e) {
+          console.log("[eDART] Endpoint error:", endpoint, e.message);
+        }
+      }
+
+      if (!matchData) {
+        console.log("[eDART] ⚠️ Could not load match data for:", urlId, "— waiting for intercepted data");
         return;
       }
 
-      const matchData = await res.json();
       const state = String(matchData?.state || "").toLowerCase();
       const players = Array.isArray(matchData?.players) ? matchData.players : [];
       console.log("[eDART] 📊 Match data loaded — state:", state, "players:", players.length,
         players.map(p => p.name || p.username || "?").join(" vs "));
 
-      handleMatchData(matchData, `https://play.autodarts.io/matches/${matchId}`);
+      handleMatchData(matchData, `https://play.autodarts.io/matches/${urlId}`);
 
       if (isFinishedMatch(matchData)) {
         console.log("[eDART] 🏁 Match finished, stopping poll");
@@ -376,6 +422,28 @@
           if (data) {
             console.log("[eDART] 🔎 Intercepted fetch match data, state:", data?.state);
             handleMatchData(data, url);
+          }
+        })
+        .catch(() => {});
+    }
+
+    // Intercept lobby API responses
+    if (url && /api\.autodarts\.io\/gs\/v0\/lobbies\/[a-f0-9-]+/i.test(url)) {
+      fetchPromise
+        .then(async (res) => {
+          if (!res.ok) return;
+          const data = await res.clone().json().catch(() => null);
+          if (data) {
+            const lobbyId = url.match(/lobbies\/([a-f0-9-]+)/i)?.[1];
+            const mId = data.matchId || data.match_id;
+            if (lobbyId && mId) {
+              lobbyToMatchId[lobbyId] = mId;
+              console.log("[eDART] 🔗 Intercepted lobby->match mapping:", lobbyId, "->", mId);
+            }
+            if (data.players && Array.isArray(data.players) && data.players.length >= 2) {
+              console.log("[eDART] 🔎 Intercepted lobby player data, checking league...");
+              handleMatchData(data, url);
+            }
           }
         })
         .catch(() => {});
