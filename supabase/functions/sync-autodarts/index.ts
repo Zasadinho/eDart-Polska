@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const token = await getAutodartsToken();
+    const adToken = await getAutodartsToken();
     let synced = 0;
 
     // Get upcoming matches in our system
