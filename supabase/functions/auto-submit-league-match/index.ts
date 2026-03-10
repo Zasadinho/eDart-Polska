@@ -202,16 +202,16 @@ function processGameTurns(
     if (dartsArr && scoreBeforeTurn != null) {
       let runningRemaining = scoreBeforeTurn;
       for (const d of dartsArr) {
-        if (isFinishableWithOneDouble(runningRemaining)) st.checkoutAttempts++;
+        if (isFinishable(runningRemaining)) st.checkoutAttempts++;
         runningRemaining -= getDartPoints(d);
         if (runningRemaining <= 0) break;
       }
       const missingDarts = Math.max(0, dartsCount - dartsArr.length);
       for (let md = 0; md < missingDarts; md++) {
-        if (isFinishableWithOneDouble(runningRemaining)) st.checkoutAttempts++;
+        if (isFinishable(runningRemaining)) st.checkoutAttempts++;
       }
     } else if (!dartsArr && scoreBeforeTurn != null) {
-      if (isFinishableWithOneDouble(scoreBeforeTurn)) st.checkoutAttempts += dartsCount;
+      if (isFinishable(scoreBeforeTurn)) st.checkoutAttempts += dartsCount;
     }
 
     const remainingAfter = typeof turn.score === "number" ? turn.score : null;
