@@ -1,0 +1,3 @@
+ALTER TABLE public.players 
+ADD COLUMN IF NOT EXISTS dartcounter_id text DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS dartsmind_id text DEFAULT NULL;
