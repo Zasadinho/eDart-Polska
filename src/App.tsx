@@ -24,6 +24,7 @@ import HallOfFamePage from "./pages/HallOfFamePage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ChatPage from "./pages/ChatPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
+import ReportBugPage from "./pages/ReportBugPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/stats" element={<StatsPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/report-bug" element={<ReportBugPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

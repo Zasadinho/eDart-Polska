@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Bell } from "lucide-react";
+import { Bell, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,7 +39,6 @@ const NotificationBell = () => {
 
     fetchNotifications();
 
-    // Realtime subscription
     const channel = supabase
       .channel("notifications")
       .on(
@@ -56,7 +55,6 @@ const NotificationBell = () => {
     };
   }, [user]);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -75,6 +73,19 @@ const NotificationBell = () => {
     if (unreadIds.length === 0) return;
     await supabase.from("notifications").update({ is_read: true }).in("id", unreadIds);
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+  };
+
+  const deleteNotification = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    await supabase.from("notifications").delete().eq("id", id);
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  const deleteAllNotifications = async () => {
+    if (notifications.length === 0) return;
+    const ids = notifications.map((n) => n.id);
+    await supabase.from("notifications").delete().in("id", ids);
+    setNotifications([]);
   };
 
   const handleClick = (n: Notification) => {
@@ -102,11 +113,18 @@ const NotificationBell = () => {
         <div className="absolute right-0 top-10 w-80 max-h-96 overflow-y-auto rounded-lg border border-border bg-card shadow-lg z-50 animate-fade-in">
           <div className="flex items-center justify-between p-3 border-b border-border">
             <span className="text-sm font-display uppercase tracking-wider text-foreground">Powiadomienia</span>
-            {unreadCount > 0 && (
-              <button onClick={markAllRead} className="text-xs text-primary hover:underline font-body">
-                Oznacz wszystkie
-              </button>
-            )}
+            <div className="flex items-center gap-1">
+              {unreadCount > 0 && (
+                <button onClick={markAllRead} className="text-xs text-primary hover:underline font-body">
+                  Przeczytane
+                </button>
+              )}
+              {notifications.length > 0 && (
+                <button onClick={deleteAllNotifications} className="text-xs text-destructive hover:underline font-body ml-2">
+                  Wyczyść
+                </button>
+              )}
+            </div>
           </div>
 
           {notifications.length === 0 ? (
@@ -115,17 +133,17 @@ const NotificationBell = () => {
             </div>
           ) : (
             notifications.map((n) => (
-              <button
+              <div
                 key={n.id}
                 onClick={() => handleClick(n)}
-                className={`w-full text-left p-3 border-b border-border hover:bg-muted/30 transition-colors ${
+                className={`w-full text-left p-3 border-b border-border hover:bg-muted/30 transition-colors cursor-pointer relative group ${
                   !n.is_read ? "bg-primary/5" : ""
                 }`}
               >
                 <div className="flex items-start gap-2">
                   {!n.is_read && <span className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />}
-                  <div className={!n.is_read ? "" : "ml-4"}>
-                    <div className="text-sm font-body font-semibold text-foreground">{n.title}</div>
+                  <div className={`flex-1 ${!n.is_read ? "" : "ml-4"}`}>
+                    <div className="text-sm font-body font-semibold text-foreground pr-6">{n.title}</div>
                     <div className="text-xs text-muted-foreground font-body mt-0.5">{n.message}</div>
                     <div className="text-[10px] text-muted-foreground mt-1">
                       {new Date(n.created_at).toLocaleDateString("pl-PL", {
@@ -136,8 +154,14 @@ const NotificationBell = () => {
                       })}
                     </div>
                   </div>
+                  <button
+                    onClick={(e) => deleteNotification(e, n.id)}
+                    className="absolute right-2 top-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 </div>
-              </button>
+              </div>
             ))
           )}
         </div>
