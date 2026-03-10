@@ -400,8 +400,9 @@ const SubmitMatchPage = () => {
 
       if (fnError || !fnData?.success) {
         toast({
-          title: "Błąd",
-          description: fnData?.error || fnError?.message || "Nie udało się pobrać danych",
+          title: "Błąd pobierania danych",
+          description: (fnData?.error || fnError?.message || "Nie udało się pobrać danych") +
+            "\n\n⚠️ Prawdopodobnie wygasł token Autodarts. Odśwież stronę play.autodarts.io i spróbuj ponownie.",
           variant: "destructive",
         });
         setFetchingAutodarts(false);
@@ -414,7 +415,11 @@ const SubmitMatchPage = () => {
         description: `Statystyki: ${fnData.data.player1_name} vs ${fnData.data.player2_name}`,
       });
     } catch {
-      toast({ title: "Błąd", description: "Nie udało się połączyć z Autodarts", variant: "destructive" });
+      toast({
+        title: "Błąd połączenia",
+        description: "Nie udało się połączyć z Autodarts. Prawdopodobnie wygasł token — odśwież stronę play.autodarts.io i spróbuj ponownie.",
+        variant: "destructive",
+      });
     }
 
     setFetchingAutodarts(false);

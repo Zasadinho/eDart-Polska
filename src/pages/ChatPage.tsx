@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Send, ArrowLeft, Users, Search } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import { pl } from "date-fns/locale";
 
 interface ChatContact {
@@ -292,7 +292,12 @@ const ChatPage = () => {
                         <div className={`max-w-[75%] rounded-lg px-3 py-2 ${isMine ? "bg-primary text-primary-foreground" : "bg-muted/50 text-foreground border border-border"}`}>
                           <p className="text-sm font-body whitespace-pre-wrap break-words">{m.content}</p>
                           <p className={`text-[10px] mt-1 ${isMine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                            {format(new Date(m.created_at), "HH:mm", { locale: pl })}
+                            {(() => {
+                              const d = new Date(m.created_at);
+                              if (isToday(d)) return format(d, "HH:mm", { locale: pl });
+                              if (isYesterday(d)) return `wczoraj ${format(d, "HH:mm", { locale: pl })}`;
+                              return format(d, "dd.MM.yyyy HH:mm", { locale: pl });
+                            })()}
                           </p>
                         </div>
                       </div>
