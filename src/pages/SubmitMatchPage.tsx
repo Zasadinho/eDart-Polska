@@ -86,6 +86,8 @@ const SubmitMatchPage = () => {
   const [extensionToken, setExtensionToken] = useState<string | null>(null);
   const [tokenFresh, setTokenFresh] = useState(false);
   const [autoSubmitFromExtension, setAutoSubmitFromExtension] = useState(true);
+  const [sourcePlatform, setSourcePlatform] = useState<SourcePlatform>("autodarts");
+  const [screenshotUrls, setScreenshotUrls] = useState<string[]>([]);
   const processedAutoMatchRef = useRef<string | null>(null);
 
   // Raw preview of fetched Autodarts data
