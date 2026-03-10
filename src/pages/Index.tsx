@@ -33,6 +33,8 @@ const Index = () => {
         {leagueType === "bracket" && <BracketView />}
         {leagueType === "group_bracket" && <GroupBracketView />}
         <UpcomingMatchesPreview />
+        <ExtensionDownloadSection />
+        <ApkDownloadSection />
       </div>
     </div>
   );
