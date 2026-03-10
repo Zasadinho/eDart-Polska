@@ -21,7 +21,6 @@ const Index = () => {
       <HeroSection />
       <div className="container mx-auto px-4 py-8 space-y-8">
         <MyNextMatchWidget />
-        <LiveMatchesWidget />
         <ExtensionDownloadSection />
         <ApkDownloadSection />
         <LeagueWinners />
