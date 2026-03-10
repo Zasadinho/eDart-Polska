@@ -346,7 +346,7 @@ const ExtensionConfigPanel = ({ leagues }: { leagues: any[] }) => {
 
       {/* Save */}
       <div className="flex justify-end">
-        <Button variant="hero" size="lg" onClick={saveSettings} disabled={saving}>
+        <Button variant="hero" size="lg" onClick={() => saveSettings()} disabled={saving}>
           {saving ? "Zapisywanie..." : "💾 Zapisz ustawienia"}
         </Button>
       </div>
