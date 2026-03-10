@@ -99,12 +99,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error?.message ?? null };
   };
 
-  const register = async (name: string, email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+  const register = async (name: string, email: string, password: string, gamingNick?: string) => {
+    const { error, data } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: { data: { name, gaming_nick: gamingNick } },
     });
+    
+    // If gaming nick provided, update the player record after registration
+    if (!error && data?.user && gamingNick) {
+      // The trigger creates the player record, so update it with gaming nick info
+      setTimeout(async () => {
+        await supabase.from("players").update({
+          dartcounter_id: gamingNick,
+          dartsmind_id: gamingNick,
+        } as any).eq("user_id", data.user!.id);
+      }, 1000);
+    }
+    
     return { error: error?.message ?? null };
   };
 
