@@ -283,6 +283,7 @@ Deno.serve(async (req) => {
       player2_name,
       player1_autodarts_id,
       player2_autodarts_id,
+      client_stats,
     } = await req.json();
 
     if (!autodarts_match_id && !player1_name) {
