@@ -106,10 +106,14 @@ const SubmitMatchPage = () => {
       setLoadingPlayer(true);
       const { data: me } = await supabase
         .from("players")
-        .select("id")
+        .select("id, auto_submit_enabled")
         .eq("user_id", user.id)
         .maybeSingle();
       setMyPlayerId(me?.id ?? null);
+      if (me) {
+        setAutoSubmitFromExtension((me as any).auto_submit_enabled !== false);
+        setAutoSubmitLoaded(true);
+      }
       setLoadingPlayer(false);
     };
     fetchPlayerId();
