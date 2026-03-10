@@ -20,10 +20,9 @@ const chromeSteps = [
 ];
 
 const firefoxSteps = [
-  "Pobierz plik ZIP z wtyczką klikając przycisk poniżej.",
-  "Otwórz Firefox i wejdź w about:debugging#/runtime/this-firefox",
-  "Kliknij \"Załaduj tymczasowy dodatek...\"",
-  "Wskaż plik manifest.json z rozpakowanego folderu wtyczki.",
+  "Kliknij przycisk \"Pobierz wtyczkę (Firefox)\" poniżej — przeniesie Cię do oficjalnej strony dodatku.",
+  "Kliknij \"Dodaj do Firefoksa\" na stronie Mozilla Add-ons.",
+  "Potwierdź instalację w wyskakującym okienku przeglądarki.",
   "Gotowe! Zaloguj się na play.autodarts.io — wtyczka zacznie działać automatycznie.",
 ];
 
