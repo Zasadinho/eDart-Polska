@@ -17,12 +17,15 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
+  Camera,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import MatchStatFields from "@/components/MatchStatFields";
+import ScreenshotUpload from "@/components/ScreenshotUpload";
 
 type AutoPayload = Record<string, any>;
+type SourcePlatform = "autodarts" | "dartcounter" | "dartsmind";
 
 const asNumber = (value: unknown, fallback = 0): number => {
   const n = Number(value);
