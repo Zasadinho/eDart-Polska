@@ -489,6 +489,56 @@ const SubmitMatchPage = () => {
     setStats({});
     setShowAdvanced(false);
     setRawPreview(null);
+    setScreenshotUrls([]);
+  };
+
+  const handleScreenshotStats = (extractedStats: Record<string, any>) => {
+    if (extractedStats.screenshot_urls) {
+      setScreenshotUrls(extractedStats.screenshot_urls);
+    }
+    
+    const payload: AutoPayload = {
+      player1_name: extractedStats.player1_name || "",
+      player2_name: extractedStats.player2_name || "",
+      score1: extractedStats.score1 ?? 0,
+      score2: extractedStats.score2 ?? 0,
+      avg1: extractedStats.avg1 ?? null,
+      avg2: extractedStats.avg2 ?? null,
+      first_9_avg1: extractedStats.first_9_avg1 ?? null,
+      first_9_avg2: extractedStats.first_9_avg2 ?? null,
+      one_eighties1: extractedStats.one_eighties1 ?? 0,
+      one_eighties2: extractedStats.one_eighties2 ?? 0,
+      high_checkout1: extractedStats.high_checkout1 ?? 0,
+      high_checkout2: extractedStats.high_checkout2 ?? 0,
+      checkout_attempts1: extractedStats.checkout_attempts1 ?? 0,
+      checkout_attempts2: extractedStats.checkout_attempts2 ?? 0,
+      checkout_hits1: extractedStats.checkout_hits1 ?? 0,
+      checkout_hits2: extractedStats.checkout_hits2 ?? 0,
+      darts_thrown1: extractedStats.darts_thrown1 ?? 0,
+      darts_thrown2: extractedStats.darts_thrown2 ?? 0,
+      ton60_1: extractedStats.ton60_1 ?? 0,
+      ton60_2: extractedStats.ton60_2 ?? 0,
+      ton80_1: extractedStats.ton80_1 ?? 0,
+      ton80_2: extractedStats.ton80_2 ?? 0,
+      ton_plus1: extractedStats.ton_plus1 ?? 0,
+      ton_plus2: extractedStats.ton_plus2 ?? 0,
+    };
+
+    // Try to match player names to the selected match and swap if needed
+    if (selectedMatch) {
+      const p1 = normalizeName(payload.player1_name);
+      const p2 = normalizeName(payload.player2_name);
+      const m1 = normalizeName(selectedMatch.player1Name);
+      const m2 = normalizeName(selectedMatch.player2Name);
+      
+      const reversed = m1 === p2 && m2 === p1;
+      if (reversed) {
+        populateForm(swapPayload(payload));
+        return;
+      }
+    }
+
+    populateForm(payload);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
