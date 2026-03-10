@@ -30,8 +30,17 @@ browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
       })
       .catch((err) => {
         console.error("[eDART] Auto-submit failed:", err);
-        sendResponse({ is_league_match: false, submitted: false, error: String(err) });
+        const errorResult = { is_league_match: false, submitted: false, error: String(err) };
+        sendResponse(errorResult);
+        showManualFallbackNotification(message.payload, String(err));
       });
+    return true;
+  }
+
+  if (message.type === 'CHECK_LEAGUE_MATCH_LIVE') {
+    checkLeagueMatchLive(message.payload)
+      .then((result) => sendResponse(result))
+      .catch(() => sendResponse({ is_league_match: false }));
     return true;
   }
 
@@ -59,6 +68,66 @@ browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 });
+
+async function checkLeagueMatchLive(payload) {
+  try {
+    const checkRes = await fetch(`${SUPABASE_URL}/functions/v1/check-league-match`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        player1_autodarts_id: payload.player1_autodarts_id,
+        player2_autodarts_id: payload.player2_autodarts_id,
+        player1_name: payload.player1_name,
+        player2_name: payload.player2_name,
+      }),
+    });
+
+    if (!checkRes.ok) return { is_league_match: false };
+    const checkData = await checkRes.json();
+
+    if (checkData.is_league_match) {
+      const p1 = payload.player1_name || "Gracz 1";
+      const p2 = payload.player2_name || "Gracz 2";
+
+      browserAPI.notifications.create(`league-live-${payload.autodarts_match_id}`, {
+        type: "basic",
+        iconUrl: "icon128.png",
+        title: "🎯 Mecz ligowy rozpoczęty!",
+        message: `${p1} vs ${p2}\n${checkData.league_name || "Liga"}\nWynik zostanie wysłany automatycznie po zakończeniu meczu.`,
+      });
+    }
+
+    return checkData;
+  } catch (err) {
+    console.error("[eDART] Check league match error:", err);
+    return { is_league_match: false };
+  }
+}
+
+function showManualFallbackNotification(matchPayload, errorMsg) {
+  const p1 = matchPayload?.player1_name || "Gracz 1";
+  const p2 = matchPayload?.player2_name || "Gracz 2";
+  const matchId = matchPayload?.match_id || "";
+
+  browserAPI.storage.local.set({
+    edart_manual_fallback: {
+      autodarts_link: `https://play.autodarts.io/history/matches/${matchId}`,
+      player1_name: p1,
+      player2_name: p2,
+    }
+  });
+
+  browserAPI.notifications.create(`league-error-${Date.now()}`, {
+    type: "basic",
+    iconUrl: "icon128.png",
+    title: "⚠️ Błąd wysyłania wyniku",
+    message: `${p1} vs ${p2}\nNie udało się automatycznie wysłać wyniku.\nKliknij aby wprowadzić wynik ręcznie.`,
+  });
+}
 
 async function handleLiveMatchUpdate(payload) {
   try {
@@ -186,13 +255,13 @@ async function autoSubmitLeagueMatch(matchPayload) {
 
     if (!response.ok) {
       console.error("[eDART] auto-submit HTTP error:", response.status);
-      return { is_league_match: false, submitted: false };
+      return { is_league_match: false, submitted: false, error: `HTTP ${response.status}` };
     }
 
     return await response.json();
   } catch (err) {
     console.error("[eDART] auto-submit fetch error:", err);
-    return { is_league_match: false, submitted: false };
+    return { is_league_match: false, submitted: false, error: String(err) };
   }
 }
 
@@ -238,14 +307,23 @@ function handleAutoSubmitResult(result, matchPayload) {
     browserAPI.notifications.create(`league-detected-${Date.now()}`, {
       type: "basic",
       iconUrl: "icon128.png",
-      title: "🎯 Mecz ligowy wykryty",
-      message: `${p1} vs ${p2}\n${result.league_name || "Liga"}\n${result.reason || "Wynik nie został wysłany automatycznie."}`,
+      title: "⚠️ Mecz ligowy — wymagane ręczne zgłoszenie",
+      message: `${p1} vs ${p2}\n${result.league_name || "Liga"}\n${result.reason || "Wynik nie został wysłany automatycznie."}\nKliknij aby wprowadzić wynik ręcznie.`,
+    });
+
+    browserAPI.storage.local.set({
+      edart_manual_fallback: {
+        autodarts_link: `https://play.autodarts.io/history/matches/${matchPayload.match_id}`,
+        match_id: result.match_id,
+        player1_name: p1,
+        player2_name: p2,
+      }
     });
   }
 }
 
 browserAPI.notifications.onClicked.addListener((notificationId) => {
-  if (notificationId.startsWith("league-")) {
+  if (notificationId.startsWith("league-submitted-") || notificationId.startsWith("league-already-")) {
     browserAPI.storage.local.get(["autodarts_league_match"]).then((result) => {
       const data = result.autodarts_league_match;
       if (data?.edart_match_id) {
@@ -257,6 +335,23 @@ browserAPI.notifications.onClicked.addListener((notificationId) => {
         browserAPI.tabs.create({ url: `${EDART_URL}/matches`, active: true });
       }
     });
+    browserAPI.notifications.clear(notificationId);
+  } else if (notificationId.startsWith("league-error-") || notificationId.startsWith("league-detected-")) {
+    browserAPI.storage.local.get(["edart_manual_fallback"]).then((result) => {
+      const fallback = result.edart_manual_fallback;
+      if (fallback?.autodarts_link) {
+        const encoded = encodeURIComponent(fallback.autodarts_link);
+        browserAPI.tabs.create({
+          url: `${EDART_URL}/submit-match?autodarts_link=${encoded}`,
+          active: true,
+        });
+      } else {
+        browserAPI.tabs.create({ url: `${EDART_URL}/submit-match`, active: true });
+      }
+    });
+    browserAPI.notifications.clear(notificationId);
+  } else if (notificationId.startsWith("league-live-")) {
+    browserAPI.tabs.create({ url: `${EDART_URL}/matches`, active: true });
     browserAPI.notifications.clear(notificationId);
   }
 });
