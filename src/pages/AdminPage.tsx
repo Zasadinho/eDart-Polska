@@ -959,6 +959,7 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
   const [adding, setAdding] = useState(false);
   const [profiles, setProfiles] = useState<{ user_id: string; name: string }[]>([]);
   const [playerUserMap, setPlayerUserMap] = useState<Record<string, string | null>>({});
+  const [playerExtIds, setPlayerExtIds] = useState<Record<string, { autodarts_user_id: string; dartcounter_id: string; dartsmind_id: string }>>({});
 
   useEffect(() => {
     const fetchProfiles = async () => {
