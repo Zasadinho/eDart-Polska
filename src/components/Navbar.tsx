@@ -47,6 +47,8 @@ const allMobileItems = [
   { label: "Osiągnięcia", href: "/achievements", icon: <Zap className="h-4 w-4" /> },
   { label: "Czat", href: "/chat", icon: <MessageCircle className="h-4 w-4" />, authOnly: true },
   { label: "Ogłoszenia", href: "/announcements", icon: <Megaphone className="h-4 w-4" /> },
+  { label: "Jak grać?", href: "/how-to-play", icon: <Gamepad2 className="h-4 w-4" /> },
+  { label: "Pobieranie", href: "/downloads", icon: <Download className="h-4 w-4" /> },
   { label: "Zgłoś błąd", href: "/report-bug", icon: <Bug className="h-4 w-4" />, authOnly: true },
 ];
 
