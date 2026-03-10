@@ -878,37 +878,47 @@ const SubmitMatchPage = () => {
               </div>
 
 
-              {/* Autodarts link */}
-              <div className="space-y-2">
-                <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground flex items-center gap-2">
-                  <Link2 className="h-3.5 w-3.5" /> Link Autodarts.io
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="url"
-                    value={autodartsLink}
-                    onChange={(e) => setAutodartsLink(e.target.value)}
-                    placeholder="https://play.autodarts.io/history/matches/..."
-                    className="bg-muted/30 border-border"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={!autodartsLink || fetchingAutodarts}
-                    onClick={handleFetchAutodarts}
-                    className="shrink-0 font-display uppercase tracking-wider text-xs"
-                  >
-                    {fetchingAutodarts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-                    {fetchingAutodarts ? "" : " Pobierz"}
-                  </Button>
+              {/* Screenshot upload for DartCounter/DartsMind */}
+              {(sourcePlatform === "dartcounter" || sourcePlatform === "dartsmind") && (
+                <ScreenshotUpload
+                  onStatsExtracted={handleScreenshotStats}
+                  matchId={selectedMatchId}
+                />
+              )}
+
+              {/* Autodarts link - only for Autodarts */}
+              {sourcePlatform === "autodarts" && (
+                <div className="space-y-2">
+                  <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground flex items-center gap-2">
+                    <Link2 className="h-3.5 w-3.5" /> Link Autodarts.io
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="url"
+                      value={autodartsLink}
+                      onChange={(e) => setAutodartsLink(e.target.value)}
+                      placeholder="https://play.autodarts.io/history/matches/..."
+                      className="bg-muted/30 border-border"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={!autodartsLink || fetchingAutodarts}
+                      onClick={handleFetchAutodarts}
+                      className="shrink-0 font-display uppercase tracking-wider text-xs"
+                    >
+                      {fetchingAutodarts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                      {fetchingAutodarts ? "" : " Pobierz"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-body">
+                    {extensionInstalled && extensionToken
+                      ? "✅ Rozszerzenie pobiera i może wysłać wynik automatycznie"
+                      : "Wklej link i kliknij Pobierz — zostaniesz poproszony o token"}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground font-body">
-                  {extensionInstalled && extensionToken
-                    ? "✅ Rozszerzenie pobiera i może wysłać wynik automatycznie"
-                    : "Wklej link i kliknij Pobierz — zostaniesz poproszony o token"}
-                </p>
-              </div>
+              )}
 
               <button
                 type="button"
