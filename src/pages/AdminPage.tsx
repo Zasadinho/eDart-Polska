@@ -1086,6 +1086,7 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
                 />
               </div>
             </div>
+            <div className="flex flex-wrap gap-2">
               {leagues.map((l: any) => {
                 const isIn = (p.leagueIds || []).includes(l.id);
                 return (
