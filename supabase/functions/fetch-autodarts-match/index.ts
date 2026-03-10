@@ -267,9 +267,9 @@ function processGameTurns(
       for (const d of dartsArr) {
         const dartValue = getDartPoints(d);
 
-        // Count a checkout attempt for EVERY dart thrown when remaining is a one-dart finish
-        // (remaining is 2,4,6,...,40 even or =50 bull)
-        if (isFinishableWithOneDouble(runningRemaining)) {
+        // Count a checkout attempt for EVERY dart thrown when remaining is finishable
+        // (can be checked out in ≤3 darts ending with a double)
+        if (isFinishable(runningRemaining)) {
           st.checkoutAttempts++;
         }
 
@@ -281,7 +281,7 @@ function processGameTurns(
       // If API declares more darts than it provides, treat missing ones as misses (0 points).
       const missingDarts = Math.max(0, dartsCount - dartsArr.length);
       for (let md = 0; md < missingDarts; md++) {
-        if (isFinishableWithOneDouble(runningRemaining)) {
+        if (isFinishable(runningRemaining)) {
           st.checkoutAttempts++;
         }
       }
