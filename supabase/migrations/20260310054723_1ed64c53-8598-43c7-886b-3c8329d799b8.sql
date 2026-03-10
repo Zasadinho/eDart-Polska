@@ -1,0 +1,1 @@
+ALTER TABLE public.extension_settings ADD COLUMN auto_approve_manual boolean NOT NULL DEFAULT false;
