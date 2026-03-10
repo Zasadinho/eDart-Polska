@@ -72,6 +72,7 @@ const AdminPage = () => {
     { id: "integrations", label: "Integracje", icon: <Plug className="h-4 w-4" />, adminOnly: true },
     { id: "audit", label: "Dziennik", icon: <ScrollText className="h-4 w-4" />, adminOnly: true },
     { id: "export", label: "Eksport", icon: <Download className="h-4 w-4" />, adminOnly: true },
+    { id: "bugs", label: "Błędy", icon: <Bug className="h-4 w-4" /> },
   ];
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
