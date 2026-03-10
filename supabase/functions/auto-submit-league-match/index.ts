@@ -479,6 +479,8 @@ Deno.serve(async (req) => {
           );
 
           const players = adMatch.players || [];
+          console.log(`[auto-submit] Match state: ${adMatch.state}, players: ${players.length}, games: ${Array.isArray(adMatch.games) ? adMatch.games.length : 0}`);
+
           if (players.length >= 2) {
             const playerIdMap = buildPlayerIdMap(players);
 
@@ -499,6 +501,7 @@ Deno.serve(async (req) => {
             st[1].legsWon = legsWon2;
 
             const games = Array.isArray(adMatch.games) ? adMatch.games.filter((g: any) => g) : [];
+            console.log(`[auto-submit] Processing ${games.length} games for turn-by-turn stats`);
             for (let gi = 0; gi < games.length; gi++) {
               processGameTurns(games[gi], playerIdMap, st, gi);
             }
@@ -513,31 +516,33 @@ Deno.serve(async (req) => {
             const p1ApiStats = players[0]?.stats || {};
             const p2ApiStats = players[1]?.stats || {};
 
-            const avg = (s: PlayerStats) => s.totalDarts > 0 ? Math.round((s.totalScore / s.totalDarts) * 3 * 100) / 100 : null;
-            const f9 = (s: PlayerStats) => s.first9Darts > 0 ? Math.round((s.first9Score / s.first9Darts) * 3 * 100) / 100 : null;
-            const a170 = (s: PlayerStats) => s.until170Darts > 0 ? Math.round((s.until170Score / s.until170Darts) * 3 * 100) / 100 : null;
+            console.log(`[auto-submit] Turn-based: P1 darts=${st[0].totalDarts} score=${st[0].totalScore}, P2 darts=${st[1].totalDarts} score=${st[1].totalScore}`);
+            console.log(`[auto-submit] API stats P1:`, JSON.stringify(p1ApiStats));
+            console.log(`[auto-submit] API stats P2:`, JSON.stringify(p2ApiStats));
+
+            // Compute from turns
+            const avgFromTurns = (s: PlayerStats) => s.totalDarts > 0 ? Math.round((s.totalScore / s.totalDarts) * 3 * 100) / 100 : null;
+            const f9FromTurns = (s: PlayerStats) => s.first9Darts > 0 ? Math.round((s.first9Score / s.first9Darts) * 3 * 100) / 100 : null;
+            const a170FromTurns = (s: PlayerStats) => s.until170Darts > 0 ? Math.round((s.until170Score / s.until170Darts) * 3 * 100) / 100 : null;
+
+            // Helper to read avg from API stats (ppd * 3 or direct average)
+            const apiAvg = (apiSt: any): number | null => {
+              if (typeof apiSt.average === "number") return Math.round(apiSt.average * 100) / 100;
+              if (typeof apiSt.avg === "number") return Math.round(apiSt.avg * 100) / 100;
+              if (typeof apiSt.ppd === "number") return Math.round(apiSt.ppd * 3 * 100) / 100;
+              return null;
+            };
+
+            const apiFirst9 = (apiSt: any): number | null => {
+              return numOrNull(apiSt.first9Average, apiSt.firstNineAvg, apiSt.first9Avg, apiSt.first9avg);
+            };
 
             // Determine which Autodarts player maps to which eDART player
-            // eDART match has player1_id and player2_id
-            // Autodarts players[0] and players[1] — we need to map them correctly
             const adP1AutoId = players[0].userId || players[0].id || null;
-            const adP2AutoId = players[1].userId || players[1].id || null;
-            const adP1Name = (players[0].name || "").toLowerCase();
-            const adP2Name = (players[1].name || "").toLowerCase();
 
-            // Check if Autodarts player order matches eDART player order
             let swapped = false;
-
-            // edartMatch.player1_id = p1Id or p2Id depending on match query
-            // We already know p1Id and p2Id from our player search
-            // edartMatch.player1_id and player2_id are the eDART match's player order
-            // We need to figure out: does Autodarts player[0] = eDART player1 or player2?
-
             const edartP1Id = edartMatch.player1_id;
-            // const edartP2Id = edartMatch.player2_id;
 
-            // Autodarts player[0] corresponds to p1Id or p2Id?
-            // Check by autodarts_user_id first
             if (adP1AutoId) {
               const { data: adP1Db } = await supabase
                 .from("players")
@@ -548,7 +553,6 @@ Deno.serve(async (req) => {
                 swapped = adP1Db.id !== edartP1Id;
               }
             } else {
-              // Fallback: by name
               const { data: adP1Db } = await supabase
                 .from("players")
                 .select("id")
@@ -561,40 +565,46 @@ Deno.serve(async (req) => {
 
             const i1 = swapped ? 1 : 0;
             const i2 = swapped ? 0 : 1;
+            const api1 = swapped ? p2ApiStats : p1ApiStats;
+            const api2 = swapped ? p1ApiStats : p2ApiStats;
+
+            // Use turn-based stats first, fallback to API stats
+            const hasTurnData = st[0].totalDarts > 0 || st[1].totalDarts > 0;
+            console.log(`[auto-submit] hasTurnData=${hasTurnData}, swapped=${swapped}`);
 
             statsData = {
               score1: st[i1].legsWon,
               score2: st[i2].legsWon,
-              avg1: avg(st[i1]),
-              avg2: avg(st[i2]),
-              first_9_avg1: f9(st[i1]),
-              first_9_avg2: f9(st[i2]),
-              avg_until_170_1: a170(st[i1]),
-              avg_until_170_2: a170(st[i2]),
-              one_eighties1: st[i1].oneEighties,
-              one_eighties2: st[i2].oneEighties,
-              high_checkout1: st[i1].highCheckout,
-              high_checkout2: st[i2].highCheckout,
-              ton60_1: st[i1].ton60,
-              ton60_2: st[i2].ton60,
-              ton80_1: st[i1].ton100,
-              ton80_2: st[i2].ton100,
-              ton_plus1: st[i1].ton140,
-              ton_plus2: st[i2].ton140,
-              ton40_1: st[i1].ton170,
-              ton40_2: st[i2].ton170,
-              darts_thrown1: st[i1].totalDarts,
-              darts_thrown2: st[i2].totalDarts,
-              checkout_attempts1: numOrNull((swapped ? p2ApiStats : p1ApiStats).checkoutAttempts, (swapped ? p2ApiStats : p1ApiStats).checkoutDarts) ?? st[i1].checkoutAttempts,
-              checkout_attempts2: numOrNull((swapped ? p1ApiStats : p2ApiStats).checkoutAttempts, (swapped ? p1ApiStats : p2ApiStats).checkoutDarts) ?? st[i2].checkoutAttempts,
-              checkout_hits1: numOrNull((swapped ? p2ApiStats : p1ApiStats).checkoutHits, (swapped ? p2ApiStats : p1ApiStats).checkouts) ?? st[i1].checkoutHits,
-              checkout_hits2: numOrNull((swapped ? p1ApiStats : p2ApiStats).checkoutHits, (swapped ? p1ApiStats : p2ApiStats).checkouts) ?? st[i2].checkoutHits,
+              avg1: avgFromTurns(st[i1]) ?? apiAvg(api1),
+              avg2: avgFromTurns(st[i2]) ?? apiAvg(api2),
+              first_9_avg1: f9FromTurns(st[i1]) ?? apiFirst9(api1),
+              first_9_avg2: f9FromTurns(st[i2]) ?? apiFirst9(api2),
+              avg_until_170_1: a170FromTurns(st[i1]),
+              avg_until_170_2: a170FromTurns(st[i2]),
+              one_eighties1: hasTurnData ? st[i1].oneEighties : (numOrNull(api1.oneEighties, api1["180s"]) ?? 0),
+              one_eighties2: hasTurnData ? st[i2].oneEighties : (numOrNull(api2.oneEighties, api2["180s"]) ?? 0),
+              high_checkout1: hasTurnData ? st[i1].highCheckout : (numOrNull(api1.highestCheckout, api1.bestCheckout) ?? 0),
+              high_checkout2: hasTurnData ? st[i2].highCheckout : (numOrNull(api2.highestCheckout, api2.bestCheckout) ?? 0),
+              ton60_1: hasTurnData ? st[i1].ton60 : (numOrNull(api1["60+"], api1.ton60) ?? 0),
+              ton60_2: hasTurnData ? st[i2].ton60 : (numOrNull(api2["60+"], api2.ton60) ?? 0),
+              ton80_1: hasTurnData ? st[i1].ton100 : (numOrNull(api1["100+"], api1.ton100) ?? 0),
+              ton80_2: hasTurnData ? st[i2].ton100 : (numOrNull(api2["100+"], api2.ton100) ?? 0),
+              ton_plus1: hasTurnData ? st[i1].ton140 : (numOrNull(api1["140+"], api1.ton140) ?? 0),
+              ton_plus2: hasTurnData ? st[i2].ton140 : (numOrNull(api2["140+"], api2.ton140) ?? 0),
+              ton40_1: hasTurnData ? st[i1].ton170 : (numOrNull(api1["170+"], api1.ton170) ?? 0),
+              ton40_2: hasTurnData ? st[i2].ton170 : (numOrNull(api2["170+"], api2.ton170) ?? 0),
+              darts_thrown1: hasTurnData ? st[i1].totalDarts : (numOrNull(api1.dartsThrown, api1.darts) ?? 0),
+              darts_thrown2: hasTurnData ? st[i2].totalDarts : (numOrNull(api2.dartsThrown, api2.darts) ?? 0),
+              checkout_attempts1: numOrNull(api1.checkoutAttempts, api1.checkoutDarts) ?? st[i1].checkoutAttempts,
+              checkout_attempts2: numOrNull(api2.checkoutAttempts, api2.checkoutDarts) ?? st[i2].checkoutAttempts,
+              checkout_hits1: numOrNull(api1.checkoutHits, api1.checkouts) ?? st[i1].checkoutHits,
+              checkout_hits2: numOrNull(api2.checkoutHits, api2.checkouts) ?? st[i2].checkoutHits,
               autodarts_link: `https://play.autodarts.io/history/matches/${autodarts_match_id}`,
               nine_darters1: st[i1].nineDarters,
               nine_darters2: st[i2].nineDarters,
             };
 
-            console.log(`[auto-submit] Stats computed. Swapped=${swapped}. Score: ${statsData.score1}-${statsData.score2}`);
+            console.log(`[auto-submit] Stats computed. Score: ${statsData.score1}-${statsData.score2}, avg1=${statsData.avg1}, avg2=${statsData.avg2}, f9_1=${statsData.first_9_avg1}, f9_2=${statsData.first_9_avg2}, 180s: ${statsData.one_eighties1}/${statsData.one_eighties2}`);
           }
         } catch (err) {
           console.error("[auto-submit] Autodarts fetch error:", err);
