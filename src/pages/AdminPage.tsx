@@ -1060,7 +1060,6 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
                 <Input
                   value={playerExtIds[p.id]?.autodarts_user_id || ""}
                   onChange={(e) => setPlayerExtIds(prev => ({ ...prev, [p.id]: { ...prev[p.id], autodarts_user_id: e.target.value } }))}
-                  onBlur={(e) => supabase.from("players").update({ autodarts_user_id: e.target.value.trim() || null } as any).eq("id", p.id)}
                   placeholder="Autodarts User ID"
                   className="bg-muted/30 border-border text-xs h-8"
                 />
@@ -1070,7 +1069,6 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
                 <Input
                   value={playerExtIds[p.id]?.dartcounter_id || ""}
                   onChange={(e) => setPlayerExtIds(prev => ({ ...prev, [p.id]: { ...prev[p.id], dartcounter_id: e.target.value } }))}
-                  onBlur={(e) => supabase.from("players").update({ dartcounter_id: e.target.value.trim() || null } as any).eq("id", p.id)}
                   placeholder="Nick DartCounter"
                   className="bg-muted/30 border-border text-xs h-8"
                 />
@@ -1080,11 +1078,33 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
                 <Input
                   value={playerExtIds[p.id]?.dartsmind_id || ""}
                   onChange={(e) => setPlayerExtIds(prev => ({ ...prev, [p.id]: { ...prev[p.id], dartsmind_id: e.target.value } }))}
-                  onBlur={(e) => supabase.from("players").update({ dartsmind_id: e.target.value.trim() || null } as any).eq("id", p.id)}
                   placeholder="Nick DartsMind"
                   className="bg-muted/30 border-border text-xs h-8"
                 />
               </div>
+            </div>
+            <div className="mt-2 flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs"
+                onClick={async () => {
+                  const ids = playerExtIds[p.id];
+                  if (!ids) return;
+                  const { error } = await supabase.from("players").update({
+                    autodarts_user_id: ids.autodarts_user_id.trim() || null,
+                    dartcounter_id: ids.dartcounter_id.trim() || null,
+                    dartsmind_id: ids.dartsmind_id.trim() || null,
+                  } as any).eq("id", p.id);
+                  if (error) {
+                    toast({ title: "Błąd zapisu", description: error.message, variant: "destructive" });
+                  } else {
+                    toast({ title: "✅ ID zapisane!", description: `Zaktualizowano ID platform dla ${p.name}` });
+                  }
+                }}
+              >
+                <Check className="h-3.5 w-3.5 mr-1" /> Zapisz ID
+              </Button>
             </div>
             <div className="flex flex-wrap gap-2">
               {leagues.map((l: any) => {
