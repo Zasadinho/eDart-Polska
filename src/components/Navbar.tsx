@@ -13,7 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const allNavItems = [
+type NavItem = { label: string; href: string; icon: React.ReactElement; authOnly?: boolean };
+
+const allNavItems: NavItem[] = [
   { label: "Tabela", href: "/", icon: <Target className="h-3.5 w-3.5" /> },
   { label: "Mecze", href: "/matches", icon: <Swords className="h-3.5 w-3.5" /> },
   { label: "Gracze", href: "/players", icon: <Trophy className="h-3.5 w-3.5" /> },
@@ -27,16 +29,16 @@ const allNavItems = [
   { label: "Pobieranie", href: "/downloads", icon: <Download className="h-3.5 w-3.5" /> },
 ];
 
-const extraNavItems = [
+const extraNavItems: NavItem[] = [
   { label: "Moje Mecze", href: "/my-matches", icon: <Handshake className="h-3.5 w-3.5" />, authOnly: true },
   { label: "Osiągnięcia", href: "/achievements", icon: <Zap className="h-3.5 w-3.5" /> },
   { label: "Czat", href: "/chat", icon: <MessageCircle className="h-3.5 w-3.5" />, authOnly: true },
   { label: "Zgłoś błąd", href: "/report-bug", icon: <Bug className="h-3.5 w-3.5" />, authOnly: true },
 ];
 
-const allMobileItems = [
-  ...allNavItems.map(i => ({ ...i, icon: <i.icon.type className="h-4 w-4" /> })),
-  ...extraNavItems.map(i => ({ ...i, icon: <i.icon.type className="h-4 w-4" /> })),
+const allMobileItems: NavItem[] = [
+  ...allNavItems,
+  ...extraNavItems,
 ];
 
 const Navbar = () => {
