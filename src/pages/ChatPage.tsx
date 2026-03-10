@@ -292,7 +292,12 @@ const ChatPage = () => {
                         <div className={`max-w-[75%] rounded-lg px-3 py-2 ${isMine ? "bg-primary text-primary-foreground" : "bg-muted/50 text-foreground border border-border"}`}>
                           <p className="text-sm font-body whitespace-pre-wrap break-words">{m.content}</p>
                           <p className={`text-[10px] mt-1 ${isMine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                            {format(new Date(m.created_at), "HH:mm", { locale: pl })}
+                            {(() => {
+                              const d = new Date(m.created_at);
+                              if (isToday(d)) return format(d, "HH:mm", { locale: pl });
+                              if (isYesterday(d)) return `wczoraj ${format(d, "HH:mm", { locale: pl })}`;
+                              return format(d, "dd.MM.yyyy HH:mm", { locale: pl });
+                            })()}
                           </p>
                         </div>
                       </div>

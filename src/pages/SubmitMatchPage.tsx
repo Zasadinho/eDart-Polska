@@ -415,7 +415,11 @@ const SubmitMatchPage = () => {
         description: `Statystyki: ${fnData.data.player1_name} vs ${fnData.data.player2_name}`,
       });
     } catch {
-      toast({ title: "Błąd", description: "Nie udało się połączyć z Autodarts", variant: "destructive" });
+      toast({
+        title: "Błąd połączenia",
+        description: "Nie udało się połączyć z Autodarts. Prawdopodobnie wygasł token — odśwież stronę play.autodarts.io i spróbuj ponownie.",
+        variant: "destructive",
+      });
     }
 
     setFetchingAutodarts(false);

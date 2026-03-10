@@ -1,0 +1,1 @@
+CREATE POLICY "Anon can read players" ON public.players FOR SELECT TO anon USING (true);
