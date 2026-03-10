@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
 
     // Try autodarts_user_id first for player 2
     if (player2_autodarts_id) {
-      const { data } = await supabase
+      const { data } = await supabaseAnon
         .from("players")
         .select("id")
         .eq("autodarts_user_id", player2_autodarts_id)
