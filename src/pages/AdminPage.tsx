@@ -1053,7 +1053,39 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
                 ))}
               </select>
             </div>
-            <div className="flex flex-wrap gap-2">
+            {/* Platform IDs */}
+            <div className="mb-3 grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground font-body mb-1 block">🎯 Autodarts ID</Label>
+                <Input
+                  value={playerExtIds[p.id]?.autodarts_user_id || ""}
+                  onChange={(e) => setPlayerExtIds(prev => ({ ...prev, [p.id]: { ...prev[p.id], autodarts_user_id: e.target.value } }))}
+                  onBlur={(e) => supabase.from("players").update({ autodarts_user_id: e.target.value.trim() || null } as any).eq("id", p.id)}
+                  placeholder="Autodarts User ID"
+                  className="bg-muted/30 border-border text-xs h-8"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground font-body mb-1 block">📱 DartCounter</Label>
+                <Input
+                  value={playerExtIds[p.id]?.dartcounter_id || ""}
+                  onChange={(e) => setPlayerExtIds(prev => ({ ...prev, [p.id]: { ...prev[p.id], dartcounter_id: e.target.value } }))}
+                  onBlur={(e) => supabase.from("players").update({ dartcounter_id: e.target.value.trim() || null } as any).eq("id", p.id)}
+                  placeholder="Nick DartCounter"
+                  className="bg-muted/30 border-border text-xs h-8"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground font-body mb-1 block">🧠 DartsMind</Label>
+                <Input
+                  value={playerExtIds[p.id]?.dartsmind_id || ""}
+                  onChange={(e) => setPlayerExtIds(prev => ({ ...prev, [p.id]: { ...prev[p.id], dartsmind_id: e.target.value } }))}
+                  onBlur={(e) => supabase.from("players").update({ dartsmind_id: e.target.value.trim() || null } as any).eq("id", p.id)}
+                  placeholder="Nick DartsMind"
+                  className="bg-muted/30 border-border text-xs h-8"
+                />
+              </div>
+            </div>
               {leagues.map((l: any) => {
                 const isIn = (p.leagueIds || []).includes(l.id);
                 return (
