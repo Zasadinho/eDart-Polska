@@ -604,6 +604,8 @@ export type Database = {
           avatar: string
           avatar_url: string | null
           created_at: string
+          dartcounter_id: string | null
+          dartsmind_id: string | null
           discord: string | null
           id: string
           name: string
@@ -616,6 +618,8 @@ export type Database = {
           avatar?: string
           avatar_url?: string | null
           created_at?: string
+          dartcounter_id?: string | null
+          dartsmind_id?: string | null
           discord?: string | null
           id?: string
           name: string
@@ -628,6 +632,8 @@ export type Database = {
           avatar?: string
           avatar_url?: string | null
           created_at?: string
+          dartcounter_id?: string | null
+          dartsmind_id?: string | null
           discord?: string | null
           id?: string
           name?: string

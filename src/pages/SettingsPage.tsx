@@ -25,21 +25,25 @@ const SettingsPage = () => {
   })());
 
   // We need to get player by user_id from supabase directly
-  const [playerData, setPlayerData] = useState<{ id: string; phone: string; discord: string; avatar_url: string | null; autodarts_user_id: string } | null>(null);
+  const [playerData, setPlayerData] = useState<{ id: string; phone: string; discord: string; avatar_url: string | null; autodarts_user_id: string; dartcounter_id: string; dartsmind_id: string } | null>(null);
   const [phone, setPhone] = useState("");
   const [discord, setDiscord] = useState("");
   const [autodartsId, setAutodartsId] = useState("");
+  const [dartcounterId, setDartcounterId] = useState("");
+  const [dartsmindId, setDartsmindId] = useState("");
   const [savingContact, setSavingContact] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     import("@/integrations/supabase/client").then(({ supabase }) => {
-      supabase.from("players").select("id, phone, discord, avatar_url, autodarts_user_id").eq("user_id", user.id).maybeSingle().then(({ data }) => {
+      supabase.from("players").select("id, phone, discord, avatar_url, autodarts_user_id, dartcounter_id, dartsmind_id").eq("user_id", user.id).maybeSingle().then(({ data }) => {
         if (data) {
-          setPlayerData({ id: data.id, phone: data.phone || "", discord: data.discord || "", avatar_url: (data as any).avatar_url || null, autodarts_user_id: (data as any).autodarts_user_id || "" });
+          setPlayerData({ id: data.id, phone: data.phone || "", discord: data.discord || "", avatar_url: (data as any).avatar_url || null, autodarts_user_id: (data as any).autodarts_user_id || "", dartcounter_id: (data as any).dartcounter_id || "", dartsmind_id: (data as any).dartsmind_id || "" });
           setPhone(data.phone || "");
           setDiscord(data.discord || "");
           setAutodartsId((data as any).autodarts_user_id || "");
+          setDartcounterId((data as any).dartcounter_id || "");
+          setDartsmindId((data as any).dartsmind_id || "");
         }
       });
     });
@@ -91,6 +95,8 @@ const SettingsPage = () => {
       phone: phone.trim() || null,
       discord: discord.trim() || null,
       autodarts_user_id: autodartsId.trim() || null,
+      dartcounter_id: dartcounterId.trim() || null,
+      dartsmind_id: dartsmindId.trim() || null,
     } as any).eq("id", playerData.id);
     setSavingContact(false);
     toast({ title: "Zapisano!", description: "Dane kontaktowe zostały zaktualizowane." });
@@ -157,6 +163,20 @@ const SettingsPage = () => {
               </Label>
               <Input value={autodartsId} onChange={(e) => setAutodartsId(e.target.value)} placeholder="Twój ID z autodarts.io" className="bg-muted/30 border-border" />
               <p className="text-xs text-muted-foreground font-body">Podaj swój Autodarts User ID, aby system automatycznie pobierał wyniki Twoich meczy.</p>
+            </div>
+            <div className="space-y-2">
+              <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground flex items-center gap-1">
+                📱 Nick DartCounter
+              </Label>
+              <Input value={dartcounterId} onChange={(e) => setDartcounterId(e.target.value)} placeholder="Twój nick w DartCounter" className="bg-muted/30 border-border" />
+              <p className="text-xs text-muted-foreground font-body">Nick używany w aplikacji DartCounter — służy do dopasowania statystyk ze screenshotów.</p>
+            </div>
+            <div className="space-y-2">
+              <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground flex items-center gap-1">
+                🧠 Nick DartsMind
+              </Label>
+              <Input value={dartsmindId} onChange={(e) => setDartsmindId(e.target.value)} placeholder="Twój nick w DartsMind" className="bg-muted/30 border-border" />
+              <p className="text-xs text-muted-foreground font-body">Nick używany w aplikacji DartsMind — służy do dopasowania statystyk ze screenshotów.</p>
             </div>
             <Button type="submit" variant="hero" disabled={savingContact}>
               {savingContact ? "Zapisywanie..." : "Zapisz kontakt"}

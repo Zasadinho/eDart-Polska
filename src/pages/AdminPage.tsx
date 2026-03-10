@@ -959,16 +959,21 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
   const [adding, setAdding] = useState(false);
   const [profiles, setProfiles] = useState<{ user_id: string; name: string }[]>([]);
   const [playerUserMap, setPlayerUserMap] = useState<Record<string, string | null>>({});
+  const [playerExtIds, setPlayerExtIds] = useState<Record<string, { autodarts_user_id: string; dartcounter_id: string; dartsmind_id: string }>>({});
 
   useEffect(() => {
     const fetchProfiles = async () => {
       const { data } = await supabase.from("profiles").select("user_id, name");
       setProfiles(data || []);
-      // Fetch player->user_id mapping
-      const { data: playersWithUser } = await supabase.from("players").select("id, user_id");
+      const { data: playersWithUser } = await supabase.from("players").select("id, user_id, autodarts_user_id, dartcounter_id, dartsmind_id");
       const map: Record<string, string | null> = {};
-      (playersWithUser || []).forEach((p: any) => { map[p.id] = p.user_id; });
+      const extMap: Record<string, { autodarts_user_id: string; dartcounter_id: string; dartsmind_id: string }> = {};
+      (playersWithUser || []).forEach((p: any) => {
+        map[p.id] = p.user_id;
+        extMap[p.id] = { autodarts_user_id: p.autodarts_user_id || "", dartcounter_id: p.dartcounter_id || "", dartsmind_id: p.dartsmind_id || "" };
+      });
       setPlayerUserMap(map);
+      setPlayerExtIds(extMap);
     };
     fetchProfiles();
   }, [players]);
@@ -1047,6 +1052,39 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
                   <option key={pr.user_id} value={pr.user_id}>{pr.name} ({pr.user_id.slice(0, 8)}...)</option>
                 ))}
               </select>
+            </div>
+            {/* Platform IDs */}
+            <div className="mb-3 grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground font-body mb-1 block">🎯 Autodarts ID</Label>
+                <Input
+                  value={playerExtIds[p.id]?.autodarts_user_id || ""}
+                  onChange={(e) => setPlayerExtIds(prev => ({ ...prev, [p.id]: { ...prev[p.id], autodarts_user_id: e.target.value } }))}
+                  onBlur={(e) => supabase.from("players").update({ autodarts_user_id: e.target.value.trim() || null } as any).eq("id", p.id)}
+                  placeholder="Autodarts User ID"
+                  className="bg-muted/30 border-border text-xs h-8"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground font-body mb-1 block">📱 DartCounter</Label>
+                <Input
+                  value={playerExtIds[p.id]?.dartcounter_id || ""}
+                  onChange={(e) => setPlayerExtIds(prev => ({ ...prev, [p.id]: { ...prev[p.id], dartcounter_id: e.target.value } }))}
+                  onBlur={(e) => supabase.from("players").update({ dartcounter_id: e.target.value.trim() || null } as any).eq("id", p.id)}
+                  placeholder="Nick DartCounter"
+                  className="bg-muted/30 border-border text-xs h-8"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground font-body mb-1 block">🧠 DartsMind</Label>
+                <Input
+                  value={playerExtIds[p.id]?.dartsmind_id || ""}
+                  onChange={(e) => setPlayerExtIds(prev => ({ ...prev, [p.id]: { ...prev[p.id], dartsmind_id: e.target.value } }))}
+                  onBlur={(e) => supabase.from("players").update({ dartsmind_id: e.target.value.trim() || null } as any).eq("id", p.id)}
+                  placeholder="Nick DartsMind"
+                  className="bg-muted/30 border-border text-xs h-8"
+                />
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               {leagues.map((l: any) => {
