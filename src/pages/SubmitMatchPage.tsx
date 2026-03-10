@@ -794,9 +794,47 @@ const SubmitMatchPage = () => {
             )}
           </div>
 
-          <div className="rounded-lg border border-border bg-card p-3 mb-6 flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">Auto-zgłoszenie po zakończeniu meczu z Autodarts</div>
-            <Switch checked={autoSubmitFromExtension} onCheckedChange={setAutoSubmitFromExtension} />
+          <div className="rounded-lg border border-border bg-card p-3 mb-6 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Auto-zgłoszenie po zakończeniu meczu z Autodarts</div>
+              <Switch
+                checked={autoSubmitFromExtension}
+                onCheckedChange={(v) => {
+                  setAutoSubmitFromExtension(v);
+                  setAutoSubmitDirty(true);
+                }}
+              />
+            </div>
+            {autoSubmitDirty && myPlayerId && (
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="hero"
+                  disabled={savingAutoSubmit}
+                  onClick={async () => {
+                    setSavingAutoSubmit(true);
+                    const { error } = await supabase
+                      .from("players")
+                      .update({ auto_submit_enabled: autoSubmitFromExtension } as any)
+                      .eq("id", myPlayerId);
+                    setSavingAutoSubmit(false);
+                    if (error) {
+                      toast({ title: "Błąd", description: "Nie udało się zapisać ustawienia.", variant: "destructive" });
+                    } else {
+                      setAutoSubmitDirty(false);
+                      toast({
+                        title: autoSubmitFromExtension ? "Włączono ✅" : "Wyłączono ❌",
+                        description: autoSubmitFromExtension
+                          ? "Wyniki będą zgłaszane automatycznie."
+                          : "Wyniki nie będą zgłaszane automatycznie.",
+                      });
+                    }
+                  }}
+                >
+                  {savingAutoSubmit ? "Zapisywanie..." : "💾 Zapisz"}
+                </Button>
+              </div>
+            )}
           </div>
         </>
       )}
