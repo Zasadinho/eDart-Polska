@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const API_BASE = "https://api.autodarts.io";
@@ -50,7 +50,7 @@ async function fetchJson(url: string, token: string) {
   return res.json();
 }
 
-// ─── Stat helpers (same as fetch-autodarts-match) ───
+// ─── Stat helpers ───
 interface PlayerStats {
   totalScore: number; totalDarts: number;
   first9Score: number; first9Darts: number;
@@ -73,11 +73,6 @@ function emptyStats(): PlayerStats {
     legsWon: 0,
     nineDarters: 0,
   };
-}
-
-function isFinishableWithOneDouble(remaining: number): boolean {
-  if (remaining === 50) return true;
-  return remaining >= 2 && remaining <= 40 && remaining % 2 === 0;
 }
 
 function isFinishable(remaining: number): boolean {
@@ -220,13 +215,8 @@ function processGameTurns(
     if (isCheckout && points > 0) {
       st.checkoutHits++;
       if (points > st.highCheckout) st.highCheckout = points;
-      // Nine-darter detection: checkout with exactly 9 darts in the leg
       if (st.totalDarts > 0 && dartsCount <= 3) {
-        // Check if this leg was completed in 9 darts (3 visits × 3 darts)
-        const legDarts = turnCount[pIdx] <= 3 ? st.totalDarts : dartsCount;
-        // Simple heuristic: if we're on the 3rd turn or less and total points = 501
         if (turnCount[pIdx] <= 3 && scoreBeforeTurn != null && scoreBeforeTurn <= points && dartsCount <= 3) {
-          // Count darts in this leg based on turn count
           let legTotalDarts = 0;
           let checkIdx = i;
           let counted = 0;
@@ -252,7 +242,7 @@ function processGameTurns(
 // ─── Main handler ───
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -263,6 +253,7 @@ Deno.serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
+      console.error("[auto-submit] No auth header");
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -270,17 +261,22 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
+    
+    // Use getUser instead of getClaims for better compatibility
     const authClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
-    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims?.sub) {
+    const { data: userData, error: userError } = await authClient.auth.getUser(token);
+    
+    if (userError || !userData?.user?.id) {
+      console.error("[auto-submit] Auth failed:", userError?.message || "no user");
       return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
+        JSON.stringify({ error: "Unauthorized", details: userError?.message }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    const callerUserId = claimsData.claims.sub as string;
+    const callerUserId = userData.user.id;
+    console.log(`[auto-submit] Authenticated user: ${callerUserId}`);
 
     const {
       autodarts_match_id,
@@ -291,6 +287,8 @@ Deno.serve(async (req) => {
       player2_autodarts_id,
       client_stats,
     } = await req.json();
+
+    console.log(`[auto-submit] Request: match=${autodarts_match_id}, p1=${player1_name} (${player1_autodarts_id}), p2=${player2_name} (${player2_autodarts_id})`);
 
     if (!autodarts_match_id && !player1_name) {
       return new Response(
@@ -325,6 +323,8 @@ Deno.serve(async (req) => {
     const p1Id = await findPlayer(player1_autodarts_id, player1_name);
     const p2Id = await findPlayer(player2_autodarts_id, player2_name);
 
+    console.log(`[auto-submit] Player lookup: p1=${p1Id}, p2=${p2Id}`);
+
     if (!p1Id || !p2Id) {
       return new Response(
         JSON.stringify({
@@ -346,6 +346,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (!callerPlayer || (callerPlayer.id !== p1Id && callerPlayer.id !== p2Id)) {
+      console.log(`[auto-submit] Caller ${callerUserId} (player=${callerPlayer?.id}) is not participant p1=${p1Id} or p2=${p2Id}`);
       return new Response(
         JSON.stringify({ error: "Forbidden: you are not a participant of this match" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -397,6 +398,7 @@ Deno.serve(async (req) => {
         );
       }
 
+      console.log(`[auto-submit] No upcoming match found between ${p1Id} and ${p2Id}`);
       return new Response(
         JSON.stringify({
           is_league_match: false,
@@ -409,12 +411,11 @@ Deno.serve(async (req) => {
 
     const edartMatch = matches[0];
     const leagueName = (edartMatch as any).leagues?.name || "Liga";
+    console.log(`[auto-submit] Found match: ${edartMatch.id}, league: ${leagueName}`);
 
     // ─── Step 3: Check if match is scheduled around now ───
-    // Accept if: confirmed_date is today/yesterday/tomorrow, OR if no confirmed_date but deadline hasn't passed
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().slice(0, 10);
 
     let isScheduledNow = false;
     let scheduleInfo = "";
@@ -423,7 +424,6 @@ Deno.serve(async (req) => {
       const confirmed = new Date(edartMatch.confirmed_date);
       confirmed.setHours(0, 0, 0, 0);
       const diffDays = Math.abs((today.getTime() - confirmed.getTime()) / 86400000);
-      // Accept within 1 day of confirmed date
       isScheduledNow = diffDays <= 1;
       scheduleInfo = `confirmed_date=${edartMatch.confirmed_date}, diff=${diffDays.toFixed(0)}d`;
     } else {
@@ -451,13 +451,11 @@ Deno.serve(async (req) => {
     }
 
     // ─── Step 4: Fetch full stats from Autodarts API ───
-    // Try player's token first, then server credentials as fallback
     let statsData: any = null;
 
     if (autodarts_match_id) {
       let adToken: string | null = null;
 
-      // Try player's autodarts token first
       if (autodarts_token) {
         try {
           const testRes = await fetch(`${API_BASE}/as/v0/matches/${autodarts_match_id}`, {
@@ -467,15 +465,18 @@ Deno.serve(async (req) => {
             adToken = autodarts_token;
             console.log("[auto-submit] Using player's autodarts token");
           } else {
-            await testRes.text();
+            const errText = await testRes.text();
+            console.log(`[auto-submit] Player token failed (${testRes.status}): ${errText.substring(0, 100)}`);
           }
-        } catch { /* fallback */ }
+        } catch (e) {
+          console.log(`[auto-submit] Player token error: ${e}`);
+        }
       }
 
-      // Fallback to server credentials
       if (!adToken) {
         adToken = await loginToAutodarts();
         if (adToken) console.log("[auto-submit] Using server autodarts credentials");
+        else console.log("[auto-submit] Server autodarts login failed");
       }
 
       if (adToken) {
@@ -524,15 +525,11 @@ Deno.serve(async (req) => {
             const p2ApiStats = players[1]?.stats || {};
 
             console.log(`[auto-submit] Turn-based: P1 darts=${st[0].totalDarts} score=${st[0].totalScore}, P2 darts=${st[1].totalDarts} score=${st[1].totalScore}`);
-            console.log(`[auto-submit] API stats P1:`, JSON.stringify(p1ApiStats));
-            console.log(`[auto-submit] API stats P2:`, JSON.stringify(p2ApiStats));
 
-            // Compute from turns
             const avgFromTurns = (s: PlayerStats) => s.totalDarts > 0 ? Math.round((s.totalScore / s.totalDarts) * 3 * 100) / 100 : null;
             const f9FromTurns = (s: PlayerStats) => s.first9Darts > 0 ? Math.round((s.first9Score / s.first9Darts) * 3 * 100) / 100 : null;
             const a170FromTurns = (s: PlayerStats) => s.until170Darts > 0 ? Math.round((s.until170Score / s.until170Darts) * 3 * 100) / 100 : null;
 
-            // Helper to read avg from API stats (ppd * 3 or direct average)
             const apiAvg = (apiSt: any): number | null => {
               if (typeof apiSt.average === "number") return Math.round(apiSt.average * 100) / 100;
               if (typeof apiSt.avg === "number") return Math.round(apiSt.avg * 100) / 100;
@@ -544,7 +541,6 @@ Deno.serve(async (req) => {
               return numOrNull(apiSt.first9Average, apiSt.firstNineAvg, apiSt.first9Avg, apiSt.first9avg);
             };
 
-            // Determine which Autodarts player maps to which eDART player
             const adP1AutoId = players[0].userId || players[0].id || null;
 
             let swapped = false;
@@ -575,7 +571,6 @@ Deno.serve(async (req) => {
             const api1 = swapped ? p2ApiStats : p1ApiStats;
             const api2 = swapped ? p1ApiStats : p2ApiStats;
 
-            // Use turn-based stats first, fallback to API stats
             const hasTurnData = st[0].totalDarts > 0 || st[1].totalDarts > 0;
             console.log(`[auto-submit] hasTurnData=${hasTurnData}, swapped=${swapped}`);
 
@@ -611,13 +606,11 @@ Deno.serve(async (req) => {
               nine_darters2: st[i2].nineDarters,
             };
 
-            console.log(`[auto-submit] Stats computed. Score: ${statsData.score1}-${statsData.score2}, avg1=${statsData.avg1}, avg2=${statsData.avg2}, f9_1=${statsData.first_9_avg1}, f9_2=${statsData.first_9_avg2}, 180s: ${statsData.one_eighties1}/${statsData.one_eighties2}`);
+            console.log(`[auto-submit] Stats computed. Score: ${statsData.score1}-${statsData.score2}, avg1=${statsData.avg1}, avg2=${statsData.avg2}`);
           }
         } catch (err) {
           console.error("[auto-submit] Autodarts fetch error:", err);
         }
-      } else {
-        console.error("[auto-submit] Failed to login to Autodarts");
       }
     }
 
@@ -625,8 +618,6 @@ Deno.serve(async (req) => {
     if (!statsData && client_stats) {
       console.log("[auto-submit] Using client-captured stats as fallback");
       
-      // Determine player mapping: client stats are in Autodarts order (player[0], player[1])
-      // We need to map to eDART order (edartMatch.player1_id, edartMatch.player2_id)
       let cSwapped = false;
       if (player1_autodarts_id) {
         const { data: cp1 } = await supabase.from("players").select("id").eq("autodarts_user_id", player1_autodarts_id).maybeSingle();
@@ -674,7 +665,7 @@ Deno.serve(async (req) => {
           avg_until_170_1: null, avg_until_170_2: null,
         };
       }
-      console.log(`[auto-submit] Client fallback stats: score=${statsData.score1}-${statsData.score2}, avg1=${statsData.avg1}, avg2=${statsData.avg2}, swapped=${cSwapped}`);
+      console.log(`[auto-submit] Client fallback stats: score=${statsData.score1}-${statsData.score2}, swapped=${cSwapped}`);
     }
 
     if (!statsData) {
@@ -755,7 +746,6 @@ Deno.serve(async (req) => {
     // Clean up live match entry
     if (autodarts_match_id) {
       await supabase.from("live_matches").delete().eq("autodarts_match_id", autodarts_match_id);
-      console.log(`[auto-submit] Cleaned up live match: ${autodarts_match_id}`);
     }
 
     console.log(`[auto-submit] ✅ Match ${edartMatch.id} submitted as ${newStatus}. Score: ${statsData.score1}-${statsData.score2}`);
@@ -774,7 +764,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("[auto-submit] Error:", err);
     return new Response(
-      JSON.stringify({ is_league_match: false, submitted: false, error: "Internal server error" }),
+      JSON.stringify({ is_league_match: false, submitted: false, error: String(err) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
