@@ -351,7 +351,7 @@ browserAPI.notifications.onClicked.addListener((notificationId) => {
     });
     browserAPI.notifications.clear(notificationId);
   } else if (notificationId.startsWith("league-live-")) {
-    browserAPI.tabs.create({ url: `${EDART_URL}/matches`, active: true });
+    browserAPI.tabs.create({ url: `${EDART_URL}/live`, active: true });
     browserAPI.notifications.clear(notificationId);
   }
 });
