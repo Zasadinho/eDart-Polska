@@ -114,19 +114,19 @@ const SubmitMatchPage = () => {
 
   const canSubmitAll = isAdmin || isModerator;
 
-  const upcomingMatches = matches.filter((m) => {
+  const upcomingMatches = useMemo(() => matches.filter((m) => {
     if (m.status !== "upcoming") return false;
     if (canSubmitAll) return true;
     if (!myPlayerId) return false;
     return m.player1Id === myPlayerId || m.player2Id === myPlayerId;
-  });
+  }), [matches, canSubmitAll, myPlayerId]);
 
-  const pendingMatches = matches.filter((m) => {
+  const pendingMatches = useMemo(() => matches.filter((m) => {
     if (m.status !== "pending_approval") return false;
     if (canSubmitAll) return true;
     if (!myPlayerId) return false;
     return m.player1Id === myPlayerId || m.player2Id === myPlayerId;
-  });
+  }), [matches, canSubmitAll, myPlayerId]);
 
   const selectedMatch = matches.find((m) => m.id === selectedMatchId);
 
