@@ -17,12 +17,15 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
+  Camera,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import MatchStatFields from "@/components/MatchStatFields";
+import ScreenshotUpload from "@/components/ScreenshotUpload";
 
 type AutoPayload = Record<string, any>;
+type SourcePlatform = "autodarts" | "dartcounter" | "dartsmind";
 
 const asNumber = (value: unknown, fallback = 0): number => {
   const n = Number(value);
@@ -83,6 +86,8 @@ const SubmitMatchPage = () => {
   const [extensionToken, setExtensionToken] = useState<string | null>(null);
   const [tokenFresh, setTokenFresh] = useState(false);
   const [autoSubmitFromExtension, setAutoSubmitFromExtension] = useState(true);
+  const [sourcePlatform, setSourcePlatform] = useState<SourcePlatform>("autodarts");
+  const [screenshotUrls, setScreenshotUrls] = useState<string[]>([]);
   const processedAutoMatchRef = useRef<string | null>(null);
 
   // Raw preview of fetched Autodarts data
@@ -484,6 +489,56 @@ const SubmitMatchPage = () => {
     setStats({});
     setShowAdvanced(false);
     setRawPreview(null);
+    setScreenshotUrls([]);
+  };
+
+  const handleScreenshotStats = (extractedStats: Record<string, any>) => {
+    if (extractedStats.screenshot_urls) {
+      setScreenshotUrls(extractedStats.screenshot_urls);
+    }
+    
+    const payload: AutoPayload = {
+      player1_name: extractedStats.player1_name || "",
+      player2_name: extractedStats.player2_name || "",
+      score1: extractedStats.score1 ?? 0,
+      score2: extractedStats.score2 ?? 0,
+      avg1: extractedStats.avg1 ?? null,
+      avg2: extractedStats.avg2 ?? null,
+      first_9_avg1: extractedStats.first_9_avg1 ?? null,
+      first_9_avg2: extractedStats.first_9_avg2 ?? null,
+      one_eighties1: extractedStats.one_eighties1 ?? 0,
+      one_eighties2: extractedStats.one_eighties2 ?? 0,
+      high_checkout1: extractedStats.high_checkout1 ?? 0,
+      high_checkout2: extractedStats.high_checkout2 ?? 0,
+      checkout_attempts1: extractedStats.checkout_attempts1 ?? 0,
+      checkout_attempts2: extractedStats.checkout_attempts2 ?? 0,
+      checkout_hits1: extractedStats.checkout_hits1 ?? 0,
+      checkout_hits2: extractedStats.checkout_hits2 ?? 0,
+      darts_thrown1: extractedStats.darts_thrown1 ?? 0,
+      darts_thrown2: extractedStats.darts_thrown2 ?? 0,
+      ton60_1: extractedStats.ton60_1 ?? 0,
+      ton60_2: extractedStats.ton60_2 ?? 0,
+      ton80_1: extractedStats.ton80_1 ?? 0,
+      ton80_2: extractedStats.ton80_2 ?? 0,
+      ton_plus1: extractedStats.ton_plus1 ?? 0,
+      ton_plus2: extractedStats.ton_plus2 ?? 0,
+    };
+
+    // Try to match player names to the selected match and swap if needed
+    if (selectedMatch) {
+      const p1 = normalizeName(payload.player1_name);
+      const p2 = normalizeName(payload.player2_name);
+      const m1 = normalizeName(selectedMatch.player1Name);
+      const m2 = normalizeName(selectedMatch.player2Name);
+      
+      const reversed = m1 === p2 && m2 === p1;
+      if (reversed) {
+        populateForm(swapPayload(payload));
+        return;
+      }
+    }
+
+    populateForm(payload);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -544,6 +599,8 @@ const SubmitMatchPage = () => {
       avgUntil170_1: optNum("avgUntil170_1"),
       avgUntil170_2: optNum("avgUntil170_2"),
       autodartsLink: autodartsLink || undefined,
+      screenshotUrls: screenshotUrls.length > 0 ? screenshotUrls : undefined,
+      sourcePlatform,
     };
 
     submitMatchResult(selectedMatchId, data);
@@ -596,43 +653,70 @@ const SubmitMatchPage = () => {
         </p>
       </div>
 
-      {/* Extension status */}
-      <div
-        className={`rounded-lg border p-3 mb-4 flex items-center gap-3 text-sm ${
-          extensionInstalled && extensionToken
-            ? "border-primary/30 bg-primary/10 text-primary"
-            : extensionInstalled
-              ? "border-accent/30 bg-accent/10 text-accent"
-              : "border-border bg-muted/30 text-muted-foreground"
-        }`}
-      >
-        {extensionInstalled && extensionToken ? (
-          <>
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span>Rozszerzenie aktywne — token Autodarts gotowy {tokenFresh ? "✅" : "(odśwież Autodarts)"}</span>
-          </>
-        ) : extensionInstalled ? (
-          <>
-            <XCircle className="h-4 w-4 shrink-0" />
-            <span>
-              Rozszerzenie działa, ale brak tokena. Zaloguj się na{" "}
-              <a href="https://play.autodarts.io" target="_blank" rel="noopener" className="underline">
-                play.autodarts.io
-              </a>
-            </span>
-          </>
-        ) : (
-          <>
-            <Zap className="h-4 w-4 shrink-0" />
-            <span>Zainstaluj rozszerzenie Chrome eDART, żeby pobierać i wysyłać wynik automatycznie.</span>
-          </>
-        )}
+      {/* Platform selector */}
+      <div className="rounded-lg border border-border bg-card p-4 mb-4">
+        <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground mb-3 block">
+          Platforma
+        </Label>
+        <div className="grid grid-cols-3 gap-2">
+          {(["autodarts", "dartcounter", "dartsmind"] as SourcePlatform[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setSourcePlatform(p)}
+              className={`rounded-lg border p-3 text-center text-sm font-display transition-all ${
+                sourcePlatform === p
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-card hover:border-primary/30 text-muted-foreground"
+              }`}
+            >
+              {p === "autodarts" ? "🎯 Autodarts" : p === "dartcounter" ? "📱 DartCounter" : "🧠 DartsMind"}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-3 mb-6 flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">Auto-zgłoszenie po zakończeniu meczu z Autodarts</div>
-        <Switch checked={autoSubmitFromExtension} onCheckedChange={setAutoSubmitFromExtension} />
-      </div>
+      {/* Extension status - only for Autodarts */}
+      {sourcePlatform === "autodarts" && (
+        <>
+          <div
+            className={`rounded-lg border p-3 mb-4 flex items-center gap-3 text-sm ${
+              extensionInstalled && extensionToken
+                ? "border-primary/30 bg-primary/10 text-primary"
+                : extensionInstalled
+                  ? "border-accent/30 bg-accent/10 text-accent"
+                  : "border-border bg-muted/30 text-muted-foreground"
+            }`}
+          >
+            {extensionInstalled && extensionToken ? (
+              <>
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>Rozszerzenie aktywne — token Autodarts gotowy {tokenFresh ? "✅" : "(odśwież Autodarts)"}</span>
+              </>
+            ) : extensionInstalled ? (
+              <>
+                <XCircle className="h-4 w-4 shrink-0" />
+                <span>
+                  Rozszerzenie działa, ale brak tokena. Zaloguj się na{" "}
+                  <a href="https://play.autodarts.io" target="_blank" rel="noopener" className="underline">
+                    play.autodarts.io
+                  </a>
+                </span>
+              </>
+            ) : (
+              <>
+                <Zap className="h-4 w-4 shrink-0" />
+                <span>Zainstaluj rozszerzenie Chrome eDART, żeby pobierać i wysyłać wynik automatycznie.</span>
+              </>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-border bg-card p-3 mb-6 flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">Auto-zgłoszenie po zakończeniu meczu z Autodarts</div>
+            <Switch checked={autoSubmitFromExtension} onCheckedChange={setAutoSubmitFromExtension} />
+          </div>
+        </>
+      )}
 
       {/* Pending matches */}
       {pendingMatches.length > 0 && (
@@ -754,7 +838,7 @@ const SubmitMatchPage = () => {
                   </div>
 
                   <p className="text-[10px] text-muted-foreground text-center">
-                    Dane z Autodarts uzupełniły formularz poniżej.
+                    Dane z {sourcePlatform === "autodarts" ? "Autodarts" : sourcePlatform === "dartcounter" ? "DartCounter" : "DartsMind"} uzupełniły formularz poniżej.
                   </p>
                 </div>
               )}
@@ -794,37 +878,47 @@ const SubmitMatchPage = () => {
               </div>
 
 
-              {/* Autodarts link */}
-              <div className="space-y-2">
-                <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground flex items-center gap-2">
-                  <Link2 className="h-3.5 w-3.5" /> Link Autodarts.io
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="url"
-                    value={autodartsLink}
-                    onChange={(e) => setAutodartsLink(e.target.value)}
-                    placeholder="https://play.autodarts.io/history/matches/..."
-                    className="bg-muted/30 border-border"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={!autodartsLink || fetchingAutodarts}
-                    onClick={handleFetchAutodarts}
-                    className="shrink-0 font-display uppercase tracking-wider text-xs"
-                  >
-                    {fetchingAutodarts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-                    {fetchingAutodarts ? "" : " Pobierz"}
-                  </Button>
+              {/* Screenshot upload for DartCounter/DartsMind */}
+              {(sourcePlatform === "dartcounter" || sourcePlatform === "dartsmind") && (
+                <ScreenshotUpload
+                  onStatsExtracted={handleScreenshotStats}
+                  matchId={selectedMatchId}
+                />
+              )}
+
+              {/* Autodarts link - only for Autodarts */}
+              {sourcePlatform === "autodarts" && (
+                <div className="space-y-2">
+                  <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground flex items-center gap-2">
+                    <Link2 className="h-3.5 w-3.5" /> Link Autodarts.io
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="url"
+                      value={autodartsLink}
+                      onChange={(e) => setAutodartsLink(e.target.value)}
+                      placeholder="https://play.autodarts.io/history/matches/..."
+                      className="bg-muted/30 border-border"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={!autodartsLink || fetchingAutodarts}
+                      onClick={handleFetchAutodarts}
+                      className="shrink-0 font-display uppercase tracking-wider text-xs"
+                    >
+                      {fetchingAutodarts ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                      {fetchingAutodarts ? "" : " Pobierz"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-body">
+                    {extensionInstalled && extensionToken
+                      ? "✅ Rozszerzenie pobiera i może wysłać wynik automatycznie"
+                      : "Wklej link i kliknij Pobierz — zostaniesz poproszony o token"}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground font-body">
-                  {extensionInstalled && extensionToken
-                    ? "✅ Rozszerzenie pobiera i może wysłać wynik automatycznie"
-                    : "Wklej link i kliknij Pobierz — zostaniesz poproszony o token"}
-                </p>
-              </div>
+              )}
 
               <button
                 type="button"

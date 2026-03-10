@@ -14,6 +14,7 @@ interface ExtensionSettings {
   league_id: string | null;
   auto_approve: boolean;
   auto_approve_manual: boolean;
+  auto_approve_screenshot: boolean;
   require_avg: boolean;
   require_180s: boolean;
   require_high_checkout: boolean;
@@ -55,6 +56,7 @@ const ExtensionConfigPanel = ({ leagues }: { leagues: any[] }) => {
       .update({
         auto_approve: s.auto_approve,
         auto_approve_manual: s.auto_approve_manual,
+        auto_approve_screenshot: s.auto_approve_screenshot,
         require_avg: s.require_avg,
         require_180s: s.require_180s,
         require_high_checkout: s.require_high_checkout,
@@ -253,7 +255,21 @@ const ExtensionConfigPanel = ({ leagues }: { leagues: any[] }) => {
             />
           </div>
 
-          {(settings.auto_approve || settings.auto_approve_manual) && (
+          <div className="border-t border-border pt-4 flex items-center justify-between">
+            <div>
+              <Label className="font-body font-medium text-foreground">Auto-zatwierdzanie (screenshot AI)</Label>
+              <p className="text-xs text-muted-foreground font-body mt-0.5">
+                Wyniki ze screenshotów rozpoznane przez AI z wysoką pewnością będą zatwierdzane automatycznie.
+                Screenshoty o niskiej pewności trafią do ręcznej weryfikacji.
+              </p>
+            </div>
+            <Switch
+              checked={settings.auto_approve_screenshot}
+              onCheckedChange={(v) => updateSetting("auto_approve_screenshot", v)}
+            />
+          </div>
+
+          {(settings.auto_approve || settings.auto_approve_manual || settings.auto_approve_screenshot) && (
             <div className="rounded-md bg-accent/10 border border-accent/30 p-3 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-accent mt-0.5 shrink-0" />
               <p className="text-xs text-accent font-body">

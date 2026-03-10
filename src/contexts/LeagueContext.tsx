@@ -70,6 +70,8 @@ export interface MatchResultData {
   avgUntil170_1?: number;
   avgUntil170_2?: number;
   autodartsLink?: string;
+  screenshotUrls?: string[];
+  sourcePlatform?: string;
 }
 
 export interface TonLeaderEntry {
@@ -142,6 +144,8 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
     avgUntil170_1: m.avg_until_170_1 ? Number(m.avg_until_170_1) : undefined,
     avgUntil170_2: m.avg_until_170_2 ? Number(m.avg_until_170_2) : undefined,
     confirmedDate: m.confirmed_date ?? null,
+    screenshotUrls: m.screenshot_urls ?? [],
+    sourcePlatform: m.source_platform ?? 'autodarts',
   };
 };
 
@@ -366,7 +370,9 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       avg_until_170_1: data.avgUntil170_1 ?? null,
       avg_until_170_2: data.avgUntil170_2 ?? null,
       autodarts_link: data.autodartsLink,
-    }).eq("id", matchId);
+      screenshot_urls: data.screenshotUrls ?? [],
+      source_platform: data.sourcePlatform ?? 'autodarts',
+    } as any).eq("id", matchId);
 
     setMatchList((prev) =>
       prev.map((m) =>
