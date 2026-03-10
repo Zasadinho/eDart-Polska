@@ -80,6 +80,12 @@ function isFinishableWithOneDouble(remaining: number): boolean {
   return remaining >= 2 && remaining <= 40 && remaining % 2 === 0;
 }
 
+function isFinishable(remaining: number): boolean {
+  if (remaining <= 0 || remaining > 170) return false;
+  const impossible = new Set([169, 168, 166, 165, 163, 162, 159]);
+  return !impossible.has(remaining);
+}
+
 function getDartPoints(dart: any): number {
   const seg = dart?.segment || dart || {};
   const bed = String(seg.bed ?? "").toLowerCase();
