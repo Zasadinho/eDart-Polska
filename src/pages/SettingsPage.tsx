@@ -95,6 +95,8 @@ const SettingsPage = () => {
       phone: phone.trim() || null,
       discord: discord.trim() || null,
       autodarts_user_id: autodartsId.trim() || null,
+      dartcounter_id: dartcounterId.trim() || null,
+      dartsmind_id: dartsmindId.trim() || null,
     } as any).eq("id", playerData.id);
     setSavingContact(false);
     toast({ title: "Zapisano!", description: "Dane kontaktowe zostały zaktualizowane." });
