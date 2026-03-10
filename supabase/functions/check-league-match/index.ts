@@ -18,7 +18,9 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabase = createClient(supabaseUrl, serviceKey);
+    // Use anon key for read-only lookups; service key only for privileged actions
+    const supabaseAnon = createClient(supabaseUrl, anonKey);
+    const supabaseService = createClient(supabaseUrl, serviceKey);
 
     // Handle live match end action — requires authenticated admin/moderator
     if (action === "end_live_match" && autodarts_match_id) {
@@ -42,7 +44,7 @@ Deno.serve(async (req) => {
       }
       const userId = claimsData.claims.sub;
       // Check admin/moderator role
-      const { data: isModAdmin } = await supabase.rpc("is_moderator_or_admin", { _user_id: userId });
+      const { data: isModAdmin } = await supabaseService.rpc("is_moderator_or_admin", { _user_id: userId });
       if (!isModAdmin) {
         return new Response(
           JSON.stringify({ error: "Forbidden" }),
@@ -50,7 +52,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      await supabase.from("live_matches").delete().eq("autodarts_match_id", autodarts_match_id);
+      await supabaseService.from("live_matches").delete().eq("autodarts_match_id", autodarts_match_id);
       return new Response(
         JSON.stringify({ ok: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -70,7 +72,7 @@ Deno.serve(async (req) => {
 
     // Try autodarts_user_id first for player 1
     if (player1_autodarts_id) {
-      const { data } = await supabase
+      const { data } = await supabaseAnon
         .from("players")
         .select("id")
         .eq("autodarts_user_id", player1_autodarts_id)
@@ -79,7 +81,7 @@ Deno.serve(async (req) => {
     }
     // Fallback to name
     if (!p1Id && player1_name) {
-      const { data } = await supabase
+      const { data } = await supabaseAnon
         .from("players")
         .select("id")
         .ilike("name", player1_name)
@@ -89,7 +91,7 @@ Deno.serve(async (req) => {
 
     // Try autodarts_user_id first for player 2
     if (player2_autodarts_id) {
-      const { data } = await supabase
+      const { data } = await supabaseAnon
         .from("players")
         .select("id")
         .eq("autodarts_user_id", player2_autodarts_id)
@@ -98,7 +100,7 @@ Deno.serve(async (req) => {
     }
     // Fallback to name
     if (!p2Id && player2_name) {
-      const { data } = await supabase
+      const { data } = await supabaseAnon
         .from("players")
         .select("id")
         .ilike("name", player2_name)
@@ -119,7 +121,7 @@ Deno.serve(async (req) => {
     }
 
     // Check for upcoming match between these two players (either order)
-    const { data: matches } = await supabase
+    const { data: matches } = await supabaseAnon
       .from("matches")
       .select("id, league_id, round, date, leagues!inner(name)")
       .eq("status", "upcoming")
