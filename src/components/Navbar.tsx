@@ -29,6 +29,8 @@ const moreNavItems = [
   { label: "Osiągnięcia", href: "/achievements", icon: <Zap className="h-3.5 w-3.5" /> },
   { label: "Czat", href: "/chat", icon: <MessageCircle className="h-3.5 w-3.5" />, authOnly: true },
   { label: "Ogłoszenia", href: "/announcements", icon: <Megaphone className="h-3.5 w-3.5" /> },
+  { label: "Jak grać?", href: "/how-to-play", icon: <Gamepad2 className="h-3.5 w-3.5" /> },
+  { label: "Pobieranie", href: "/downloads", icon: <Download className="h-3.5 w-3.5" /> },
   { label: "Zgłoś błąd", href: "/report-bug", icon: <Bug className="h-3.5 w-3.5" />, authOnly: true },
 ];
 
