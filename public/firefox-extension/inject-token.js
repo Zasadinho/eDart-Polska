@@ -1,6 +1,6 @@
-// Content script that runs on eDART pages (Firefox version)
+// Content script that runs on eDART pages
+// Provides token + latest finished match data + league match data to the app
 // Reads session from localStorage directly instead of receiving via postMessage
-const browserAPI = typeof browser !== "undefined" ? browser : chrome;
 
 (function () {
   const STORAGE_KEY_PREFIX = "sb-";
@@ -29,7 +29,7 @@ const browserAPI = typeof browser !== "undefined" ? browser : chrome;
   const syncSessionToExtension = () => {
     const token = getSessionFromLocalStorage();
     if (token) {
-      browserAPI.storage.local.set({
+      chrome.storage.local.set({
         edart_session_token: token,
         edart_session_timestamp: Date.now(),
       });
@@ -37,7 +37,7 @@ const browserAPI = typeof browser !== "undefined" ? browser : chrome;
   };
 
   const postToken = () => {
-    browserAPI.storage.local.get(["autodarts_token", "token_timestamp"]).then((result) => {
+    chrome.storage.local.get(["autodarts_token", "token_timestamp"], (result) => {
       window.postMessage(
         {
           type: "EDART_TOKEN_RESPONSE",
@@ -51,7 +51,7 @@ const browserAPI = typeof browser !== "undefined" ? browser : chrome;
   };
 
   const postLastMatch = () => {
-    browserAPI.storage.local.get(["autodarts_last_match", "autodarts_last_match_timestamp"]).then((result) => {
+    chrome.storage.local.get(["autodarts_last_match", "autodarts_last_match_timestamp"], (result) => {
       window.postMessage(
         {
           type: "EDART_LAST_MATCH_RESPONSE",
@@ -64,7 +64,7 @@ const browserAPI = typeof browser !== "undefined" ? browser : chrome;
   };
 
   const postLeagueMatch = () => {
-    browserAPI.storage.local.get(["autodarts_league_match", "autodarts_league_match_timestamp"]).then((result) => {
+    chrome.storage.local.get(["autodarts_league_match", "autodarts_league_match_timestamp"], (result) => {
       window.postMessage(
         {
           type: "EDART_LEAGUE_MATCH_RESPONSE",
@@ -84,7 +84,7 @@ const browserAPI = typeof browser !== "undefined" ? browser : chrome;
     if (event.data?.type === "EDART_AUTH_STATE_CHANGED") syncSessionToExtension();
   });
 
-  browserAPI.storage.onChanged.addListener((changes, areaName) => {
+  chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== "local") return;
     if (changes.autodarts_last_match) {
       window.postMessage(
@@ -111,10 +111,9 @@ const browserAPI = typeof browser !== "undefined" ? browser : chrome;
     }
   });
 
-  window.postMessage({ type: "EDART_EXTENSION_INSTALLED", version: "1.5.1" }, "*");
+  window.postMessage({ type: "EDART_EXTENSION_INSTALLED", version: "1.5.0" }, "*");
   postToken();
-  // Do NOT auto-push last match on page load — only respond to explicit requests
-  // postLastMatch();
+  postLastMatch();
   postLeagueMatch();
 
   // Initial session sync from localStorage
@@ -123,7 +122,7 @@ const browserAPI = typeof browser !== "undefined" ? browser : chrome;
   // Store eDART user ID for auto-fill functionality
   window.addEventListener("message", (event) => {
     if (event.data?.type === "EDART_STORE_USER_ID" && event.data?.userId) {
-      browserAPI.storage.local.set({ edart_user_id: event.data.userId });
+      chrome.storage.local.set({ edart_user_id: event.data.userId });
     }
   });
 })();
