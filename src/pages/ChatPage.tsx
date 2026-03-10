@@ -281,7 +281,32 @@ const ChatPage = () => {
                 <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setActiveChat(null)}>
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <span className="font-display font-bold text-foreground">{activeName}</span>
+                <span className="font-display font-bold text-foreground flex-1">{activeName}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive h-7 px-2"
+                  onClick={async () => {
+                    if (!user || !activeChat) return;
+                    if (!confirm("Czy na pewno chcesz usunąć tę rozmowę?")) return;
+                    // We can only delete messages we sent
+                    // For full clear, delete all messages in this conversation
+                    await supabase
+                      .from("chat_messages")
+                      .delete()
+                      .eq("sender_id", user.id)
+                      .eq("receiver_id", activeChat);
+                    await supabase
+                      .from("chat_messages")
+                      .delete()
+                      .eq("sender_id", activeChat)
+                      .eq("receiver_id", user.id);
+                    setMessages([]);
+                    loadContacts();
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
               </div>
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-3">
