@@ -1324,6 +1324,11 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
       });
     }
 
+    // Discord webhook
+    await supabase.functions.invoke("discord-webhook", {
+      body: { action: "send_match_result", match_data: { match_id: matchId } },
+    }).catch(() => {});
+
     setWalkoverDialog(null);
     refreshData();
     toast({ title: "⚠️ Walkower zapisany!", description: `Wygrywa ${isP1Winner ? match.player1Name : match.player2Name} ${s1}:${s2}` });
@@ -1364,6 +1369,13 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
         old_data: null,
         new_data: { player_id: playerId, league_id: leagueId, matches_affected: upcomingMatches.length },
       });
+    }
+
+    // Discord webhooks for all disqualified matches
+    for (const m of upcomingMatches) {
+      await supabase.functions.invoke("discord-webhook", {
+        body: { action: "send_match_result", match_data: { match_id: m.id } },
+      }).catch(() => {});
     }
 
     refreshData();
