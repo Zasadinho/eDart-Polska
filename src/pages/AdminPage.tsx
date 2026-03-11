@@ -1296,6 +1296,80 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
     toast({ title: "🔄 Mecz zresetowany", description: "Status zmieniony na 'zaplanowany', statystyki wyczyszczone." });
   };
 
+  const handleWalkover = async (matchId: string, winnerId: string, loserId: string, leagueId: string) => {
+    // Find league max_legs for walkover score
+    const league = leagues.find((l: any) => l.id === leagueId);
+    const maxLegs = league?.max_legs || 5;
+    const winScore = Math.ceil(maxLegs / 2); // e.g. Best of 5 = need 3 to win
+
+    const match = matches.find((m: any) => m.id === matchId);
+    if (!match) return;
+
+    const isP1Winner = match.player1Id === winnerId;
+    const s1 = isP1Winner ? winScore : 0;
+    const s2 = isP1Winner ? 0 : winScore;
+
+    await supabase.from("matches").update({
+      score1: s1, score2: s2, legs_won1: s1, legs_won2: s2,
+      status: "completed", is_walkover: true,
+    } as any).eq("id", matchId);
+
+    // Audit
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("match_audit_log").insert({
+        match_id: matchId, user_id: user.id, action: "walkover",
+        old_data: { status: match.status },
+        new_data: { status: "completed", is_walkover: true, score1: s1, score2: s2 },
+      });
+    }
+
+    setWalkoverDialog(null);
+    refreshData();
+    toast({ title: "⚠️ Walkower zapisany!", description: `Wygrywa ${isP1Winner ? match.player1Name : match.player2Name} ${s1}:${s2}` });
+  };
+
+  const handleDisqualify = async (playerId: string, leagueId: string, playerName: string) => {
+    if (!confirm(`Czy na pewno chcesz zdyskwalifikować ${playerName}? Wszystkie nadchodzące mecze zostaną przegrane walkowerem.`)) return;
+
+    // Mark player as disqualified in player_leagues
+    await supabase.from("player_leagues").update({ disqualified: true, disqualified_at: new Date().toISOString() } as any)
+      .eq("player_id", playerId).eq("league_id", leagueId);
+
+    // Find all upcoming matches for this player in this league
+    const upcomingMatches = matches.filter((m: any) => m.leagueId === leagueId && m.status === "upcoming" && (m.player1Id === playerId || m.player2Id === playerId));
+
+    const league = leagues.find((l: any) => l.id === leagueId);
+    const maxLegs = league?.max_legs || 5;
+    const winScore = Math.ceil(maxLegs / 2);
+
+    for (const m of upcomingMatches) {
+      const isP1Disqualified = m.player1Id === playerId;
+      const s1 = isP1Disqualified ? 0 : winScore;
+      const s2 = isP1Disqualified ? winScore : 0;
+
+      await supabase.from("matches").update({
+        score1: s1, score2: s2, legs_won1: s1, legs_won2: s2,
+        status: "completed", is_walkover: true,
+      } as any).eq("id", m.id);
+    }
+
+    // Audit
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("match_audit_log").insert({
+        match_id: upcomingMatches[0]?.id || "00000000-0000-0000-0000-000000000000",
+        user_id: user.id,
+        action: "disqualify",
+        old_data: null,
+        new_data: { player_id: playerId, league_id: leagueId, matches_affected: upcomingMatches.length },
+      });
+    }
+
+    refreshData();
+    toast({ title: "🚫 Gracz zdyskwalifikowany!", description: `${playerName} — ${upcomingMatches.length} meczów przegranych walkowerem.` });
+  };
+
   const handleCompleteWithStats = async (m: any) => {
     const s1 = parseInt(editScore1) || 0;
     const s2 = parseInt(editScore2) || 0;
