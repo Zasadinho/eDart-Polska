@@ -210,6 +210,7 @@ export type Database = {
           max_legs: number | null
           meetings_per_pair: number
           name: string
+          registration_deadline: string | null
           registration_open: boolean
           season: string
         }
@@ -224,6 +225,7 @@ export type Database = {
           max_legs?: number | null
           meetings_per_pair?: number
           name: string
+          registration_deadline?: string | null
           registration_open?: boolean
           season: string
         }
@@ -238,6 +240,7 @@ export type Database = {
           max_legs?: number | null
           meetings_per_pair?: number
           name?: string
+          registration_deadline?: string | null
           registration_open?: boolean
           season?: string
         }

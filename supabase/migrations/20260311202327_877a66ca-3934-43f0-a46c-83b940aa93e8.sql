@@ -1,0 +1,1 @@
+ALTER TABLE public.leagues ADD COLUMN registration_deadline date DEFAULT NULL;

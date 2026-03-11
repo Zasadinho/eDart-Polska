@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, Settings, Check, Clock, CheckCircle2, XCircle, UserPlus, Award, Shuffle, Brackets, Layers, Plug, ScrollText, Download, Bug, Zap, MessageCircle, Ban, AlertTriangle } from "lucide-react";
+import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, Settings, Check, Clock, CheckCircle2, XCircle, UserPlus, Award, Shuffle, Brackets, Layers, Plug, ScrollText, Download, Bug, Zap, MessageCircle, Ban, AlertTriangle, Search } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import ExportPanel from "@/components/ExportPanel";
@@ -114,7 +114,7 @@ const AdminPage = () => {
         <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
           {activeTab === "overview" && <OverviewTab leagues={leagues} players={players} completedCount={completedCount} upcomingCount={upcomingCount} pendingPlayers={pendingPlayers} pendingApproval={pendingApproval} approvePlayer={approvePlayer} toast={toast} isAdmin={isAdmin} />}
           {activeTab === "approval" && <ApprovalTab pendingApproval={pendingApproval} approveMatch={approveMatch} rejectMatch={rejectMatch} updateMatchResult={updateMatchResult} toast={toast} />}
-          {activeTab === "leagues" && isAdmin && <LeaguesTab leagues={leagues} players={players} addLeague={addLeague} updateLeague={updateLeague} deleteLeague={deleteLeague} addMatch={addMatch} refreshData={refreshData} assignPlayerToLeague={assignPlayerToLeague} toast={toast} />}
+          {activeTab === "leagues" && isAdmin && <LeaguesTab leagues={leagues} players={players} addLeague={addLeague} updateLeague={updateLeague} deleteLeague={deleteLeague} addMatch={addMatch} refreshData={refreshData} assignPlayerToLeague={assignPlayerToLeague} removePlayerFromLeague={removePlayerFromLeague} toast={toast} />}
           {activeTab === "players" && isAdmin && <PlayersTab players={players} leagues={leagues} pendingPlayers={pendingPlayers} approvePlayer={approvePlayer} updatePlayer={updatePlayer} deletePlayer={deletePlayer} assignPlayerToLeague={assignPlayerToLeague} removePlayerFromLeague={removePlayerFromLeague} addPlayer={addPlayer} toast={toast} />}
           {activeTab === "matches" && isAdmin && <MatchesTab matches={matches} players={players} leagues={leagues} addMatch={addMatch} deleteMatch={deleteMatch} toast={toast} />}
           {activeTab === "roles" && isAdmin && <RolesTab toast={toast} />}
@@ -448,7 +448,7 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
 };
 
 // ─── LEAGUES TAB ───
-const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, addMatch, refreshData, assignPlayerToLeague, toast }: any) => {
+const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, addMatch, refreshData, assignPlayerToLeague, removePlayerFromLeague, toast }: any) => {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -457,6 +457,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
   const [format, setFormat] = useState("Best of 5");
   const [isActive, setIsActive] = useState(true);
   const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [registrationDeadline, setRegistrationDeadline] = useState("");
   const [leagueType, setLeagueType] = useState<LeagueType>("league");
   const [bonusRules, setBonusRules] = useState<BonusRules>({ ...DEFAULT_BONUS_RULES });
   const [meetingsPerPair, setMeetingsPerPair] = useState(1);
@@ -471,10 +472,12 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
   const [generateMode, setGenerateMode] = useState<"all" | "selected">("all");
   const [selectedRounds, setSelectedRounds] = useState<number[]>([]);
   const [roundDeadlines, setRoundDeadlines] = useState<Record<number, string>>({});
+  const [playerSearch, setPlayerSearch] = useState("");
+  const [leaguePlayerSearch, setLeaguePlayerSearch] = useState("");
 
   const resetForm = () => {
     setName(""); setSeason(""); setDescription(""); setFormat("Best of 5");
-    setIsActive(true); setRegistrationOpen(false); setLeagueType("league"); setBonusRules({ ...DEFAULT_BONUS_RULES });
+    setIsActive(true); setRegistrationOpen(false); setRegistrationDeadline(""); setLeagueType("league"); setBonusRules({ ...DEFAULT_BONUS_RULES });
     setMeetingsPerPair(1);
     setShowForm(false); setEditId(null);
   };
@@ -483,6 +486,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     setEditId(l.id); setName(l.name); setSeason(l.season); setDescription(l.description);
     setFormat(l.format || "Best of 5"); setIsActive(l.is_active);
     setRegistrationOpen(l.registration_open ?? false);
+    setRegistrationDeadline(l.registration_deadline || "");
     setLeagueType(l.league_type || "league");
     setBonusRules({ ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) });
     setMeetingsPerPair(l.meetings_per_pair ?? 1);
@@ -494,10 +498,10 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     if (!name || !season) { toast({ title: "Błąd", description: "Wypełnij wymagane pola.", variant: "destructive" }); return; }
     const maxLegs = BEST_OF_OPTIONS.find(o => o.value === format)?.maxLegs || 5;
     if (editId) {
-      await updateLeague(editId, { name, season, description, format, is_active: isActive, registration_open: registrationOpen, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules, meetings_per_pair: meetingsPerPair });
+      await updateLeague(editId, { name, season, description, format, is_active: isActive, registration_open: registrationOpen, registration_deadline: registrationDeadline || null, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules, meetings_per_pair: meetingsPerPair });
       toast({ title: "Zaktualizowano!", description: `${name} została zmieniona.` });
     } else {
-      const result = await addLeague({ name, season, description, format, is_active: isActive, registration_open: registrationOpen, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules, meetings_per_pair: meetingsPerPair });
+      const result = await addLeague({ name, season, description, format, is_active: isActive, registration_open: registrationOpen, registration_deadline: registrationDeadline || null, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules, meetings_per_pair: meetingsPerPair });
       if (result?.error) {
         toast({ title: "Błąd", description: "Nie udało się utworzyć. Sprawdź uprawnienia.", variant: "destructive" });
         return;
@@ -696,6 +700,12 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                   </SelectContent>
                 </Select>
               </div>
+              {registrationOpen && (
+                <div className="space-y-2">
+                  <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Termin zamknięcia zapisów</Label>
+                  <Input type="date" value={registrationDeadline} onChange={(e) => setRegistrationDeadline(e.target.value)} className="bg-muted/30 border-border" placeholder="Opcjonalnie" />
+                </div>
+              )}
               {leagueType === "league" && (
                 <div className="space-y-2">
                   <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Spotkania na parę</Label>
@@ -823,6 +833,42 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
               </div>
             </div>
 
+            {/* Quick player management */}
+            {l.is_active && showGenerate !== l.id && (
+              <div className="border-t border-border pt-3 mt-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">
+                    Gracze w lidze ({approvedPlayers.filter((p: any) => (p.leagueIds || []).includes(l.id)).length})
+                  </Label>
+                </div>
+                <div className="relative mb-2">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    value={leaguePlayerSearch}
+                    onChange={(e) => setLeaguePlayerSearch(e.target.value)}
+                    placeholder="Szukaj gracza do dodania/usunięcia..."
+                    className="bg-muted/30 border-border text-sm pl-8 h-8"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                  {approvedPlayers
+                    .filter((p: any) => !leaguePlayerSearch || p.name.toLowerCase().includes(leaguePlayerSearch.toLowerCase()))
+                    .map((p: any) => {
+                      const isIn = (p.leagueIds || []).includes(l.id);
+                      return (
+                        <button key={p.id} type="button" onClick={() => {
+                          if (isIn) { removePlayerFromLeague(p.id, l.id); toast({ title: `${p.name} usunięty z ${l.name}` }); }
+                          else { assignPlayerToLeague(p.id, l.id); toast({ title: `${p.name} dodany do ${l.name}` }); }
+                        }} className={`text-xs font-display uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all ${isIn ? "bg-secondary/20 border-secondary/30 text-secondary" : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30"}`}>
+                          {isIn ? <Check className="h-3 w-3 inline mr-1" /> : <Plus className="h-3 w-3 inline mr-1" />}
+                          {p.name}
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
             {/* Generate matches panel */}
             <AnimatePresence>
               {showGenerate === l.id && (
@@ -894,8 +940,19 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                         </Button>
                       </div>
                     </div>
+                    <div className="relative mb-2">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      <Input
+                        value={playerSearch}
+                        onChange={(e) => setPlayerSearch(e.target.value)}
+                        placeholder="Szukaj gracza..."
+                        className="bg-muted/30 border-border text-sm pl-8 h-8"
+                      />
+                    </div>
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-                      {approvedPlayers.map((p: any) => {
+                      {approvedPlayers
+                        .filter((p: any) => p.name.toLowerCase().includes(playerSearch.toLowerCase()))
+                        .map((p: any) => {
                         const selected = selectedPlayers.includes(p.id);
                         return (
                           <button key={p.id} type="button" onClick={() => togglePlayer(p.id)}
@@ -1028,9 +1085,12 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
   const approved = players.filter((p: any) => p.approved);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [adding, setAdding] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [profiles, setProfiles] = useState<{ user_id: string; name: string }[]>([]);
   const [playerUserMap, setPlayerUserMap] = useState<Record<string, string | null>>({});
   const [playerExtIds, setPlayerExtIds] = useState<Record<string, { autodarts_user_id: string; dartcounter_id: string; dartsmind_id: string }>>({});
+
+  const filteredApproved = approved.filter((p: any) => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -1097,9 +1157,20 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
         </section>
       )}
 
-      <h2 className="text-xl font-display font-bold text-foreground">Zatwierdzeni gracze ({approved.length})</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-display font-bold text-foreground">Zatwierdzeni gracze ({approved.length})</h2>
+      </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Szukaj gracza..."
+          className="bg-muted/30 border-border pl-9"
+        />
+      </div>
       <div className="space-y-3">
-        {approved.map((p: any) => (
+        {filteredApproved.map((p: any) => (
           <div key={p.id} className="rounded-lg border border-border bg-card p-5 card-glow">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -1194,7 +1265,8 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
             </div>
           </div>
         ))}
-        {approved.length === 0 && <p className="text-muted-foreground font-body text-center py-8">Brak graczy. Dodaj nowego gracza powyżej.</p>}
+        {filteredApproved.length === 0 && searchQuery && <p className="text-muted-foreground font-body text-center py-8">Brak wyników dla „{searchQuery}"</p>}
+        {approved.length === 0 && !searchQuery && <p className="text-muted-foreground font-body text-center py-8">Brak graczy. Dodaj nowego gracza powyżej.</p>}
       </div>
     </div>
   );
