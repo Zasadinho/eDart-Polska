@@ -207,11 +207,6 @@ const Navbar = () => {
                     <Handshake className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link to="/chat">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <MessageCircle className="h-4 w-4" />
-                  </Button>
-                </Link>
               </>
             )}
             <ThemeToggle />
