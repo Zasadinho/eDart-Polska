@@ -1535,9 +1535,14 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
                           <Edit2 className="h-4 w-4" />
                         </Button>
                         {m.status === "upcoming" && (
-                          <Button size="sm" variant="ghost" className="text-secondary hover:text-secondary" onClick={() => handleSetCompleted(m)} title="Oznacz jako rozegrany">
-                            <CheckCircle2 className="h-4 w-4" />
-                          </Button>
+                          <>
+                            <Button size="sm" variant="ghost" className="text-secondary hover:text-secondary" onClick={() => handleSetCompleted(m)} title="Oznacz jako rozegrany">
+                              <CheckCircle2 className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="text-accent hover:text-accent" onClick={() => setWalkoverDialog({ matchId: m.id, p1Name: m.player1Name, p2Name: m.player2Name, p1Id: m.player1Id, p2Id: m.player2Id, leagueId: m.leagueId })} title="Walkower">
+                              <Ban className="h-4 w-4" />
+                            </Button>
+                          </>
                         )}
                         {m.status === "pending_approval" && (
                           <Button size="sm" variant="ghost" className="text-secondary hover:text-secondary" onClick={() => { approveMatch(m.id); toast({ title: "✅ Mecz zatwierdzony!" }); }} title="Zatwierdź">
