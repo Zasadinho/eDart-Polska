@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LeagueProvider } from "@/contexts/LeagueContext";
 import Navbar from "@/components/Navbar";
+import FloatingChat from "@/components/FloatingChat";
 import { useExtensionNotifications } from "@/hooks/useExtensionNotifications";
 import Index from "./pages/Index";
 import MatchesPage from "./pages/MatchesPage";
@@ -46,6 +47,7 @@ const App = () => (
           <BrowserRouter>
             <ExtensionNotifier />
             <Navbar />
+            <FloatingChat />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/matches" element={<MatchesPage />} />

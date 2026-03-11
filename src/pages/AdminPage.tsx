@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, Settings, Check, Clock, CheckCircle2, XCircle, UserPlus, Award, Shuffle, Brackets, Layers, Plug, ScrollText, Download, Bug, Zap, MessageCircle } from "lucide-react";
+import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, Settings, Check, Clock, CheckCircle2, XCircle, UserPlus, Award, Shuffle, Brackets, Layers, Plug, ScrollText, Download, Bug, Zap, MessageCircle, Ban, AlertTriangle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import ExportPanel from "@/components/ExportPanel";
 import ExtensionConfigPanel from "@/components/ExtensionConfigPanel";
 import BugReportsPanel from "@/components/BugReportsPanel";
 import AdminChatPanel from "@/components/AdminChatPanel";
+import DiscordWebhookPanel from "@/components/DiscordWebhookPanel";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,7 +21,7 @@ import { BEST_OF_OPTIONS, type LeagueType, type BonusRules, DEFAULT_BONUS_RULES 
 import { generateRoundRobin, generateBracket, generateGroupStage, shuffle, getRecommendedGroups } from "@/lib/tournamentUtils";
 import MatchStatFields from "@/components/MatchStatFields";
 
-type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles" | "integrations" | "audit" | "export" | "bugs" | "chats";
+type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles" | "integrations" | "discord" | "audit" | "export" | "bugs" | "chats";
 
 const LEAGUE_TYPE_LABELS: Record<LeagueType, string> = {
   league: "Liga (Round-Robin)",
@@ -72,6 +73,7 @@ const AdminPage = () => {
     { id: "matches", label: "Mecze", icon: <Calendar className="h-4 w-4" />, adminOnly: true },
     { id: "roles", label: "Role", icon: <Award className="h-4 w-4" />, adminOnly: true },
     { id: "integrations", label: "Integracje", icon: <Plug className="h-4 w-4" />, adminOnly: true },
+    { id: "discord", label: "Discord", icon: <MessageCircle className="h-4 w-4" />, adminOnly: true },
     { id: "audit", label: "Dziennik", icon: <ScrollText className="h-4 w-4" />, adminOnly: true },
     { id: "export", label: "Eksport", icon: <Download className="h-4 w-4" />, adminOnly: true },
     { id: "chats", label: "Czaty", icon: <MessageCircle className="h-4 w-4" />, adminOnly: true },
@@ -117,6 +119,7 @@ const AdminPage = () => {
           {activeTab === "matches" && isAdmin && <MatchesTab matches={matches} players={players} leagues={leagues} addMatch={addMatch} deleteMatch={deleteMatch} toast={toast} />}
           {activeTab === "roles" && isAdmin && <RolesTab toast={toast} />}
           {activeTab === "integrations" && isAdmin && <ExtensionConfigPanel leagues={leagues} />}
+          {activeTab === "discord" && isAdmin && <DiscordWebhookPanel leagues={leagues} />}
           {activeTab === "audit" && isAdmin && <AuditLogPanel />}
           {activeTab === "export" && isAdmin && <ExportPanel />}
           {activeTab === "chats" && isAdmin && <AdminChatPanel />}
@@ -1200,6 +1203,7 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
 // ─── MATCHES TAB ───
 const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }: any) => {
   const { updateMatchResult, approveMatch, rejectMatch, refreshData } = useLeague();
+  const [walkoverDialog, setWalkoverDialog] = useState<{ matchId: string; p1Name: string; p2Name: string; p1Id: string; p2Id: string; leagueId: string } | null>(null);
   const [selectedLeague, setSelectedLeague] = useState(leagues[0]?.id || "");
   const [newMatchP1, setNewMatchP1] = useState("");
   const [newMatchP2, setNewMatchP2] = useState("");
@@ -1290,6 +1294,80 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
   const handleResetMatch = async (matchId: string) => {
     await rejectMatch(matchId);
     toast({ title: "🔄 Mecz zresetowany", description: "Status zmieniony na 'zaplanowany', statystyki wyczyszczone." });
+  };
+
+  const handleWalkover = async (matchId: string, winnerId: string, loserId: string, leagueId: string) => {
+    // Find league max_legs for walkover score
+    const league = leagues.find((l: any) => l.id === leagueId);
+    const maxLegs = league?.max_legs || 5;
+    const winScore = Math.ceil(maxLegs / 2); // e.g. Best of 5 = need 3 to win
+
+    const match = matches.find((m: any) => m.id === matchId);
+    if (!match) return;
+
+    const isP1Winner = match.player1Id === winnerId;
+    const s1 = isP1Winner ? winScore : 0;
+    const s2 = isP1Winner ? 0 : winScore;
+
+    await supabase.from("matches").update({
+      score1: s1, score2: s2, legs_won1: s1, legs_won2: s2,
+      status: "completed", is_walkover: true,
+    } as any).eq("id", matchId);
+
+    // Audit
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("match_audit_log").insert({
+        match_id: matchId, user_id: user.id, action: "walkover",
+        old_data: { status: match.status },
+        new_data: { status: "completed", is_walkover: true, score1: s1, score2: s2 },
+      });
+    }
+
+    setWalkoverDialog(null);
+    refreshData();
+    toast({ title: "⚠️ Walkower zapisany!", description: `Wygrywa ${isP1Winner ? match.player1Name : match.player2Name} ${s1}:${s2}` });
+  };
+
+  const handleDisqualify = async (playerId: string, leagueId: string, playerName: string) => {
+    if (!confirm(`Czy na pewno chcesz zdyskwalifikować ${playerName}? Wszystkie nadchodzące mecze zostaną przegrane walkowerem.`)) return;
+
+    // Mark player as disqualified in player_leagues
+    await supabase.from("player_leagues").update({ disqualified: true, disqualified_at: new Date().toISOString() } as any)
+      .eq("player_id", playerId).eq("league_id", leagueId);
+
+    // Find all upcoming matches for this player in this league
+    const upcomingMatches = matches.filter((m: any) => m.leagueId === leagueId && m.status === "upcoming" && (m.player1Id === playerId || m.player2Id === playerId));
+
+    const league = leagues.find((l: any) => l.id === leagueId);
+    const maxLegs = league?.max_legs || 5;
+    const winScore = Math.ceil(maxLegs / 2);
+
+    for (const m of upcomingMatches) {
+      const isP1Disqualified = m.player1Id === playerId;
+      const s1 = isP1Disqualified ? 0 : winScore;
+      const s2 = isP1Disqualified ? winScore : 0;
+
+      await supabase.from("matches").update({
+        score1: s1, score2: s2, legs_won1: s1, legs_won2: s2,
+        status: "completed", is_walkover: true,
+      } as any).eq("id", m.id);
+    }
+
+    // Audit
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("match_audit_log").insert({
+        match_id: upcomingMatches[0]?.id || "00000000-0000-0000-0000-000000000000",
+        user_id: user.id,
+        action: "disqualify",
+        old_data: null,
+        new_data: { player_id: playerId, league_id: leagueId, matches_affected: upcomingMatches.length },
+      });
+    }
+
+    refreshData();
+    toast({ title: "🚫 Gracz zdyskwalifikowany!", description: `${playerName} — ${upcomingMatches.length} meczów przegranych walkowerem.` });
   };
 
   const handleCompleteWithStats = async (m: any) => {
@@ -1457,9 +1535,14 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
                           <Edit2 className="h-4 w-4" />
                         </Button>
                         {m.status === "upcoming" && (
-                          <Button size="sm" variant="ghost" className="text-secondary hover:text-secondary" onClick={() => handleSetCompleted(m)} title="Oznacz jako rozegrany">
-                            <CheckCircle2 className="h-4 w-4" />
-                          </Button>
+                          <>
+                            <Button size="sm" variant="ghost" className="text-secondary hover:text-secondary" onClick={() => handleSetCompleted(m)} title="Oznacz jako rozegrany">
+                              <CheckCircle2 className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="text-accent hover:text-accent" onClick={() => setWalkoverDialog({ matchId: m.id, p1Name: m.player1Name, p2Name: m.player2Name, p1Id: m.player1Id, p2Id: m.player2Id, leagueId: m.leagueId })} title="Walkower">
+                              <Ban className="h-4 w-4" />
+                            </Button>
+                          </>
                         )}
                         {m.status === "pending_approval" && (
                           <Button size="sm" variant="ghost" className="text-secondary hover:text-secondary" onClick={() => { approveMatch(m.id); toast({ title: "✅ Mecz zatwierdzony!" }); }} title="Zatwierdź">
@@ -1484,6 +1567,54 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
         ))
       ) : (
         <p className="text-muted-foreground font-body text-center py-4">Brak meczów w tej lidze.</p>
+      )}
+
+      {/* Walkover dialog */}
+      {walkoverDialog && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setWalkoverDialog(null)}>
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-2xl space-y-4" onClick={e => e.stopPropagation()}>
+            <h3 className="font-display font-bold text-foreground flex items-center gap-2">
+              <Ban className="h-5 w-5 text-accent" /> Walkower
+            </h3>
+            <p className="text-sm text-muted-foreground font-body">Wybierz kto wygrywa walkowerem:</p>
+            <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" className="h-auto py-4 flex flex-col gap-1" onClick={() => handleWalkover(walkoverDialog.matchId, walkoverDialog.p1Id, walkoverDialog.p2Id, walkoverDialog.leagueId)}>
+                <span className="font-display font-bold text-foreground">{walkoverDialog.p1Name}</span>
+                <span className="text-xs text-secondary">Wygrywa</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-4 flex flex-col gap-1" onClick={() => handleWalkover(walkoverDialog.matchId, walkoverDialog.p2Id, walkoverDialog.p1Id, walkoverDialog.leagueId)}>
+                <span className="font-display font-bold text-foreground">{walkoverDialog.p2Name}</span>
+                <span className="text-xs text-secondary">Wygrywa</span>
+              </Button>
+            </div>
+            <Button variant="ghost" size="sm" className="w-full" onClick={() => setWalkoverDialog(null)}>Anuluj</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Disqualification section */}
+      {selectedLeague && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-5 card-glow">
+          <h3 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" /> Dyskwalifikacja gracza
+          </h3>
+          <p className="text-xs text-muted-foreground font-body mb-3">
+            Dyskwalifikacja oznacza przegranie wszystkich pozostałych meczów walkowerem. Gracz nie może dalej grać w tej lidze.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {players.filter((p: any) => p.approved).map((p: any) => (
+              <Button
+                key={p.id}
+                variant="outline"
+                size="sm"
+                className="text-xs border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => handleDisqualify(p.id, selectedLeague, p.name)}
+              >
+                <Ban className="h-3 w-3 mr-1" /> {p.name}
+              </Button>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

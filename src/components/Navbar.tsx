@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type NavItem = { label: string; href: string; icon: React.ReactElement; authOnly?: boolean };
+type NavItem = { label: string; href: string; icon: React.ReactElement; authOnly?: boolean; mobileOnly?: boolean };
 
 const allNavItems: NavItem[] = [
   { label: "Tabela", href: "/", icon: <Target className="h-3.5 w-3.5" /> },
@@ -23,7 +23,7 @@ const allNavItems: NavItem[] = [
   { label: "Statystyki", href: "/stats", icon: <BarChart3 className="h-3.5 w-3.5" /> },
   { label: "H2H", href: "/h2h", icon: <Swords className="h-3.5 w-3.5" /> },
   { label: "Kalendarz", href: "/calendar", icon: <Calendar className="h-3.5 w-3.5" /> },
-  { label: "Hall of Fame", href: "/hall-of-fame", icon: <Trophy className="h-3.5 w-3.5" /> },
+  { label: "Rekordy", href: "/hall-of-fame", icon: <Trophy className="h-3.5 w-3.5" /> },
   { label: "Ogłoszenia", href: "/announcements", icon: <Megaphone className="h-3.5 w-3.5" /> },
   { label: "Jak grać?", href: "/how-to-play", icon: <Gamepad2 className="h-3.5 w-3.5" /> },
   { label: "Pobieranie", href: "/downloads", icon: <Download className="h-3.5 w-3.5" /> },
@@ -32,7 +32,7 @@ const allNavItems: NavItem[] = [
 const extraNavItems: NavItem[] = [
   { label: "Moje Mecze", href: "/my-matches", icon: <Handshake className="h-3.5 w-3.5" />, authOnly: true },
   { label: "Osiągnięcia", href: "/achievements", icon: <Zap className="h-3.5 w-3.5" /> },
-  { label: "Czat", href: "/chat", icon: <MessageCircle className="h-3.5 w-3.5" />, authOnly: true },
+  { label: "Czat", href: "/chat", icon: <MessageCircle className="h-3.5 w-3.5" />, authOnly: true, mobileOnly: true },
   { label: "Zgłoś błąd", href: "/report-bug", icon: <Bug className="h-3.5 w-3.5" />, authOnly: true },
 ];
 
@@ -205,11 +205,6 @@ const Navbar = () => {
                 <Link to="/my-matches">
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <Handshake className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link to="/chat">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <MessageCircle className="h-4 w-4" />
                   </Button>
                 </Link>
               </>
