@@ -448,7 +448,7 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
 };
 
 // ─── LEAGUES TAB ───
-const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, addMatch, refreshData, assignPlayerToLeague, toast }: any) => {
+const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, addMatch, refreshData, assignPlayerToLeague, removePlayerFromLeague, toast }: any) => {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
