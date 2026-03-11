@@ -1055,6 +1055,60 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
         {leagues.length === 0 && <p className="text-muted-foreground font-body text-center py-8">Brak lig. Kliknij "Nowa Liga / Turniej" aby utworzyć pierwszą.</p>}
       </div>
     </div>
+
+      {/* Manage players dialog */}
+      <Dialog open={!!managePlayersLeagueId} onOpenChange={(open) => { if (!open) { setManagePlayersLeagueId(null); setLeaguePlayerSearch(""); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display">
+              Zarządzaj graczami — {leagues.find((l: any) => l.id === managePlayersLeagueId)?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={leaguePlayerSearch}
+              onChange={(e) => setLeaguePlayerSearch(e.target.value)}
+              placeholder="Szukaj gracza..."
+              className="pl-9"
+              autoFocus
+            />
+          </div>
+          <ScrollArea className="max-h-[400px]">
+            <div className="space-y-1">
+              {approvedPlayers
+                .filter((p: any) => !leaguePlayerSearch || p.name.toLowerCase().includes(leaguePlayerSearch.toLowerCase()))
+                .map((p: any) => {
+                  const isIn = (p.leagueIds || []).includes(managePlayersLeagueId);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        if (isIn) {
+                          removePlayerFromLeague(p.id, managePlayersLeagueId!);
+                          toast({ title: `${p.name} usunięty z ligi` });
+                        } else {
+                          assignPlayerToLeague(p.id, managePlayersLeagueId!);
+                          toast({ title: `${p.name} dodany do ligi` });
+                        }
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${isIn ? "bg-secondary/15 text-foreground" : "text-muted-foreground hover:bg-muted/50"}`}
+                    >
+                      <Checkbox checked={isIn} className="pointer-events-none" />
+                      <span className="font-medium">{p.name}</span>
+                      {isIn && <Check className="h-3.5 w-3.5 ml-auto text-secondary" />}
+                    </button>
+                  );
+                })}
+              {approvedPlayers.filter((p: any) => !leaguePlayerSearch || p.name.toLowerCase().includes(leaguePlayerSearch.toLowerCase())).length === 0 && (
+                <p className="text-center text-muted-foreground text-sm py-4">Brak graczy pasujących do wyszukiwania</p>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
