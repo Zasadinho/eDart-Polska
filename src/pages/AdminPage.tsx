@@ -12,6 +12,7 @@ import AuditLogPanel from "@/components/AuditLogPanel";
 import ExportPanel from "@/components/ExportPanel";
 import ExtensionConfigPanel from "@/components/ExtensionConfigPanel";
 import BugReportsPanel from "@/components/BugReportsPanel";
+import AdminChatPanel from "@/components/AdminChatPanel";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
