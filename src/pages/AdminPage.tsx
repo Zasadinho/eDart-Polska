@@ -486,6 +486,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     setEditId(l.id); setName(l.name); setSeason(l.season); setDescription(l.description);
     setFormat(l.format || "Best of 5"); setIsActive(l.is_active);
     setRegistrationOpen(l.registration_open ?? false);
+    setRegistrationDeadline(l.registration_deadline || "");
     setLeagueType(l.league_type || "league");
     setBonusRules({ ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) });
     setMeetingsPerPair(l.meetings_per_pair ?? 1);
