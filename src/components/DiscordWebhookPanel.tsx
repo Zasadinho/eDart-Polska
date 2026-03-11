@@ -5,69 +5,122 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { MessageCircle, Check, ExternalLink, TestTube } from "lucide-react";
+import { MessageCircle, Check, TestTube, Plus, Trash2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface Webhook {
+  id?: string;
+  league_id: string | null;
+  webhook_url: string;
+  enabled: boolean;
+  label: string;
+  isNew?: boolean;
+}
 
 const DiscordWebhookPanel = ({ leagues }: { leagues: any[] }) => {
   const { toast } = useToast();
-  const [webhookUrl, setWebhookUrl] = useState("");
-  const [enabled, setEnabled] = useState(false);
+  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [testing, setTesting] = useState(false);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [testingId, setTestingId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadSettings();
+    loadWebhooks();
   }, []);
 
-  const loadSettings = async () => {
+  const loadWebhooks = async () => {
     const { data } = await supabase
-      .from("extension_settings")
-      .select("id, webhook_enabled")
-      .is("league_id", null)
-      .maybeSingle();
-    
-    if (data) {
-      setEnabled(data.webhook_enabled ?? false);
-    }
+      .from("discord_webhooks" as any)
+      .select("*")
+      .order("created_at", { ascending: true });
 
-    // Load webhook URL from edge function config (stored as secret)
-    // We'll check if the function exists
+    if (data) {
+      setWebhooks((data as any[]).map((w: any) => ({
+        id: w.id,
+        league_id: w.league_id,
+        webhook_url: w.webhook_url,
+        enabled: w.enabled,
+        label: w.label || "",
+      })));
+    }
     setLoading(false);
   };
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      // Save webhook URL via edge function that stores it
-      const { data, error } = await supabase.functions.invoke("discord-webhook", {
-        body: { action: "save_config", webhook_url: webhookUrl, enabled },
-      });
-      
-      if (error) throw error;
-      toast({ title: "✅ Zapisano!", description: "Konfiguracja Discord została zaktualizowana." });
-    } catch (err: any) {
-      toast({ title: "Błąd", description: err.message || "Nie udało się zapisać konfiguracji.", variant: "destructive" });
-    }
-    setSaving(false);
+  const addNew = () => {
+    setWebhooks(prev => [...prev, {
+      league_id: null,
+      webhook_url: "",
+      enabled: true,
+      label: "",
+      isNew: true,
+    }]);
   };
 
-  const handleTest = async () => {
-    setTesting(true);
+  const updateLocal = (index: number, changes: Partial<Webhook>) => {
+    setWebhooks(prev => prev.map((w, i) => i === index ? { ...w, ...changes } : w));
+  };
+
+  const handleSave = async (index: number) => {
+    const wh = webhooks[index];
+    const key = wh.id || `new-${index}`;
+    setSavingId(key);
     try {
       const { data, error } = await supabase.functions.invoke("discord-webhook", {
-        body: { action: "test" },
+        body: {
+          action: "save_webhook",
+          id: wh.id || undefined,
+          league_id: wh.league_id,
+          webhook_url: wh.webhook_url,
+          enabled: wh.enabled,
+          label: wh.label,
+        },
       });
-      
+
+      if (error) throw error;
+      toast({ title: "✅ Zapisano!", description: "Webhook Discord został zaktualizowany." });
+      await loadWebhooks();
+    } catch (err: any) {
+      toast({ title: "Błąd", description: err.message || "Nie udało się zapisać.", variant: "destructive" });
+    }
+    setSavingId(null);
+  };
+
+  const handleDelete = async (index: number) => {
+    const wh = webhooks[index];
+    if (wh.isNew) {
+      setWebhooks(prev => prev.filter((_, i) => i !== index));
+      return;
+    }
+    try {
+      const { error } = await supabase.functions.invoke("discord-webhook", {
+        body: { action: "delete_webhook", id: wh.id },
+      });
+      if (error) throw error;
+      toast({ title: "Usunięto", description: "Webhook został usunięty." });
+      await loadWebhooks();
+    } catch (err: any) {
+      toast({ title: "Błąd", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleTest = async (index: number) => {
+    const wh = webhooks[index];
+    const key = wh.id || `new-${index}`;
+    setTestingId(key);
+    try {
+      const { data, error } = await supabase.functions.invoke("discord-webhook", {
+        body: { action: "test", webhook_url: wh.webhook_url },
+      });
       if (error) throw error;
       if (data?.success) {
         toast({ title: "✅ Wysłano!", description: "Wiadomość testowa została wysłana na Discord." });
       } else {
-        toast({ title: "Błąd", description: data?.error || "Nie udało się wysłać wiadomości testowej.", variant: "destructive" });
+        toast({ title: "Błąd", description: data?.error || "Nie udało się wysłać.", variant: "destructive" });
       }
     } catch (err: any) {
-      toast({ title: "Błąd", description: err.message || "Nie udało się wysłać wiadomości testowej.", variant: "destructive" });
+      toast({ title: "Błąd", description: err.message, variant: "destructive" });
     }
-    setTesting(false);
+    setTestingId(null);
   };
 
   if (loading) return <p className="text-muted-foreground font-body text-sm">Ładowanie...</p>;
@@ -75,45 +128,109 @@ const DiscordWebhookPanel = ({ leagues }: { leagues: any[] }) => {
   return (
     <div className="space-y-6">
       <div className="rounded-lg border border-border bg-card p-6 card-glow">
-        <h3 className="font-display font-bold text-foreground mb-4 flex items-center gap-2">
-          <MessageCircle className="h-5 w-5 text-[#5865F2]" /> Integracja z Discord
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display font-bold text-foreground flex items-center gap-2">
+            <MessageCircle className="h-5 w-5 text-[#5865F2]" /> Integracja z Discord
+          </h3>
+          <Button variant="outline" size="sm" onClick={addNew}>
+            <Plus className="h-4 w-4 mr-1" /> Dodaj webhook
+          </Button>
+        </div>
         <p className="text-sm text-muted-foreground font-body mb-6">
-          Automatycznie wysyłaj wyniki meczów na kanał Discord po ich zatwierdzeniu. 
-          Wiadomość zawiera nazwy graczy, wynik, ligę oraz kluczowe statystyki.
+          Każda liga/turniej może mieć własny webhook Discord. Webhooki bez przypisanej ligi wysyłają wyniki wszystkich meczów.
         </p>
 
+        {webhooks.length === 0 && (
+          <p className="text-center text-muted-foreground py-8 font-body">
+            Brak skonfigurowanych webhooków. Kliknij „Dodaj webhook" aby dodać pierwszy.
+          </p>
+        )}
+
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="font-body font-medium text-foreground">Włącz wysyłanie na Discord</Label>
-              <p className="text-xs text-muted-foreground font-body mt-0.5">Po zatwierdzeniu meczu wynik zostanie automatycznie wysłany</p>
-            </div>
-            <Switch checked={enabled} onCheckedChange={setEnabled} />
-          </div>
+          {webhooks.map((wh, index) => {
+            const key = wh.id || `new-${index}`;
+            const leagueName = wh.league_id
+              ? leagues.find(l => l.id === wh.league_id)?.name
+              : null;
 
-          <div className="space-y-2">
-            <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Webhook URL</Label>
-            <Input
-              type="url"
-              value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
-              placeholder="https://discord.com/api/webhooks/..."
-              className="bg-muted/30 border-border font-mono text-sm"
-            />
-            <p className="text-xs text-muted-foreground font-body">
-              Skopiuj URL webhooka z ustawień kanału Discord: Edytuj kanał → Integracje → Webhooki → Nowy webhook
-            </p>
-          </div>
+            return (
+              <div key={key} className="rounded-lg border border-border bg-muted/20 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      checked={wh.enabled}
+                      onCheckedChange={(v) => updateLocal(index, { enabled: v })}
+                    />
+                    <span className="text-sm font-body text-foreground">
+                      {wh.label || leagueName || "Globalny webhook"}
+                    </span>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(index)} className="text-destructive hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
 
-          <div className="flex gap-3">
-            <Button variant="hero" onClick={handleSave} disabled={saving || !webhookUrl.trim()}>
-              <Check className="h-4 w-4 mr-1" /> {saving ? "Zapisywanie..." : "Zapisz konfigurację"}
-            </Button>
-            <Button variant="outline" onClick={handleTest} disabled={testing || !webhookUrl.trim()}>
-              <TestTube className="h-4 w-4 mr-1" /> {testing ? "Wysyłanie..." : "Wyślij test"}
-            </Button>
-          </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Etykieta (opcjonalna)</Label>
+                    <Input
+                      value={wh.label}
+                      onChange={(e) => updateLocal(index, { label: e.target.value })}
+                      placeholder="np. Kanał wyników"
+                      className="bg-muted/30 border-border text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Liga / Turniej</Label>
+                    <Select
+                      value={wh.league_id || "__global__"}
+                      onValueChange={(v) => updateLocal(index, { league_id: v === "__global__" ? null : v })}
+                    >
+                      <SelectTrigger className="bg-muted/30 border-border text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__global__">🌐 Wszystkie ligi (globalny)</SelectItem>
+                        {leagues.map(l => (
+                          <SelectItem key={l.id} value={l.id}>{l.name} — {l.season}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Webhook URL</Label>
+                  <Input
+                    type="url"
+                    value={wh.webhook_url}
+                    onChange={(e) => updateLocal(index, { webhook_url: e.target.value })}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    className="bg-muted/30 border-border font-mono text-sm"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="hero"
+                    size="sm"
+                    onClick={() => handleSave(index)}
+                    disabled={savingId === key || !wh.webhook_url.trim()}
+                  >
+                    <Check className="h-4 w-4 mr-1" /> {savingId === key ? "Zapisywanie..." : "Zapisz"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleTest(index)}
+                    disabled={testingId === key || !wh.webhook_url.trim()}
+                  >
+                    <TestTube className="h-4 w-4 mr-1" /> {testingId === key ? "Wysyłanie..." : "Test"}
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
