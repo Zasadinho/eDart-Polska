@@ -904,8 +904,19 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                         </Button>
                       </div>
                     </div>
+                    <div className="relative mb-2">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      <Input
+                        value={playerSearch}
+                        onChange={(e) => setPlayerSearch(e.target.value)}
+                        placeholder="Szukaj gracza..."
+                        className="bg-muted/30 border-border text-sm pl-8 h-8"
+                      />
+                    </div>
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-                      {approvedPlayers.map((p: any) => {
+                      {approvedPlayers
+                        .filter((p: any) => p.name.toLowerCase().includes(playerSearch.toLowerCase()))
+                        .map((p: any) => {
                         const selected = selectedPlayers.includes(p.id);
                         return (
                           <button key={p.id} type="button" onClick={() => togglePlayer(p.id)}
