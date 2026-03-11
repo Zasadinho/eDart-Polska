@@ -395,6 +395,7 @@ export type Database = {
           high_checkout1: number | null
           high_checkout2: number | null
           id: string
+          is_walkover: boolean
           league_id: string
           legs_won1: number | null
           legs_won2: number | null
@@ -442,6 +443,7 @@ export type Database = {
           high_checkout1?: number | null
           high_checkout2?: number | null
           id?: string
+          is_walkover?: boolean
           league_id: string
           legs_won1?: number | null
           legs_won2?: number | null
@@ -489,6 +491,7 @@ export type Database = {
           high_checkout1?: number | null
           high_checkout2?: number | null
           id?: string
+          is_walkover?: boolean
           league_id?: string
           legs_won1?: number | null
           legs_won2?: number | null
@@ -586,16 +589,22 @@ export type Database = {
       }
       player_leagues: {
         Row: {
+          disqualified: boolean
+          disqualified_at: string | null
           id: string
           league_id: string
           player_id: string
         }
         Insert: {
+          disqualified?: boolean
+          disqualified_at?: string | null
           id?: string
           league_id: string
           player_id: string
         }
         Update: {
+          disqualified?: boolean
+          disqualified_at?: string | null
           id?: string
           league_id?: string
           player_id?: string
