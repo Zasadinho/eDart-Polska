@@ -417,7 +417,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
   const approveMatch = useCallback(async (matchId: string) => {
     const match = matchList.find(m => m.id === matchId);
-    await supabase.from("matches").update({ status: "completed" }).eq("id", matchId);
+    await supabase.from("matches").update({ status: "completed", is_walkover: false }).eq("id", matchId);
     // Audit log
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
