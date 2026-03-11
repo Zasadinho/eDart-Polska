@@ -1568,6 +1568,54 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
       ) : (
         <p className="text-muted-foreground font-body text-center py-4">Brak meczów w tej lidze.</p>
       )}
+
+      {/* Walkover dialog */}
+      {walkoverDialog && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setWalkoverDialog(null)}>
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-2xl space-y-4" onClick={e => e.stopPropagation()}>
+            <h3 className="font-display font-bold text-foreground flex items-center gap-2">
+              <Ban className="h-5 w-5 text-accent" /> Walkower
+            </h3>
+            <p className="text-sm text-muted-foreground font-body">Wybierz kto wygrywa walkowerem:</p>
+            <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" className="h-auto py-4 flex flex-col gap-1" onClick={() => handleWalkover(walkoverDialog.matchId, walkoverDialog.p1Id, walkoverDialog.p2Id, walkoverDialog.leagueId)}>
+                <span className="font-display font-bold text-foreground">{walkoverDialog.p1Name}</span>
+                <span className="text-xs text-secondary">Wygrywa</span>
+              </Button>
+              <Button variant="outline" className="h-auto py-4 flex flex-col gap-1" onClick={() => handleWalkover(walkoverDialog.matchId, walkoverDialog.p2Id, walkoverDialog.p1Id, walkoverDialog.leagueId)}>
+                <span className="font-display font-bold text-foreground">{walkoverDialog.p2Name}</span>
+                <span className="text-xs text-secondary">Wygrywa</span>
+              </Button>
+            </div>
+            <Button variant="ghost" size="sm" className="w-full" onClick={() => setWalkoverDialog(null)}>Anuluj</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Disqualification section */}
+      {selectedLeague && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-5 card-glow">
+          <h3 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" /> Dyskwalifikacja gracza
+          </h3>
+          <p className="text-xs text-muted-foreground font-body mb-3">
+            Dyskwalifikacja oznacza przegranie wszystkich pozostałych meczów walkowerem. Gracz nie może dalej grać w tej lidze.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {players.filter((p: any) => p.approved).map((p: any) => (
+              <Button
+                key={p.id}
+                variant="outline"
+                size="sm"
+                className="text-xs border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => handleDisqualify(p.id, selectedLeague, p.name)}
+              >
+                <Ban className="h-3 w-3 mr-1" /> {p.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
