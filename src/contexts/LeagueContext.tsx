@@ -353,6 +353,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       score1: data.score1, score2: data.score2,
       legs_won1: data.score1, legs_won2: data.score2,
       status: "pending_approval",
+      is_walkover: false,
       avg1: data.avg1, avg2: data.avg2,
       one_eighties1: data.oneEighties1 ?? 0, one_eighties2: data.oneEighties2 ?? 0,
       high_checkout1: data.highCheckout1 ?? 0, high_checkout2: data.highCheckout2 ?? 0,
@@ -391,6 +392,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     await supabase.from("matches").update({
       score1: data.score1, score2: data.score2,
       legs_won1: data.score1, legs_won2: data.score2,
+      is_walkover: false,
       avg1: data.avg1, avg2: data.avg2,
       one_eighties1: data.oneEighties1 ?? 0, one_eighties2: data.oneEighties2 ?? 0,
       high_checkout1: data.highCheckout1 ?? 0, high_checkout2: data.highCheckout2 ?? 0,
@@ -415,7 +417,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
   const approveMatch = useCallback(async (matchId: string) => {
     const match = matchList.find(m => m.id === matchId);
-    await supabase.from("matches").update({ status: "completed" }).eq("id", matchId);
+    await supabase.from("matches").update({ status: "completed", is_walkover: false }).eq("id", matchId);
     // Audit log
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {

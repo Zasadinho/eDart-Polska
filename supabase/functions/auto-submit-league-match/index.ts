@@ -748,6 +748,7 @@ Deno.serve(async (req) => {
         legs_won1: statsData.score1,
         legs_won2: statsData.score2,
         status: newStatus,
+        is_walkover: false,
         avg1: statsData.avg1,
         avg2: statsData.avg2,
         first_9_avg1: statsData.first_9_avg1,
