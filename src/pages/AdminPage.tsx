@@ -835,37 +835,11 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
 
             {/* Quick player management */}
             {l.is_active && showGenerate !== l.id && (
-              <div className="border-t border-border pt-3 mt-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">
-                    Gracze w lidze ({approvedPlayers.filter((p: any) => (p.leagueIds || []).includes(l.id)).length})
-                  </Label>
-                </div>
-                <div className="relative mb-2">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input
-                    value={leaguePlayerSearch}
-                    onChange={(e) => setLeaguePlayerSearch(e.target.value)}
-                    placeholder="Szukaj gracza do dodania/usunięcia..."
-                    className="bg-muted/30 border-border text-sm pl-8 h-8"
-                  />
-                </div>
-                <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
-                  {approvedPlayers
-                    .filter((p: any) => !leaguePlayerSearch || p.name.toLowerCase().includes(leaguePlayerSearch.toLowerCase()))
-                    .map((p: any) => {
-                      const isIn = (p.leagueIds || []).includes(l.id);
-                      return (
-                        <button key={p.id} type="button" onClick={() => {
-                          if (isIn) { removePlayerFromLeague(p.id, l.id); toast({ title: `${p.name} usunięty z ${l.name}` }); }
-                          else { assignPlayerToLeague(p.id, l.id); toast({ title: `${p.name} dodany do ${l.name}` }); }
-                        }} className={`text-xs font-display uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all ${isIn ? "bg-secondary/20 border-secondary/30 text-secondary" : "bg-muted/30 border-border text-muted-foreground hover:border-primary/30"}`}>
-                          {isIn ? <Check className="h-3 w-3 inline mr-1" /> : <Plus className="h-3 w-3 inline mr-1" />}
-                          {p.name}
-                        </button>
-                      );
-                    })}
-                </div>
+              <div className="border-t border-border pt-3 mt-3">
+                <Button variant="outline" size="sm" className="w-full" onClick={() => setManagePlayersLeagueId(l.id)}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Zarządzaj graczami ({approvedPlayers.filter((p: any) => (p.leagueIds || []).includes(l.id)).length})
+                </Button>
               </div>
             )}
 
