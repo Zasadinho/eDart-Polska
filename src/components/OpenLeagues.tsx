@@ -99,13 +99,18 @@ const OpenLeagues = () => {
                 {league.description && (
                   <p className="text-sm text-muted-foreground font-body mb-3">{league.description}</p>
                 )}
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                <div className="flex items-center gap-4 flex-wrap text-xs text-muted-foreground mb-4">
                   <span className="flex items-center gap-1">
                     <Trophy className="h-3.5 w-3.5" /> {league.format || "Best of 5"}
                   </span>
                   <span className="flex items-center gap-1">
                     <Users className="h-3.5 w-3.5" /> {count} zapisanych
                   </span>
+                  {(league as any).registration_deadline && (
+                    <span className="flex items-center gap-1 text-accent">
+                      <Calendar className="h-3.5 w-3.5" /> Do {new Date((league as any).registration_deadline).toLocaleDateString("pl-PL")}
+                    </span>
+                  )}
                 </div>
                 {!user ? (
                   <Link to="/login">

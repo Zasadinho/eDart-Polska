@@ -1265,7 +1265,8 @@ const PlayersTab = ({ players, leagues, pendingPlayers, approvePlayer, updatePla
             </div>
           </div>
         ))}
-        {approved.length === 0 && <p className="text-muted-foreground font-body text-center py-8">Brak graczy. Dodaj nowego gracza powyżej.</p>}
+        {filteredApproved.length === 0 && searchQuery && <p className="text-muted-foreground font-body text-center py-8">Brak wyników dla „{searchQuery}"</p>}
+        {approved.length === 0 && !searchQuery && <p className="text-muted-foreground font-body text-center py-8">Brak graczy. Dodaj nowego gracza powyżej.</p>}
       </div>
     </div>
   );
