@@ -27,7 +27,6 @@ const allNavItems: NavItem[] = [
   { label: "Rekordy", href: "/hall-of-fame", icon: <Trophy className="h-3.5 w-3.5" /> },
   { label: "Ogłoszenia", href: "/announcements", icon: <Megaphone className="h-3.5 w-3.5" /> },
   { label: "Jak grać?", href: "/how-to-play", icon: <Gamepad2 className="h-3.5 w-3.5" /> },
-  { label: "Pobieranie", href: "/downloads", icon: <Download className="h-3.5 w-3.5" /> },
 ];
 
 const extraNavItems: NavItem[] = [
