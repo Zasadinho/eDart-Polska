@@ -82,8 +82,6 @@ const LoginPage = () => {
     }
   };
 
-  // Show Google OAuth only when NOT self-hosted
-  const showGoogleOAuth = !isSelfHosted;
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
