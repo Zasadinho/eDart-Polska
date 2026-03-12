@@ -296,8 +296,6 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
       checkoutHits2: parseInt(editStats.checkoutHits2) || 0,
       first9Avg1: parseFloat(editStats.first9Avg1) || undefined,
       first9Avg2: parseFloat(editStats.first9Avg2) || undefined,
-      avgUntil170_1: parseFloat(editStats.avgUntil170_1) || undefined,
-      avgUntil170_2: parseFloat(editStats.avgUntil170_2) || undefined,
       autodartsLink: m.autodartsLink,
     });
     setEditingId(null);
