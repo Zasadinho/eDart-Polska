@@ -6,6 +6,7 @@ import { achievements } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import PlayerProgressChart from "@/components/PlayerProgressChart";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import PageHeader from "@/components/PageHeader";
 
 const RARITY_ORDER: Record<string, number> = { common: 0, rare: 1, epic: 2, legendary: 3 };
 const RARITY_STYLES: Record<string, string> = {
