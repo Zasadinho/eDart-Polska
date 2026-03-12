@@ -128,6 +128,7 @@ const AdminPage = () => {
           {activeTab === "audit" && isAdmin && <AuditLogPanel />}
           {activeTab === "export" && isAdmin && <ExportPanel />}
           {activeTab === "chats" && isAdmin && <AdminChatPanel />}
+          {activeTab === "channels" && isAdmin && <AdminChannelPanel />}
           {activeTab === "bugs" && <BugReportsPanel />}
         </motion.div>
       </AnimatePresence>
