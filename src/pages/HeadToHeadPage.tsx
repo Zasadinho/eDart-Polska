@@ -178,7 +178,6 @@ const HeadToHeadPage = () => {
         </div>
       )}
       </div>
-      </div>
     </div>
   );
 };
