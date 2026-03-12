@@ -147,6 +147,7 @@ const RoleManagementPanel = () => {
     setRoleName("");
     setRoleDesc("");
     setRoleStatsScope("own_leagues");
+    setRoleStatsLeagueIds(new Set());
     setRolePages(new Set());
     setRoleActions(new Set());
     setRoleDialog({ open: true });
