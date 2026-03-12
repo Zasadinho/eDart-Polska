@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Trash2, Edit2, UserPlus, Award, Shield, Search,
-  Settings, Eye, Zap, Users, Save, X,
+  Settings, Eye, Zap, Users, Save, X, Hash,
 } from "lucide-react";
 
 // ─── AVAILABLE PERMISSIONS ───
