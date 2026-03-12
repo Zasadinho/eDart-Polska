@@ -17,7 +17,7 @@ const PrivacyPolicyPage = () => (
 
       <section>
         <h2 className="text-xl font-display font-bold text-foreground">1. Administrator Danych Osobowych</h2>
-        <p>Administratorem danych osobowych jest EDARTPOLSKA (dalej: „Administrator"), prowadzący serwis internetowy eDART Polska dostępny pod adresem ace-darts-arena.lovable.app.</p>
+        <p>Administratorem danych osobowych jest EDARTPOLSKA (dalej: „Administrator"), prowadzący serwis internetowy eDART Polska dostępny pod adresem edartpolska.pl.</p>
         <p>Kontakt z Administratorem: <a href="mailto:kontakt@edartspolska.pl" className="text-primary hover:underline">kontakt@edartspolska.pl</a></p>
       </section>
 
