@@ -84,6 +84,7 @@ const AdminPage = () => {
     { id: "audit", label: "Dziennik", icon: <ScrollText className="h-4 w-4" />, adminOnly: true },
     { id: "export", label: "Eksport", icon: <Download className="h-4 w-4" />, adminOnly: true },
     { id: "chats", label: "Czaty", icon: <MessageCircle className="h-4 w-4" />, adminOnly: true },
+    { id: "channels", label: "Kanały", icon: <MessageCircle className="h-4 w-4" />, adminOnly: true },
     { id: "bugs", label: "Błędy", icon: <Bug className="h-4 w-4" /> },
   ];
 
