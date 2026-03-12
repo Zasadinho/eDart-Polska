@@ -181,6 +181,7 @@ const HeadToHeadPage = () => {
       </div>
     </div>
   );
+};
 
 const H2HBar = ({ label, v1, v2, format }: { label: string; v1: number; v2: number; format: (v: number) => string }) => {
   const total = v1 + v2;
