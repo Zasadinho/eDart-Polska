@@ -123,6 +123,13 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
 
   useEffect(() => { loadAccessData(); checkBan(); }, [loadAccessData, checkBan]);
 
+  // Pre-load own sender info
+  useEffect(() => {
+    if (user && !senderInfos[user.id]) {
+      loadSenderInfos([user.id]);
+    }
+  }, [user, senderInfos, loadSenderInfos]);
+
   // Load sender info (name + nick) for a set of user IDs
   const loadSenderInfos = useCallback(async (senderIds: string[]) => {
     if (senderIds.length === 0) return;
