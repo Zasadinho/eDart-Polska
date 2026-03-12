@@ -32,7 +32,7 @@ export const UNIFIED_STATS: StatRow[] = [
 export const DB_TO_CAMEL: Record<string, string> = {
   avg1: "avg1", avg2: "avg2",
   first_9_avg1: "first9Avg1", first_9_avg2: "first9Avg2",
-  avg_until_170_1: "avgUntil170_1", avg_until_170_2: "avgUntil170_2",
+  
   one_eighties1: "oneEighties1", one_eighties2: "oneEighties2",
   high_checkout1: "highCheckout1", high_checkout2: "highCheckout2",
   ton60_1: "ton60_1", ton60_2: "ton60_2",

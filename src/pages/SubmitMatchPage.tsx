@@ -46,7 +46,7 @@ const readScore = (scoreLike: unknown): number => {
 const STAT_LABELS: { key1: string; key2: string; label: string; format?: "checkout" }[] = [
   { key1: "avg1", key2: "avg2", label: "Średnia" },
   { key1: "first_9_avg1", key2: "first_9_avg2", label: "Średnia z 9" },
-  { key1: "avg_until_170_1", key2: "avg_until_170_2", label: "Śr. do 170" },
+  
   { key1: "one_eighties1", key2: "one_eighties2", label: "180" },
   { key1: "high_checkout1", key2: "high_checkout2", label: "Najw. checkout" },
   { key1: "ton60_1", key2: "ton60_2", label: "60+" },
@@ -177,8 +177,6 @@ const SubmitMatchPage = () => {
       avg2: payload.avg2 != null ? String(payload.avg2) : "",
       first9Avg1: payload.first_9_avg1 != null ? String(payload.first_9_avg1) : "",
       first9Avg2: payload.first_9_avg2 != null ? String(payload.first_9_avg2) : "",
-      avgUntil170_1: payload.avg_until_170_1 != null ? String(payload.avg_until_170_1) : "",
-      avgUntil170_2: payload.avg_until_170_2 != null ? String(payload.avg_until_170_2) : "",
       oneEighties1: String(asNumber(payload.one_eighties1)),
       oneEighties2: String(asNumber(payload.one_eighties2)),
       hc1: String(asNumber(payload.high_checkout1)),
@@ -209,7 +207,7 @@ const SubmitMatchPage = () => {
     score1: p.score2, score2: p.score1,
     avg1: p.avg2, avg2: p.avg1,
     first_9_avg1: p.first_9_avg2, first_9_avg2: p.first_9_avg1,
-    avg_until_170_1: p.avg_until_170_2, avg_until_170_2: p.avg_until_170_1,
+    
     one_eighties1: p.one_eighties2, one_eighties2: p.one_eighties1,
     high_checkout1: p.high_checkout2, high_checkout2: p.high_checkout1,
     ton60_1: p.ton60_2, ton60_2: p.ton60_1,
@@ -400,8 +398,6 @@ const SubmitMatchPage = () => {
           checkoutHits2: asNumber(finalPayload.checkout_hits2),
           first9Avg1: finalPayload.first_9_avg1 ?? undefined,
           first9Avg2: finalPayload.first_9_avg2 ?? undefined,
-          avgUntil170_1: finalPayload.avg_until_170_1 ?? undefined,
-          avgUntil170_2: finalPayload.avg_until_170_2 ?? undefined,
           autodartsLink: finalPayload.autodarts_link || undefined,
         };
         submitMatchResult(matchedUpcoming.id, data);
@@ -679,8 +675,6 @@ const SubmitMatchPage = () => {
       checkoutHits2: hitsP2,
       first9Avg1: optNum("first9Avg1"),
       first9Avg2: optNum("first9Avg2"),
-      avgUntil170_1: optNum("avgUntil170_1"),
-      avgUntil170_2: optNum("avgUntil170_2"),
       autodartsLink: autodartsLink || undefined,
       screenshotUrls: screenshotUrls.length > 0 ? screenshotUrls : undefined,
       sourcePlatform,
