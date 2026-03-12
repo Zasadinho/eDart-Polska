@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Bug, Send, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import PageHeader from "@/components/PageHeader";
 
 const ReportBugPage = () => {
   const { user } = useAuth();
