@@ -21,18 +21,6 @@ const LoginPage = () => {
   const [name, setName] = useState("");
   const [gamingNick, setGamingNick] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result?.error) {
-      toast({ title: "Błąd logowania Google", description: String(result.error), variant: "destructive" });
-    }
-    setGoogleLoading(false);
-  };
 
   if (user) {
     return (
