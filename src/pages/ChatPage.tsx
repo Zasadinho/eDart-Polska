@@ -193,12 +193,10 @@ const ChatPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-3xl font-display font-bold text-foreground mb-4 flex items-center gap-3">
-        <MessageCircle className="h-8 w-8 text-primary" /> Czat
-      </h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-220px)] min-h-[400px]">
+    <div>
+      <PageHeader title="Czat" subtitle="Prywatne wiadomości z innymi graczami" />
+      <div className="container mx-auto px-4 py-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-260px)] min-h-[400px]">
         {/* Contact list */}
         <div className="rounded-lg border border-border bg-card overflow-hidden flex flex-col">
           <div className="p-3 border-b border-border flex items-center justify-between">

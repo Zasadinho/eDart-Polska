@@ -88,16 +88,11 @@ const MyMatchesPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <div>
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2 flex items-center gap-3">
-          <Handshake className="h-8 w-8 text-primary" /> Moje Mecze
-        </h1>
-        <p className="text-muted-foreground font-body mb-4">
-          Twoje nadchodzące mecze — ustal termin z przeciwnikiem
-        </p>
+    <div>
+      <PageHeader title="Moje Mecze" subtitle="Twoje nadchodzące mecze — ustal termin z przeciwnikiem">
         <LeagueSelector />
-      </div>
+      </PageHeader>
+      <div className="container mx-auto px-4 py-6 space-y-6">
 
       {!myPlayerId ? (
         <div className="rounded-lg border border-border bg-muted/20 p-6 text-center">

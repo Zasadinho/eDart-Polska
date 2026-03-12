@@ -717,19 +717,12 @@ const SubmitMatchPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">Dodaj Wynik</h1>
-        <p className="text-muted-foreground font-body">
-          Zalogowany jako <span className="text-foreground font-semibold">{profile?.name || user.email}</span>
-          {canSubmitAll && (
-            <span className="ml-2 text-xs text-primary">(Admin/Moderator — widoczne wszystkie mecze)</span>
-          )}
-        </p>
-        <p className="text-xs text-accent font-body mt-1">
-          ⚠️ Zgłoszone wyniki wymagają zatwierdzenia przez admina lub moderatora.
-        </p>
-      </div>
+    <div>
+      <PageHeader title="Dodaj Wynik" subtitle={`Zalogowany jako ${profile?.name || user.email}${canSubmitAll ? " (Admin/Moderator)" : ""}`} />
+      <div className="container mx-auto px-4 py-6 max-w-2xl">
+      <p className="text-xs text-accent font-body mb-4">
+        ⚠️ Zgłoszone wyniki wymagają zatwierdzenia przez admina lub moderatora.
+      </p>
 
       {/* Platform selector */}
       <div className="rounded-lg border border-border bg-card p-4 mb-4">

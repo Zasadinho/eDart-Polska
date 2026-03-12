@@ -106,14 +106,9 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-lg">
-      <Link to="/">
-        <Button variant="ghost" size="sm" className="mb-6 font-display uppercase tracking-wider text-xs">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Powrót
-        </Button>
-      </Link>
-
-      <h1 className="text-3xl font-display font-bold text-foreground mb-8">Ustawienia konta</h1>
+    <div>
+      <PageHeader title="Ustawienia konta" subtitle="Zarządzaj swoim profilem i danymi" />
+      <div className="container mx-auto px-4 py-6 max-w-lg">
 
       {/* Profile info */}
       <div className="rounded-lg border border-border bg-card p-6 card-glow mb-6">
