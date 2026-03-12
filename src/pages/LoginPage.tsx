@@ -147,7 +147,21 @@ const LoginPage = () => {
                 <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Powtórz hasło</Label>
                 <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Powtórz hasło" className="bg-muted/30 border-border" required />
               </div>
-              <Button type="submit" variant="hero" size="lg" className="w-full" disabled={submitting}>
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="terms"
+                  checked={acceptedTerms}
+                  onCheckedChange={(v) => setAcceptedTerms(v === true)}
+                  className="mt-0.5"
+                />
+                <label htmlFor="terms" className="text-xs text-muted-foreground font-body leading-tight cursor-pointer">
+                  Akceptuję{" "}
+                  <Link to="/terms" className="text-primary hover:underline" target="_blank">Regulamin</Link>
+                  {" "}oraz{" "}
+                  <Link to="/privacy-policy" className="text-primary hover:underline" target="_blank">Politykę Prywatności</Link>
+                </label>
+              </div>
+              <Button type="submit" variant="hero" size="lg" className="w-full" disabled={submitting || !acceptedTerms}>
                 <UserPlus className="h-4 w-4 mr-2" />
                 {submitting ? "Rejestracja..." : "Zarejestruj się"}
               </Button>
