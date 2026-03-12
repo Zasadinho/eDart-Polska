@@ -6,6 +6,7 @@ import { achievements } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import PlayerProgressChart from "@/components/PlayerProgressChart";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import PageHeader from "@/components/PageHeader";
 
 const RARITY_ORDER: Record<string, number> = { common: 0, rare: 1, epic: 2, legendary: 3 };
 const RARITY_STYLES: Record<string, string> = {
@@ -43,19 +44,21 @@ const PlayerProfilePage = () => {
   const allLeagueStats = getPlayerAllLeagueStats(player.id);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Link to="/players">
-        <Button variant="ghost" size="sm" className="mb-6 font-display uppercase tracking-wider text-xs">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Wszyscy gracze
-        </Button>
-      </Link>
+    <div>
+      <PageHeader title={player.name} subtitle={`Aktywny w ${allLeagueStats.length} ${allLeagueStats.length === 1 ? "lidze" : "ligach"}`}>
+        <Link to="/players">
+          <Button variant="outline" size="sm" className="font-display uppercase tracking-wider text-xs">
+            <ArrowLeft className="h-4 w-4 mr-1" /> Wszyscy gracze
+          </Button>
+        </Link>
+      </PageHeader>
+      <div className="container mx-auto px-4 py-6">
 
       {/* Profile header */}
       <div className="rounded-lg border border-border bg-card p-6 md:p-8 card-glow mb-8">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
           <PlayerAvatar avatarUrl={player.avatar_url} initials={player.avatar} size="lg" />
           <div className="flex-1">
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-1">{player.name}</h1>
             <p className="text-muted-foreground font-body">
               Aktywny w {allLeagueStats.length} {allLeagueStats.length === 1 ? "lidze" : "ligach"}
             </p>
@@ -198,6 +201,7 @@ const PlayerProfilePage = () => {
       {allLeagueStats.length === 0 && (
         <p className="text-muted-foreground font-body">Gracz nie uczestniczy jeszcze w żadnej lidze.</p>
       )}
+    </div>
     </div>
   );
 };

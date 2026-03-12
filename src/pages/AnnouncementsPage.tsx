@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Megaphone, Pin, Trash2, Plus } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -98,17 +99,15 @@ const AnnouncementsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6 max-w-3xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-display font-bold text-foreground flex items-center gap-3">
-          <Megaphone className="h-8 w-8 text-primary" /> Ogłoszenia
-        </h1>
+    <div>
+      <PageHeader title="Ogłoszenia" subtitle="Ważne informacje od administracji">
         {canPost && (
           <Button variant="hero" size="sm" onClick={() => setShowForm(!showForm)}>
             <Plus className="h-4 w-4 mr-1" /> Nowe ogłoszenie
           </Button>
         )}
-      </div>
+      </PageHeader>
+      <div className="container mx-auto px-4 py-6 space-y-6 max-w-3xl">
 
       {showForm && canPost && (
         <form onSubmit={handleSubmit} className="rounded-lg border border-border bg-card p-5 card-glow space-y-4">
@@ -165,6 +164,7 @@ const AnnouncementsPage = () => {
           ))
         )}
       </div>
+    </div>
     </div>
   );
 };

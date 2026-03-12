@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Bug, Send, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import PageHeader from "@/components/PageHeader";
 
 const ReportBugPage = () => {
   const { user } = useAuth();
@@ -60,16 +61,9 @@ const ReportBugPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-lg">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-destructive/20 border border-destructive/30">
-          <Bug className="h-6 w-6 text-destructive" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Zgłoś błąd</h1>
-          <p className="text-sm text-muted-foreground font-body">Opisz problem, a administrator go rozwiąże</p>
-        </div>
-      </div>
+    <div>
+      <PageHeader title="Zgłoś błąd" subtitle="Opisz problem, a administrator go rozwiąże" />
+      <div className="container mx-auto px-4 py-6 max-w-lg">
 
       <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border border-border bg-card p-6">
         <div>
@@ -99,6 +93,7 @@ const ReportBugPage = () => {
           {sending ? "Wysyłanie..." : "Wyślij zgłoszenie"}
         </Button>
       </form>
+    </div>
     </div>
   );
 };
