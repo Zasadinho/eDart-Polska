@@ -139,8 +139,6 @@ const mapDbMatch = (m: any, players: Player[]): Match => {
     groupName: m.group_name,
     first9Avg1: m.first_9_avg1 ? Number(m.first_9_avg1) : undefined,
     first9Avg2: m.first_9_avg2 ? Number(m.first_9_avg2) : undefined,
-    avgUntil170_1: m.avg_until_170_1 ? Number(m.avg_until_170_1) : undefined,
-    avgUntil170_2: m.avg_until_170_2 ? Number(m.avg_until_170_2) : undefined,
     confirmedDate: m.confirmed_date ?? null,
     screenshotUrls: m.screenshot_urls ?? [],
     sourcePlatform: m.source_platform ?? 'autodarts',
