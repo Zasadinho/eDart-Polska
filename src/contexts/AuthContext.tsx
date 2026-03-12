@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .maybeSingle();
 
     setProfile(data ?? null);
-  }, []);
+  }, [supabase]);
 
   const checkRoles = useCallback(async (userId: string) => {
     const [adminRes, modRes, rolesRes] = await Promise.all([
