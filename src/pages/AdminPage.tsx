@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, Settings, Check, Clock, CheckCircle2, XCircle, UserPlus, Award, Shuffle, Brackets, Layers, Plug, ScrollText, Download, Bug, Zap, MessageCircle, Ban, AlertTriangle, Search } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 import { Switch } from "@/components/ui/switch";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import ExportPanel from "@/components/ExportPanel";
@@ -91,20 +92,12 @@ const AdminPage = () => {
   const upcomingCount = matches.filter((m) => m.status === "upcoming").length;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-primary/20 border border-primary/30">
-          <Shield className="h-7 w-7 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-            {isAdmin ? "Panel Admina" : "Panel Moderatora"}
-          </h1>
-          <p className="text-muted-foreground font-body text-sm">
-            {isAdmin ? "Pełne zarządzanie ligami, turniejami, graczami i meczami" : "Zatwierdzanie wyników meczów"}
-          </p>
-        </div>
-      </div>
+    <div>
+      <PageHeader 
+        title={isAdmin ? "Panel Admina" : "Panel Moderatora"} 
+        subtitle={isAdmin ? "Pełne zarządzanie ligami, turniejami, graczami i meczami" : "Zatwierdzanie wyników meczów"} 
+      />
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
 
       <div className="flex flex-wrap gap-2 mb-8 border-b border-border pb-4">
         {visibleTabs.map((tab) => (
@@ -1899,6 +1892,7 @@ const RolesTab = ({ toast }: any) => {
           <div><span className="text-accent font-semibold">Moderator</span> — Może zatwierdzać/odrzucać wyniki meczów zgłoszone przez graczy</div>
           <div><span className="text-secondary font-semibold">Gracz</span> — Może zgłaszać wyniki swoich meczów</div>
         </div>
+      </div>
       </div>
     </div>
   );
