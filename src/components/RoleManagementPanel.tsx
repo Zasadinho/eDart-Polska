@@ -295,7 +295,7 @@ const RoleManagementPanel = () => {
             <p className="text-muted-foreground text-sm text-center py-8">Brak ról niestandardowych. Utwórz pierwszą!</p>
           ) : (
             <div className="space-y-3">
-              {roles.map((role) => {
+              {[...roles].sort((a, b) => (a.is_guest_role === b.is_guest_role ? 0 : a.is_guest_role ? -1 : 1)).map((role) => {
                 const perms = getPermissionsForRole(role.id);
                 const pagePerms = perms.filter((p) => p.permission_type === "page");
                 const actionPerms = perms.filter((p) => p.permission_type === "action");
