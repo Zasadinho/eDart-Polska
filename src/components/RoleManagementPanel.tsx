@@ -117,17 +117,21 @@ const RoleManagementPanel = () => {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [rolesRes, permsRes, userRolesRes, profilesRes, legacyRes] = await Promise.all([
+    const [rolesRes, permsRes, userRolesRes, profilesRes, legacyRes, channelsRes, channelRolesRes] = await Promise.all([
       supabase.from("custom_roles").select("*").order("created_at"),
       supabase.from("custom_role_permissions").select("*"),
       supabase.from("user_custom_roles").select("*"),
       supabase.from("profiles").select("user_id, name").order("name"),
       supabase.from("user_roles").select("*"),
+      supabase.from("group_channels").select("id, name, channel_type").order("name"),
+      supabase.from("group_channel_roles").select("channel_id, role_id"),
     ]);
 
     if (rolesRes.data) setRoles(rolesRes.data as CustomRole[]);
     if (permsRes.data) setPermissions(permsRes.data as Permission[]);
     if (profilesRes.data) setProfiles(profilesRes.data);
+    if (channelsRes.data) setGroupChannels(channelsRes.data as GroupChannel[]);
+    if (channelRolesRes.data) setChannelRoleLinks(channelRolesRes.data as any[]);
 
     // Enrich user custom roles with names
     if (userRolesRes.data && profilesRes.data) {
