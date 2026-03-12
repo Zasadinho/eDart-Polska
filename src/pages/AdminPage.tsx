@@ -14,6 +14,7 @@ import ExportPanel from "@/components/ExportPanel";
 import ExtensionConfigPanel from "@/components/ExtensionConfigPanel";
 import BugReportsPanel from "@/components/BugReportsPanel";
 import AdminChatPanel from "@/components/AdminChatPanel";
+import AdminChannelPanel from "@/components/AdminChannelPanel";
 import DiscordWebhookPanel from "@/components/DiscordWebhookPanel";
 import RoleManagementPanel from "@/components/RoleManagementPanel";
 import SelfHostConfigPanel from "@/components/SelfHostConfigPanel";
