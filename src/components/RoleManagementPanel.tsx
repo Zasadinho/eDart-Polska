@@ -54,6 +54,7 @@ interface CustomRole {
   name: string;
   description: string;
   stats_scope: string;
+  is_guest_role: boolean;
   created_at: string;
 }
 
