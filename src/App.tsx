@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SelfHostProvider } from "@/contexts/SelfHostContext";
 import { LeagueProvider } from "@/contexts/LeagueContext";
 import Navbar from "@/components/Navbar";
 import FloatingChat from "@/components/FloatingChat";
@@ -46,9 +47,10 @@ const P = ({ path, children }: { path: string; children: ReactNode }) => (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider>
-        <LeagueProvider>
-          <PagePermissionsProvider>
+      <SelfHostProvider>
+        <AuthProvider>
+          <LeagueProvider>
+            <PagePermissionsProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -79,9 +81,10 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
-          </PagePermissionsProvider>
-        </LeagueProvider>
-      </AuthProvider>
+            </PagePermissionsProvider>
+          </LeagueProvider>
+        </AuthProvider>
+      </SelfHostProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

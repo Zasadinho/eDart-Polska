@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as defaultClient } from "@/integrations/supabase/client";
+import { useSelfHost } from "@/contexts/SelfHostContext";
 import type { User } from "@supabase/supabase-js";
 
 interface AuthContextType {
@@ -18,6 +19,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const { activeClient } = useSelfHost();
+  const supabase = activeClient;
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<{ name: string; avatar: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -32,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .maybeSingle();
 
     setProfile(data ?? null);
-  }, []);
+  }, [supabase]);
 
   const checkRoles = useCallback(async (userId: string) => {
     const [adminRes, modRes, rolesRes] = await Promise.all([
@@ -47,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     setIsAdmin(adminByRpc || roles.includes("admin"));
     setIsModerator(modByRpc || roles.includes("moderator"));
-  }, []);
+  }, [supabase]);
 
   const syncUserState = useCallback(async (currentUser: User | null) => {
     setUser(currentUser);
