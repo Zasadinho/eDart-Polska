@@ -52,6 +52,12 @@ const ACTION_PERMISSIONS = [
   { key: "manage_bugs", label: "Zarządzanie błędami" },
 ];
 
+interface GroupChannel {
+  id: string;
+  name: string;
+  channel_type: string;
+}
+
 interface CustomRole {
   id: string;
   name: string;
