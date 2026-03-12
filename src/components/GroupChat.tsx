@@ -150,6 +150,13 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
     setSenderInfos((prev) => ({ ...prev, ...infos }));
   }, []);
 
+  // Pre-load own sender info
+  useEffect(() => {
+    if (user && !senderInfos[user.id]) {
+      loadSenderInfos([user.id]);
+    }
+  }, [user, loadSenderInfos]);
+
   // Load messages for active channel
   useEffect(() => {
     if (!activeChannel) return;
@@ -321,11 +328,9 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
                 const info = senderInfos[m.sender_id] || { name: "..." };
                 return (
                   <div key={m.id} className="flex flex-col">
-                    {!isMine && (
-                      <span className="text-[10px] font-display font-bold text-primary mb-0.5 ml-8">
-                        {renderSenderLabel(info)}
-                      </span>
-                    )}
+                    <span className={`text-[10px] font-display font-bold mb-0.5 ${isMine ? "text-right mr-8 text-primary/70" : "ml-8 text-primary"}`}>
+                      {renderSenderLabel(info)}
+                    </span>
                     <div className={`group flex items-end gap-1.5 ${isMine ? "justify-end" : "justify-start"}`}>
                       {!isMine && (
                         <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[8px] font-display font-bold text-primary overflow-hidden shrink-0">
@@ -352,6 +357,15 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
                           })()}
                         </p>
                       </div>
+                      {isMine && (
+                        <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-[8px] font-display font-bold text-primary overflow-hidden shrink-0">
+                          {info.avatar_url ? (
+                            <img src={info.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            info.avatar || "??"
+                          )}
+                        </div>
+                      )}
                       {canModerate && !isMine && (
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
                           <button onClick={() => deleteMessage(m.id)} className="p-0.5 text-destructive hover:text-destructive/80" title="Usuń wiadomość">
