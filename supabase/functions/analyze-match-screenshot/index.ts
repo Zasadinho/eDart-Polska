@@ -315,6 +315,32 @@ Deno.serve(async (req) => {
 
     const stats = JSON.parse(toolCall.function.arguments);
 
+    const needsDartsMindScoreFallback =
+      stats?.platform === "dartsmind" &&
+      (
+        stats?.score1 == null ||
+        stats?.score2 == null ||
+        (Number(stats?.score1) === 0 && Number(stats?.score2) === 0)
+      );
+
+    if (needsDartsMindScoreFallback) {
+      const fallbackScore = await extractDartsMindScoreFallback(LOVABLE_API_KEY, screenshot_urls, match_context);
+      if (
+        fallbackScore &&
+        fallbackScore.confidence !== "none" &&
+        fallbackScore.score1 != null &&
+        fallbackScore.score2 != null &&
+        !(Number(fallbackScore.score1) === 0 && Number(fallbackScore.score2) === 0)
+      ) {
+        stats.score1 = fallbackScore.score1;
+        stats.score2 = fallbackScore.score2;
+        if (typeof fallbackScore.matched_to_context === "boolean") {
+          stats.matched_to_context = fallbackScore.matched_to_context;
+        }
+        console.log("Applied DartsMind score fallback:", JSON.stringify({ score1: stats.score1, score2: stats.score2 }));
+      }
+    }
+
     const isReversedAgainstContext = !!(
       match_context &&
       typeof stats?.player1_name === "string" &&
