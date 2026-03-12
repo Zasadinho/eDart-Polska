@@ -207,8 +207,11 @@ const RoleManagementPanel = () => {
       const permRows: any[] = [];
       rolePages.forEach((key) => permRows.push({ role_id: roleId, permission_type: "page", permission_key: key }));
       roleActions.forEach((key) => permRows.push({ role_id: roleId, permission_type: "action", permission_key: key }));
-      if (roleStatsScope === "selected_leagues") {
+              if (roleStatsScope === "selected_leagues") {
         roleStatsLeagueIds.forEach((key) => permRows.push({ role_id: roleId, permission_type: "stats_league", permission_key: key }));
+      }
+      if (roleStatsScope === "platform") {
+        roleStatsLeagueIds.forEach((key) => permRows.push({ role_id: roleId, permission_type: "stats_platform", permission_key: key }));
       }
 
       if (permRows.length > 0) {
