@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Target, Monitor, Smartphone, Camera, Link2, Upload, CheckCircle2, UserPlus, LogIn, Gamepad2, ArrowRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import PageHeader from "@/components/PageHeader";
 
 const platforms = [
   {

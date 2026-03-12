@@ -2,6 +2,7 @@ import { useLeague } from "@/contexts/LeagueContext";
 import { Trophy, Target, Crosshair, TrendingUp, Flame, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import PageHeader from "@/components/PageHeader";
 
 interface RecordEntry {
   playerId: string;

@@ -1,5 +1,6 @@
 import { achievements } from "@/data/mockData";
 import { Trophy, Zap } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 
 const RARITY_ORDER: Record<string, number> = { common: 0, rare: 1, epic: 2, legendary: 3 };
 
