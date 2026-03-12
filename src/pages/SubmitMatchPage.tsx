@@ -677,8 +677,6 @@ const SubmitMatchPage = () => {
       checkoutHits2: hitsP2,
       first9Avg1: optNum("first9Avg1"),
       first9Avg2: optNum("first9Avg2"),
-      avgUntil170_1: optNum("avgUntil170_1"),
-      avgUntil170_2: optNum("avgUntil170_2"),
       autodartsLink: autodartsLink || undefined,
       screenshotUrls: screenshotUrls.length > 0 ? screenshotUrls : undefined,
       sourcePlatform,
