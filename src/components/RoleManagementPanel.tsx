@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Trash2, Edit2, UserPlus, Award, Shield, Search,
-  Settings, Eye, Zap, Users, Save, X,
+  Settings, Eye, Zap, Users, Save, X, Hash,
 } from "lucide-react";
 
 // ─── AVAILABLE PERMISSIONS ───
@@ -52,6 +52,12 @@ const ACTION_PERMISSIONS = [
   { key: "manage_bugs", label: "Zarządzanie błędami" },
 ];
 
+interface GroupChannel {
+  id: string;
+  name: string;
+  channel_type: string;
+}
+
 interface CustomRole {
   id: string;
   name: string;
@@ -83,6 +89,8 @@ const RoleManagementPanel = () => {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [userCustomRoles, setUserCustomRoles] = useState<UserCustomRole[]>([]);
   const [profiles, setProfiles] = useState<{ user_id: string; name: string }[]>([]);
+  const [groupChannels, setGroupChannels] = useState<GroupChannel[]>([]);
+  const [channelRoleLinks, setChannelRoleLinks] = useState<{ channel_id: string; role_id: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Legacy user_roles (enum-based)
@@ -96,6 +104,7 @@ const RoleManagementPanel = () => {
   const [roleStatsLeagueIds, setRoleStatsLeagueIds] = useState<Set<string>>(new Set());
   const [rolePages, setRolePages] = useState<Set<string>>(new Set());
   const [roleActions, setRoleActions] = useState<Set<string>>(new Set());
+  const [roleChannels, setRoleChannels] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
 
   // Assign users dialog
@@ -108,17 +117,21 @@ const RoleManagementPanel = () => {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    const [rolesRes, permsRes, userRolesRes, profilesRes, legacyRes] = await Promise.all([
+    const [rolesRes, permsRes, userRolesRes, profilesRes, legacyRes, channelsRes, channelRolesRes] = await Promise.all([
       supabase.from("custom_roles").select("*").order("created_at"),
       supabase.from("custom_role_permissions").select("*"),
       supabase.from("user_custom_roles").select("*"),
       supabase.from("profiles").select("user_id, name").order("name"),
       supabase.from("user_roles").select("*"),
+      supabase.from("group_channels").select("id, name, channel_type").order("name"),
+      supabase.from("group_channel_roles").select("channel_id, role_id"),
     ]);
 
     if (rolesRes.data) setRoles(rolesRes.data as CustomRole[]);
     if (permsRes.data) setPermissions(permsRes.data as Permission[]);
     if (profilesRes.data) setProfiles(profilesRes.data);
+    if (channelsRes.data) setGroupChannels(channelsRes.data as GroupChannel[]);
+    if (channelRolesRes.data) setChannelRoleLinks(channelRolesRes.data as any[]);
 
     // Enrich user custom roles with names
     if (userRolesRes.data && profilesRes.data) {
@@ -151,6 +164,7 @@ const RoleManagementPanel = () => {
     setRoleStatsLeagueIds(new Set());
     setRolePages(new Set());
     setRoleActions(new Set());
+    setRoleChannels(new Set());
     setRoleDialog({ open: true });
   };
 
@@ -165,6 +179,9 @@ const RoleManagementPanel = () => {
       ...rolePerms.filter((p) => p.permission_type === "stats_league").map((p) => p.permission_key),
       ...rolePerms.filter((p) => p.permission_type === "stats_platform").map((p) => p.permission_key),
     ]));
+    // Load channel access for this role
+    const roleChIds = channelRoleLinks.filter((cr) => cr.role_id === role.id).map((cr) => cr.channel_id);
+    setRoleChannels(new Set(roleChIds));
     setRoleDialog({ open: true, editing: role });
   };
 
@@ -221,6 +238,13 @@ const RoleManagementPanel = () => {
       if (permRows.length > 0) {
         const { error: permErr } = await supabase.from("custom_role_permissions").insert(permRows);
         if (permErr) throw permErr;
+      }
+
+      // Save channel access
+      await supabase.from("group_channel_roles").delete().eq("role_id", roleId);
+      const channelRows = [...roleChannels].map((chId) => ({ channel_id: chId, role_id: roleId }));
+      if (channelRows.length > 0) {
+        await supabase.from("group_channel_roles").insert(channelRows as any);
       }
 
       toast({ title: roleDialog.editing ? "✅ Rola zaktualizowana!" : "✅ Rola utworzona!" });
@@ -589,6 +613,26 @@ const RoleManagementPanel = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Channel access */}
+              {groupChannels.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="font-display text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <Hash className="h-3 w-3" /> Dostęp do kanałów czatu
+                  </Label>
+                  <div className="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto rounded-md border border-border p-2">
+                    {groupChannels.map((ch) => (
+                      <label key={ch.id} className="flex items-center gap-2 text-sm font-body cursor-pointer hover:bg-muted/30 rounded-md px-2 py-1.5">
+                        <Checkbox
+                          checked={roleChannels.has(ch.id)}
+                          onCheckedChange={() => togglePerm(roleChannels, ch.id, setRoleChannels)}
+                        />
+                        {ch.channel_type === "admin" ? "🔒" : ch.channel_type === "league" ? "🏆" : ch.channel_type === "platform" ? "🖥️" : "💬"} {ch.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

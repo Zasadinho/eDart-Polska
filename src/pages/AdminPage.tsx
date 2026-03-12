@@ -14,6 +14,7 @@ import ExportPanel from "@/components/ExportPanel";
 import ExtensionConfigPanel from "@/components/ExtensionConfigPanel";
 import BugReportsPanel from "@/components/BugReportsPanel";
 import AdminChatPanel from "@/components/AdminChatPanel";
+import AdminChannelPanel from "@/components/AdminChannelPanel";
 import DiscordWebhookPanel from "@/components/DiscordWebhookPanel";
 import RoleManagementPanel from "@/components/RoleManagementPanel";
 import SelfHostConfigPanel from "@/components/SelfHostConfigPanel";
@@ -27,7 +28,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 
-type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles" | "integrations" | "discord" | "audit" | "export" | "bugs" | "chats";
+type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles" | "integrations" | "discord" | "audit" | "export" | "bugs" | "chats" | "channels";
 
 const LEAGUE_TYPE_LABELS: Record<LeagueType, string> = {
   league: "Liga (Round-Robin)",
@@ -83,6 +84,7 @@ const AdminPage = () => {
     { id: "audit", label: "Dziennik", icon: <ScrollText className="h-4 w-4" />, adminOnly: true },
     { id: "export", label: "Eksport", icon: <Download className="h-4 w-4" />, adminOnly: true },
     { id: "chats", label: "Czaty", icon: <MessageCircle className="h-4 w-4" />, adminOnly: true },
+    { id: "channels", label: "Kanały", icon: <MessageCircle className="h-4 w-4" />, adminOnly: true },
     { id: "bugs", label: "Błędy", icon: <Bug className="h-4 w-4" /> },
   ];
 
@@ -126,6 +128,7 @@ const AdminPage = () => {
           {activeTab === "audit" && isAdmin && <AuditLogPanel />}
           {activeTab === "export" && isAdmin && <ExportPanel />}
           {activeTab === "chats" && isAdmin && <AdminChatPanel />}
+          {activeTab === "channels" && isAdmin && <AdminChannelPanel />}
           {activeTab === "bugs" && <BugReportsPanel />}
         </motion.div>
       </AnimatePresence>
