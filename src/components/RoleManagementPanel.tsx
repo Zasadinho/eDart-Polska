@@ -494,6 +494,7 @@ const RoleManagementPanel = () => {
                   <SelectContent>
                     <SelectItem value="all_leagues">📊 Wszystkie ligi</SelectItem>
                     <SelectItem value="own_leagues">🎯 Tylko ligi, w których gra</SelectItem>
+                    <SelectItem value="platform">🖥️ Ligi z platformy</SelectItem>
                     <SelectItem value="selected_leagues">📋 Wybrane ligi</SelectItem>
                   </SelectContent>
                 </Select>
