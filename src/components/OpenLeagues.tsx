@@ -113,6 +113,12 @@ const OpenLeagues = () => {
                   <span className="flex items-center gap-1">
                     <Users className="h-3.5 w-3.5" /> {count} zapisanych
                   </span>
+                  {(league as any).platform && (league as any).platform !== "autodarts" && (
+                    <span className="text-xs">{PLATFORM_LABELS[(league as any).platform] || (league as any).platform}</span>
+                  )}
+                  {(league as any).platform === "autodarts" && (
+                    <span className="text-xs">{PLATFORM_LABELS.autodarts}</span>
+                  )}
                   {league.registration_deadline && (
                     <span className="flex items-center gap-1 text-accent">
                       <Calendar className="h-3.5 w-3.5" /> Zapisy do {new Date(league.registration_deadline).toLocaleDateString("pl-PL")}
