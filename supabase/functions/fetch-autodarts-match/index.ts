@@ -25,8 +25,6 @@ interface PlayerStats {
   totalDarts: number;
   first9Score: number;
   first9Darts: number;
-  until170Score: number;
-  until170Darts: number;
   oneEighties: number;
   highCheckout: number;
   ton60: number;
@@ -42,7 +40,6 @@ function emptyStats(): PlayerStats {
   return {
     totalScore: 0, totalDarts: 0,
     first9Score: 0, first9Darts: 0,
-    until170Score: 0, until170Darts: 0,
     oneEighties: 0, highCheckout: 0,
     ton60: 0, ton100: 0, ton140: 0, ton170: 0,
     checkoutAttempts: 0, checkoutHits: 0,
@@ -231,11 +228,6 @@ function processGameTurns(
     st.totalScore += points;
     st.totalDarts += dartsCount;
 
-    if (scoreBeforeTurn != null && scoreBeforeTurn > 170) {
-      st.until170Score += points;
-      st.until170Darts += dartsCount;
-    }
-
     if (tidx < 3) {
       st.first9Score += points;
       st.first9Darts += dartsCount;
@@ -402,13 +394,11 @@ async function fetchMatchData(matchId: string, token: string) {
 
   const avg = (s: PlayerStats) => s.totalDarts > 0 ? Math.round((s.totalScore / s.totalDarts) * 3 * 100) / 100 : null;
   const f9 = (s: PlayerStats) => s.first9Darts > 0 ? Math.round((s.first9Score / s.first9Darts) * 3 * 100) / 100 : null;
-  const a170 = (s: PlayerStats) => s.until170Darts > 0 ? Math.round((s.until170Score / s.until170Darts) * 3 * 100) / 100 : null;
 
   return {
     score1: st[0].legsWon, score2: st[1].legsWon,
     avg1: avg(st[0]), avg2: avg(st[1]),
     first_9_avg1: f9(st[0]), first_9_avg2: f9(st[1]),
-    avg_until_170_1: a170(st[0]), avg_until_170_2: a170(st[1]),
     one_eighties1: st[0].oneEighties, one_eighties2: st[1].oneEighties,
     high_checkout1: st[0].highCheckout, high_checkout2: st[1].highCheckout,
     ton60_1: st[0].ton60, ton60_2: st[1].ton60,

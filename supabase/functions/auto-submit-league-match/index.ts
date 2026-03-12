@@ -54,7 +54,6 @@ async function fetchJson(url: string, token: string) {
 interface PlayerStats {
   totalScore: number; totalDarts: number;
   first9Score: number; first9Darts: number;
-  until170Score: number; until170Darts: number;
   oneEighties: number; highCheckout: number;
   ton60: number; ton100: number; ton140: number; ton170: number;
   checkoutAttempts: number; checkoutHits: number;
@@ -66,7 +65,6 @@ function emptyStats(): PlayerStats {
   return {
     totalScore: 0, totalDarts: 0,
     first9Score: 0, first9Darts: 0,
-    until170Score: 0, until170Darts: 0,
     oneEighties: 0, highCheckout: 0,
     ton60: 0, ton100: 0, ton140: 0, ton170: 0,
     checkoutAttempts: 0, checkoutHits: 0,
@@ -185,11 +183,6 @@ function processGameTurns(
 
     st.totalScore += points;
     st.totalDarts += dartsCount;
-
-    if (scoreBeforeTurn != null && scoreBeforeTurn > 170) {
-      st.until170Score += points;
-      st.until170Darts += dartsCount;
-    }
 
     if (tidx < 3) {
       st.first9Score += points;
@@ -576,7 +569,6 @@ Deno.serve(async (req) => {
 
             const avgFromTurns = (s: PlayerStats) => s.totalDarts > 0 ? Math.round((s.totalScore / s.totalDarts) * 3 * 100) / 100 : null;
             const f9FromTurns = (s: PlayerStats) => s.first9Darts > 0 ? Math.round((s.first9Score / s.first9Darts) * 3 * 100) / 100 : null;
-            const a170FromTurns = (s: PlayerStats) => s.until170Darts > 0 ? Math.round((s.until170Score / s.until170Darts) * 3 * 100) / 100 : null;
 
             const apiAvg = (apiSt: any): number | null => {
               if (typeof apiSt.average === "number") return Math.round(apiSt.average * 100) / 100;
@@ -629,8 +621,6 @@ Deno.serve(async (req) => {
               avg2: avgFromTurns(st[i2]) ?? apiAvg(api2),
               first_9_avg1: f9FromTurns(st[i1]) ?? apiFirst9(api1),
               first_9_avg2: f9FromTurns(st[i2]) ?? apiFirst9(api2),
-              avg_until_170_1: a170FromTurns(st[i1]),
-              avg_until_170_2: a170FromTurns(st[i2]),
               one_eighties1: hasTurnData ? st[i1].oneEighties : (numOrNull(api1.oneEighties, api1["180s"]) ?? 0),
               one_eighties2: hasTurnData ? st[i2].oneEighties : (numOrNull(api2.oneEighties, api2["180s"]) ?? 0),
               high_checkout1: hasTurnData ? st[i1].highCheckout : (numOrNull(api1.highestCheckout, api1.bestCheckout) ?? 0),
@@ -692,7 +682,6 @@ Deno.serve(async (req) => {
           checkout_hits1: cs.checkout_hits2 ?? 0, checkout_hits2: cs.checkout_hits1 ?? 0,
           autodarts_link: `https://play.autodarts.io/history/matches/${autodarts_match_id}`,
           nine_darters1: 0, nine_darters2: 0,
-          avg_until_170_1: null, avg_until_170_2: null,
         };
       } else {
         statsData = {
@@ -710,7 +699,6 @@ Deno.serve(async (req) => {
           checkout_hits1: cs.checkout_hits1 ?? 0, checkout_hits2: cs.checkout_hits2 ?? 0,
           autodarts_link: `https://play.autodarts.io/history/matches/${autodarts_match_id}`,
           nine_darters1: 0, nine_darters2: 0,
-          avg_until_170_1: null, avg_until_170_2: null,
         };
       }
       console.log(`[auto-submit] Client fallback stats: score=${statsData.score1}-${statsData.score2}, swapped=${cSwapped}`);
@@ -753,8 +741,6 @@ Deno.serve(async (req) => {
         avg2: statsData.avg2,
         first_9_avg1: statsData.first_9_avg1,
         first_9_avg2: statsData.first_9_avg2,
-        avg_until_170_1: statsData.avg_until_170_1,
-        avg_until_170_2: statsData.avg_until_170_2,
         one_eighties1: statsData.one_eighties1,
         one_eighties2: statsData.one_eighties2,
         high_checkout1: statsData.high_checkout1,
