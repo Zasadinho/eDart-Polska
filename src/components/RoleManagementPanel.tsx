@@ -104,6 +104,7 @@ const RoleManagementPanel = () => {
   const [roleStatsLeagueIds, setRoleStatsLeagueIds] = useState<Set<string>>(new Set());
   const [rolePages, setRolePages] = useState<Set<string>>(new Set());
   const [roleActions, setRoleActions] = useState<Set<string>>(new Set());
+  const [roleChannels, setRoleChannels] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
 
   // Assign users dialog
