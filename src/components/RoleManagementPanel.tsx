@@ -590,7 +590,7 @@ const RoleManagementPanel = () => {
                 </div>
               </div>
             </div>
-          </ScrollArea>
+          </div>
 
           <DialogFooter className="pt-3 border-t border-border">
             <Button variant="ghost" onClick={() => setRoleDialog({ open: false })}>Anuluj</Button>
