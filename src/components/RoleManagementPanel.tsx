@@ -613,7 +613,28 @@ const RoleManagementPanel = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Channel access */}
+              {groupChannels.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="font-display text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <Hash className="h-3 w-3" /> Dostęp do kanałów czatu
+                  </Label>
+                  <div className="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto rounded-md border border-border p-2">
+                    {groupChannels.map((ch) => (
+                      <label key={ch.id} className="flex items-center gap-2 text-sm font-body cursor-pointer hover:bg-muted/30 rounded-md px-2 py-1.5">
+                        <Checkbox
+                          checked={roleChannels.has(ch.id)}
+                          onCheckedChange={() => togglePerm(roleChannels, ch.id, setRoleChannels)}
+                        />
+                        {ch.channel_type === "admin" ? "🔒" : ch.channel_type === "league" ? "🏆" : ch.channel_type === "platform" ? "🖥️" : "💬"} {ch.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+          </div>
           </div>
 
           <DialogFooter className="pt-3 border-t border-border">
