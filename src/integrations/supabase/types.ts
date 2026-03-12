@@ -41,6 +41,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_config: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       bug_reports: {
         Row: {
           created_at: string
