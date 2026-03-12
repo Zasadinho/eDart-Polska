@@ -46,7 +46,7 @@ const readScore = (scoreLike: unknown): number => {
 const STAT_LABELS: { key1: string; key2: string; label: string; format?: "checkout" }[] = [
   { key1: "avg1", key2: "avg2", label: "Średnia" },
   { key1: "first_9_avg1", key2: "first_9_avg2", label: "Średnia z 9" },
-  { key1: "avg_until_170_1", key2: "avg_until_170_2", label: "Śr. do 170" },
+  
   { key1: "one_eighties1", key2: "one_eighties2", label: "180" },
   { key1: "high_checkout1", key2: "high_checkout2", label: "Najw. checkout" },
   { key1: "ton60_1", key2: "ton60_2", label: "60+" },
