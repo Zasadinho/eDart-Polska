@@ -12,6 +12,7 @@ import CookieBanner from "@/components/CookieBanner";
 import { useExtensionNotifications } from "@/hooks/useExtensionNotifications";
 import { PagePermissionsProvider, ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import TablesPage from "./pages/TablesPage";
 import MatchesPage from "./pages/MatchesPage";
 import PlayersPage from "./pages/PlayersPage";
 import PlayerProfilePage from "./pages/PlayerProfilePage";
