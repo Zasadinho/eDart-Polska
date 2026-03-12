@@ -101,7 +101,7 @@ const PlayerProfilePage = () => {
             <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
               <MiniStatBox label="Najl. Śr." value={stats.bestAvg > 0 ? stats.bestAvg.toFixed(1) : "—"} />
               <MiniStatBox label="First 9 Avg" value={stats.bestFirst9Avg > 0 ? stats.bestFirst9Avg.toFixed(1) : "—"} />
-              <MiniStatBox label="Avg ≤170" value={stats.bestAvgUntil170 > 0 ? stats.bestAvgUntil170.toFixed(1) : "—"} />
+              
               <MiniStatBox label="60+" value={stats.ton60} />
               <MiniStatBox label="100+" value={stats.ton80} />
               <MiniStatBox label="140+" value={stats.tonPlus} />
