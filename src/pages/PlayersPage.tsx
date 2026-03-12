@@ -5,6 +5,7 @@ import PlayerAvatar from "@/components/PlayerAvatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 
 const PlayersPage = () => {
   const { players, leagues, activeLeagueId, getPlayerLeagueStats, getPlayerAchievements, matches } = useLeague();
@@ -16,7 +17,6 @@ const PlayersPage = () => {
   const filtered = approved.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
     if (selectedLeague === "all") return matchesSearch;
-    // Filter by league: player must have a match in the selected league
     const inLeague = matches.some(
       (m) => m.leagueId === selectedLeague && (m.player1Id === p.id || m.player2Id === p.id)
     );
@@ -32,11 +32,8 @@ const PlayersPage = () => {
   })).sort((a, b) => b.stats.points - a.stats.points);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">Gracze</h1>
-        <p className="text-muted-foreground font-body">{approved.length} uczestników ligi</p>
-      </div>
+    <div>
+      <PageHeader title="Gracze" subtitle={`${approved.length} uczestników ligi`} />
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
