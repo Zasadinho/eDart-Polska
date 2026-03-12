@@ -89,6 +89,8 @@ const RoleManagementPanel = () => {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [userCustomRoles, setUserCustomRoles] = useState<UserCustomRole[]>([]);
   const [profiles, setProfiles] = useState<{ user_id: string; name: string }[]>([]);
+  const [groupChannels, setGroupChannels] = useState<GroupChannel[]>([]);
+  const [channelRoleLinks, setChannelRoleLinks] = useState<{ channel_id: string; role_id: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Legacy user_roles (enum-based)
