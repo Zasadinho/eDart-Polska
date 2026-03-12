@@ -477,14 +477,14 @@ const RoleManagementPanel = () => {
 
       {/* ─── CREATE/EDIT ROLE DIALOG ─── */}
       <Dialog open={roleDialog.open} onOpenChange={(open) => { if (!open) setRoleDialog({ open: false }); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+        <DialogContent className="max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="font-display">
               {roleDialog.editing ? "Edytuj rolę" : "Nowa rola"}
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 pr-4 -mr-4">
+          <div className="flex-1 min-h-0 overflow-y-auto pr-2 -mr-2">
             <div className="space-y-5 pb-4">
               {/* Name & description */}
               <div className="space-y-3">
@@ -590,7 +590,7 @@ const RoleManagementPanel = () => {
                 </div>
               </div>
             </div>
-          </ScrollArea>
+          </div>
 
           <DialogFooter className="pt-3 border-t border-border">
             <Button variant="ghost" onClick={() => setRoleDialog({ open: false })}>Anuluj</Button>
