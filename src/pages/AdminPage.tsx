@@ -129,6 +129,7 @@ const AdminPage = () => {
           {activeTab === "bugs" && <BugReportsPanel />}
         </motion.div>
       </AnimatePresence>
+      </div>
     </div>
   );
 };
@@ -1892,7 +1893,6 @@ const RolesTab = ({ toast }: any) => {
           <div><span className="text-accent font-semibold">Moderator</span> — Może zatwierdzać/odrzucać wyniki meczów zgłoszone przez graczy</div>
           <div><span className="text-secondary font-semibold">Gracz</span> — Może zgłaszać wyniki swoich meczów</div>
         </div>
-      </div>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import PageHeader from "@/components/PageHeader";
 
 const HeadToHeadPage = () => {
   const { players, matches, leagues } = useLeague();
@@ -177,6 +178,7 @@ const HeadToHeadPage = () => {
           <p className="text-muted-foreground font-body">Wybierz dwóch graczy, aby zobaczyć porównanie.</p>
         </div>
       )}
+      </div>
     </div>
   );
 };
