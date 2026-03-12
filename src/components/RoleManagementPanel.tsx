@@ -494,9 +494,29 @@ const RoleManagementPanel = () => {
                   <SelectContent>
                     <SelectItem value="all_leagues">📊 Wszystkie ligi</SelectItem>
                     <SelectItem value="own_leagues">🎯 Tylko ligi, w których gra</SelectItem>
+                    <SelectItem value="selected_leagues">📋 Wybrane ligi</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* League-specific stats selection */}
+              {roleStatsScope === "selected_leagues" && (
+                <div className="space-y-2">
+                  <Label className="font-display text-xs uppercase tracking-wider text-muted-foreground">Ligi ze statystykami</Label>
+                  <div className="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto rounded-md border border-border p-2">
+                    {leagues.map((league) => (
+                      <label key={league.id} className="flex items-center gap-2 text-sm font-body cursor-pointer hover:bg-muted/30 rounded-md px-2 py-1.5">
+                        <Checkbox
+                          checked={roleStatsLeagueIds.has(league.id)}
+                          onCheckedChange={() => togglePerm(roleStatsLeagueIds, league.id, setRoleStatsLeagueIds)}
+                        />
+                        {league.name}
+                        <span className="text-[10px] text-muted-foreground ml-auto">{league.season}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )
 
               {/* Page permissions */}
               <div className="space-y-2">
