@@ -16,7 +16,8 @@ import {
 type NavItem = { label: string; href: string; icon: React.ReactElement; authOnly?: boolean; mobileOnly?: boolean };
 
 const allNavItems: NavItem[] = [
-  { label: "Tabela", href: "/", icon: <Target className="h-3.5 w-3.5" /> },
+  { label: "Strona główna", href: "/", icon: <Target className="h-3.5 w-3.5" /> },
+  { label: "Tabele", href: "/tables", icon: <Trophy className="h-3.5 w-3.5" /> },
   { label: "Mecze", href: "/matches", icon: <Swords className="h-3.5 w-3.5" /> },
   { label: "Gracze", href: "/players", icon: <Trophy className="h-3.5 w-3.5" /> },
   { label: "Dodaj Wynik", href: "/submit", icon: <ClipboardEdit className="h-3.5 w-3.5" /> },

@@ -65,6 +65,7 @@ const App = () => (
               <CookieBanner />
               <Routes>
                 <Route path="/" element={<P path="/"><Index /></P>} />
+                <Route path="/tables" element={<P path="/tables"><TablesPage /></P>} />
                 <Route path="/matches" element={<P path="/matches"><MatchesPage /></P>} />
                 <Route path="/players" element={<P path="/players"><PlayersPage /></P>} />
                 <Route path="/players/:id" element={<P path="/players"><PlayerProfilePage /></P>} />
