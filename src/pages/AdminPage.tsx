@@ -466,6 +466,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [registrationDeadline, setRegistrationDeadline] = useState("");
   const [leagueType, setLeagueType] = useState<LeagueType>("league");
+  const [leaguePlatform, setLeaguePlatform] = useState<LeaguePlatform>("autodarts");
   const [bonusRules, setBonusRules] = useState<BonusRules>({ ...DEFAULT_BONUS_RULES });
   const [meetingsPerPair, setMeetingsPerPair] = useState(1);
   
