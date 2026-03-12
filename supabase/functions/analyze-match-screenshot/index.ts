@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-pro",
-        messages: [
+        temperature: 0,
           { role: "system", content: systemPrompt },
           {
             role: "user",
