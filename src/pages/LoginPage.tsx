@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSelfHost } from "@/contexts/SelfHostContext";
-import { lovable } from "@/integrations/lovable/index";
+
 
 const LoginPage = () => {
   const { toast } = useToast();
