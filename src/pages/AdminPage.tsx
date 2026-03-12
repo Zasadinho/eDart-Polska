@@ -497,6 +497,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     setRegistrationOpen(l.registration_open ?? false);
     setRegistrationDeadline(l.registration_deadline || "");
     setLeagueType(l.league_type || "league");
+    setLeaguePlatform(l.platform || "autodarts");
     setBonusRules({ ...DEFAULT_BONUS_RULES, ...(l.bonus_rules || {}) });
     setMeetingsPerPair(l.meetings_per_pair ?? 1);
     setShowForm(true);
