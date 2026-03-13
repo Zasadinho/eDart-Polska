@@ -5,6 +5,7 @@ import { ArrowLeft, Target, Trophy, TrendingUp, Crosshair, BarChart3, Zap } from
 import { achievements } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import PlayerProgressChart from "@/components/PlayerProgressChart";
+import FormComparisonChart from "@/components/FormComparisonChart";
 import PlayerAvatar from "@/components/PlayerAvatar";
 import PageHeader from "@/components/PageHeader";
 
