@@ -254,8 +254,8 @@ const RuleCard = ({
       </div>
     </CardHeader>
     <CardContent>
-      <div className="whitespace-pre-wrap text-sm font-body text-muted-foreground leading-relaxed">
-        {rule.content || "Brak treści."}
+      <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground font-body [&_h1]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_strong]:text-foreground [&_li]:marker:text-primary">
+        {rule.content ? <ReactMarkdown>{rule.content}</ReactMarkdown> : <p>Brak treści.</p>}
       </div>
     </CardContent>
   </Card>
