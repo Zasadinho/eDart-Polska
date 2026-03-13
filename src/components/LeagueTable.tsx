@@ -64,7 +64,7 @@ const LeagueTable = () => {
                 const achiev = getPlayerAchievements(entry.id, activeLeagueId);
                 return (
                   <tr key={entry.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                    <td className="px-2 py-2"><RankIcon rank={index + 1} /></td>
+                    <td className="px-2 py-2"><RankIcon rank={(entry as any).rank ?? (index + 1)} /></td>
                     <td className="px-2 py-2">
                       <div className="flex items-center gap-2">
                         <PlayerAvatar avatarUrl={entry.avatar_url} initials={entry.avatar} size="sm" className="w-7 h-7 text-[9px]" />
