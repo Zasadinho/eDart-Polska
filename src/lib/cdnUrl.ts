@@ -10,10 +10,11 @@ const SUPABASE_STORAGE_PATTERN =
   /https?:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/public\/(.+)/;
 
 /** CDN proxy is only available on the production Vercel domain */
-const IS_VERCEL =
+const IS_CDN_HOST =
   typeof window !== "undefined" &&
   (window.location.hostname === "edartpolska.pl" ||
-   window.location.hostname.endsWith(".vercel.app"));
+   window.location.hostname.endsWith(".vercel.app") ||
+   window.location.hostname.endsWith(".lovable.app"));
 
 export function cdnUrl(url: string | null | undefined): string | null | undefined {
   if (!url) return url;
