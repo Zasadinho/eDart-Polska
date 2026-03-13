@@ -229,7 +229,7 @@ const ScreenshotUpload = ({ onStatsExtracted, matchId, disabled, matchContext }:
           variant="outline"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || uploading || uploadedUrls.length >= 5}
+          disabled={disabled || uploading || uploadedUrls.length >= 2}
           className="font-display uppercase tracking-wider text-xs"
         >
           {uploading ? (
