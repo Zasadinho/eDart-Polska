@@ -35,6 +35,7 @@ import DownloadsPage from "./pages/DownloadsPage";
 import HowToPlayPage from "./pages/HowToPlayPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsPage from "./pages/TermsPage";
+import WeeklyChallengesPage from "./pages/WeeklyChallengesPage";
 import NotFound from "./pages/NotFound";
 import Footer from "./components/Footer";
 import { ReactNode } from "react";
