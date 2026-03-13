@@ -70,8 +70,8 @@ const LoginPage = () => {
     if (error) {
       toast({ title: "Błąd rejestracji", description: error, variant: "destructive" });
     } else {
-      toast({ title: "Konto utworzone!", description: "Zostałeś automatycznie zalogowany." });
-      navigate("/");
+      toast({ title: "Konto utworzone!", description: "Sprawdź swoją skrzynkę e-mail i kliknij link aktywacyjny, aby potwierdzić rejestrację." });
+      setMode("login");
     }
   };
 
