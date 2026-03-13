@@ -89,14 +89,14 @@ const RulesPage = () => {
     };
 
     if (editingRule) {
-      const { error } = await supabase.from("league_rules").update(payload).eq("id", editingRule.id);
+      const { error } = await supabase.from("league_rules" as any).update(payload).eq("id", editingRule.id);
       if (error) {
         toast({ title: "Błąd", description: error.message, variant: "destructive" });
         return;
       }
       toast({ title: "Zaktualizowano regulamin" });
     } else {
-      const { error } = await supabase.from("league_rules").insert(payload);
+      const { error } = await supabase.from("league_rules" as any).insert(payload);
       if (error) {
         toast({ title: "Błąd", description: error.message, variant: "destructive" });
         return;
