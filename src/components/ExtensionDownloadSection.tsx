@@ -103,7 +103,7 @@ const ExtensionDownloadSection = () => {
               <h2 className="text-xl font-display font-bold text-foreground">
                 Wtyczka {activeTab === "chrome" ? "Chrome" : "Firefox"}
               </h2>
-              <p className="text-sm text-muted-foreground font-body">eDART Polska – Autodarts Stats v1.5.0</p>
+              <p className="text-sm text-muted-foreground font-body">eDART Polska – Autodarts Stats v1.6.0</p>
             </div>
           </div>
 
