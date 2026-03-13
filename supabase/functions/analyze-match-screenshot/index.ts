@@ -94,7 +94,7 @@ KRYTYCZNE ZADANIE - MAPOWANIE GRACZY:
 };
 
 const extractDartsMindScoreFallback = async (
-  lovableApiKey: string,
+  aiConfig: { url: string; apiKey: string },
   screenshotUrls: string[],
   matchContext?: { player1_name: string; player2_name: string },
 ) => {
