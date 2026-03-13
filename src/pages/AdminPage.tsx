@@ -21,6 +21,7 @@ import SelfHostConfigPanel from "@/components/SelfHostConfigPanel";
 import LeagueStatusPanel from "@/components/LeagueStatusPanel";
 import ActivityReportPanel from "@/components/ActivityReportPanel";
 import EmailConfigPanel from "@/components/EmailConfigPanel";
+import IntegrationsPanel from "@/components/IntegrationsPanel";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -128,9 +129,9 @@ const AdminPage = () => {
           {activeTab === "roles" && isAdmin && <RoleManagementPanel />}
           {activeTab === "integrations" && isAdmin && (
             <div className="space-y-8">
+              <IntegrationsPanel />
               <EmailConfigPanel />
               <ExtensionConfigPanel leagues={leagues} />
-              <SelfHostConfigPanel />
             </div>
           )}
           {activeTab === "discord" && isAdmin && <DiscordWebhookPanel leagues={leagues} />}
