@@ -6,7 +6,40 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const LOVABLE_AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const OPENAI_GATEWAY = "https://api.openai.com/v1/chat/completions";
+const GEMINI_GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+
+/** Resolve which AI endpoint + key to use. Custom key from app_config takes priority. */
+async function resolveAiConfig(serviceClient: any): Promise<{ url: string; apiKey: string }> {
+  // Check if custom AI API key is configured in app_config
+  const { data } = await serviceClient
+    .from("app_config")
+    .select("value")
+    .eq("key", "custom_ai_api_key")
+    .maybeSingle();
+
+  const customKey = data?.value?.trim();
+
+  if (customKey) {
+    // Detect provider from key prefix
+    if (customKey.startsWith("sk-")) {
+      return { url: OPENAI_GATEWAY, apiKey: customKey };
+    }
+    if (customKey.startsWith("AIza")) {
+      return { url: GEMINI_GATEWAY, apiKey: customKey };
+    }
+    // Fallback: treat as OpenAI-compatible
+    return { url: OPENAI_GATEWAY, apiKey: customKey };
+  }
+
+  // Default: use Lovable AI gateway
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!lovableKey) {
+    throw new Error("AI not configured");
+  }
+  return { url: LOVABLE_AI_GATEWAY, apiKey: lovableKey };
+}
 
 const buildSystemPrompt = (matchContext?: { player1_name: string; player2_name: string }) => {
   let prompt = `Jesteś ekspertem od darta. Analizujesz zrzuty ekranu z aplikacji do darta (DartCounter, DartsMind, Autodarts lub inne).
@@ -61,7 +94,7 @@ KRYTYCZNE ZADANIE - MAPOWANIE GRACZY:
 };
 
 const extractDartsMindScoreFallback = async (
-  lovableApiKey: string,
+  aiConfig: { url: string; apiKey: string },
   screenshotUrls: string[],
   matchContext?: { player1_name: string; player2_name: string },
 ) => {
@@ -75,10 +108,10 @@ const extractDartsMindScoreFallback = async (
       ? `Kontekst meczu: player1=${matchContext.player1_name}, player2=${matchContext.player2_name}.`
       : "Brak kontekstu meczu.";
 
-    const response = await fetch(AI_GATEWAY, {
+    const response = await fetch(aiConfig.url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
+        Authorization: `Bearer ${aiConfig.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -159,8 +192,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    // Create service client for config lookup
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const serviceClient = createClient(supabaseUrl, serviceKey);
+
+    let aiConfig: { url: string; apiKey: string };
+    try {
+      aiConfig = await resolveAiConfig(serviceClient);
+    } catch (e) {
       return new Response(JSON.stringify({ error: "AI not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -173,7 +213,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -207,10 +246,10 @@ Deno.serve(async (req) => {
       ? `Przeanalizuj ${screenshot_urls.length > 1 ? "te zrzuty ekranu" : "ten zrzut ekranu"} z meczu darta. Mecz ligowy: "${match_context.player1_name}" vs "${match_context.player2_name}". Dopasuj graczy ze screena do tych z kontekstu i zwróć statystyki w odpowiedniej kolejności (player1_* = ${match_context.player1_name}, player2_* = ${match_context.player2_name}).`
       : `Przeanalizuj ${screenshot_urls.length > 1 ? "te zrzuty ekranu" : "ten zrzut ekranu"} z meczu darta i wyodrębnij statystyki.`;
 
-    const response = await fetch(AI_GATEWAY, {
+    const response = await fetch(aiConfig.url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${aiConfig.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -325,7 +364,7 @@ Deno.serve(async (req) => {
       );
 
     if (needsDartsMindScoreFallback) {
-      const fallbackScore = await extractDartsMindScoreFallback(LOVABLE_API_KEY, screenshot_urls, match_context);
+      const fallbackScore = await extractDartsMindScoreFallback(aiConfig, screenshot_urls, match_context);
       if (
         fallbackScore &&
         fallbackScore.confidence !== "none" &&
