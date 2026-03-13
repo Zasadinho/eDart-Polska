@@ -25,6 +25,7 @@ const RankIcon = ({ rank }: { rank: number }) => {
 };
 
 const LeagueTable = () => {
+  const [legendOpen, setLegendOpen] = useState(false);
   const { activeLeagueId, getLeagueStandings, getPlayerAchievements, leagues } = useLeague();
   const league = leagues.find(l => l.id === activeLeagueId);
   const rules = league?.bonus_rules ?? DEFAULT_BONUS_RULES;
