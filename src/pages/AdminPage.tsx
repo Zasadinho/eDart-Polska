@@ -78,6 +78,8 @@ const AdminPage = () => {
   const tabs: { id: AdminTab; label: string; icon: React.ReactNode; adminOnly?: boolean }[] = [
     { id: "overview", label: "Podsumowanie", icon: <Settings className="h-4 w-4" /> },
     { id: "approval", label: `Zatwierdzanie (${pendingApproval.length})`, icon: <CheckCircle2 className="h-4 w-4" /> },
+    { id: "league-status", label: "Status lig", icon: <Calendar className="h-4 w-4" />, adminOnly: true },
+    { id: "activity", label: "Aktywność", icon: <Users className="h-4 w-4" />, adminOnly: true },
     { id: "leagues", label: "Ligi / Turnieje", icon: <Trophy className="h-4 w-4" />, adminOnly: true },
     { id: "players", label: "Gracze", icon: <Users className="h-4 w-4" />, adminOnly: true },
     { id: "matches", label: "Mecze", icon: <Calendar className="h-4 w-4" />, adminOnly: true },
