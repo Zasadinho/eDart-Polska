@@ -870,7 +870,7 @@ const SubmitMatchPage = () => {
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
                   <div>
                     <h3 className="font-display font-bold text-sm text-primary uppercase tracking-wider">
-                      📊 Dane z Autodarts
+                      📊 Dane z analizy
                     </h3>
                   </div>
 
