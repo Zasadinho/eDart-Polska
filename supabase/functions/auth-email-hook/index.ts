@@ -147,7 +147,8 @@ async function handlePreview(req: Request): Promise<Response> {
 
 // Webhook handler - verifies signature and sends email
 async function handleWebhook(req: Request): Promise<Response> {
-  const apiKey = Deno.env.get('LOVABLE_API_KEY')
+  // Load config from DB on each webhook call
+  await loadEmailConfig()
 
   if (!apiKey) {
     console.error('LOVABLE_API_KEY not configured')
