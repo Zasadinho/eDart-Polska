@@ -108,10 +108,10 @@ const extractDartsMindScoreFallback = async (
       ? `Kontekst meczu: player1=${matchContext.player1_name}, player2=${matchContext.player2_name}.`
       : "Brak kontekstu meczu.";
 
-    const response = await fetch(AI_GATEWAY, {
+    const response = await fetch(aiConfig.url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
+        Authorization: `Bearer ${aiConfig.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
