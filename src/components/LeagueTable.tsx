@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useLeague } from "@/contexts/LeagueContext";
-import { Trophy, Medal, Award } from "lucide-react";
+import { Trophy, Medal, Award, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import { DEFAULT_BONUS_RULES } from "@/data/mockData";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const FormBadge = ({ result }: { result: "W" | "L" }) => {
   const styles = {
@@ -23,6 +25,7 @@ const RankIcon = ({ rank }: { rank: number }) => {
 };
 
 const LeagueTable = () => {
+  const [legendOpen, setLegendOpen] = useState(false);
   const { activeLeagueId, getLeagueStandings, getPlayerAchievements, leagues } = useLeague();
   const league = leagues.find(l => l.id === activeLeagueId);
   const rules = league?.bonus_rules ?? DEFAULT_BONUS_RULES;
@@ -115,21 +118,60 @@ const LeagueTable = () => {
         </div>
       </div>
 
-      {/* Bonus points legend */}
-      <div className="mt-4 rounded-lg border border-border bg-muted/20 p-3">
-        <h3 className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-2">System punktowy</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 text-[10px] font-body text-muted-foreground">
-          {rules.win > 0 && <span>🏆 Wygrana: <strong className="text-foreground">+{rules.win}</strong></span>}
-          {rules.per180 > 0 && <span>🎯 180: <strong className="text-foreground">+{rules.per180}</strong></span>}
-          
-          {rules.checkout100 > 0 && <span>✅ CO 100+: <strong className="text-foreground">+{rules.checkout100}</strong></span>}
-          {rules.checkout150 > 0 && <span>💫 CO 150+: <strong className="text-foreground">+{rules.checkout100 + rules.checkout150}</strong></span>}
-          {rules.avg90 > 0 && <span>📊 Śr. 90+: <strong className="text-foreground">+{rules.avg90}</strong></span>}
-          {rules.avg100 > 0 && <span>📈 Śr. 100+: <strong className="text-foreground">+{rules.avg90 + rules.avg100}</strong></span>}
-          {rules.closeLoss > 0 && <span>🥈 Bliska przegrana: <strong className="text-foreground">+{rules.closeLoss}</strong></span>}
-          {rules.cleanSweep > 0 && <span>💪 Clean sweep: <strong className="text-foreground">+{rules.cleanSweep}</strong></span>}
-        </div>
-      </div>
+      {/* Collapsible legend */}
+      <Collapsible open={legendOpen} onOpenChange={setLegendOpen}>
+        <CollapsibleTrigger className="mt-4 w-full flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 hover:bg-muted/40 transition-colors cursor-pointer">
+          <span className="flex items-center gap-1.5 text-[10px] font-display uppercase tracking-wider text-muted-foreground">
+            <HelpCircle className="h-3.5 w-3.5" /> Legenda kolumn i system punktowy
+          </span>
+          {legendOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="rounded-b-lg border border-t-0 border-border bg-muted/20 px-3 pb-3 pt-2 space-y-3">
+            {/* Column explanations */}
+            <div>
+              <h4 className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-1.5">Kolumny tabeli</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 text-[10px] font-body text-muted-foreground">
+                <span><strong className="text-foreground">#</strong> — Miejsce w tabeli</span>
+                <span><strong className="text-foreground">M</strong> — Mecze rozegrane</span>
+                <span><strong className="text-foreground">W</strong> — Wygrane</span>
+                <span><strong className="text-foreground">L</strong> — Przegrane</span>
+                <span><strong className="text-foreground">Pkt</strong> — Punkty (baz.+bonus)</span>
+                <span><strong className="text-foreground">R.L.</strong> — Różnica legów</span>
+                <span><strong className="text-foreground">Śr.</strong> — Średnia (3 dart avg)</span>
+                <span><strong className="text-foreground">180</strong> — Rzuty 180</span>
+                <span><strong className="text-foreground">HC</strong> — Najwyższy checkout</span>
+                <span><strong className="text-foreground">Forma</strong> — Ostatnie wyniki</span>
+              </div>
+            </div>
+            {/* Bonus points */}
+            <div>
+              <h4 className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-1.5">System punktowy</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 text-[10px] font-body text-muted-foreground">
+                {rules.win > 0 && <span>🏆 Wygrana: <strong className="text-foreground">+{rules.win}</strong></span>}
+                {rules.per180 > 0 && <span>🎯 180: <strong className="text-foreground">+{rules.per180}</strong></span>}
+                {rules.checkout100 > 0 && <span>✅ CO 100+: <strong className="text-foreground">+{rules.checkout100}</strong></span>}
+                {rules.checkout150 > 0 && <span>💫 CO 150+: <strong className="text-foreground">+{rules.checkout100 + rules.checkout150}</strong></span>}
+                {rules.avg90 > 0 && <span>📊 Śr. 90+: <strong className="text-foreground">+{rules.avg90}</strong></span>}
+                {rules.avg100 > 0 && <span>📈 Śr. 100+: <strong className="text-foreground">+{rules.avg90 + rules.avg100}</strong></span>}
+                {rules.closeLoss > 0 && <span>🥈 Bliska przegrana: <strong className="text-foreground">+{rules.closeLoss}</strong></span>}
+                {rules.cleanSweep > 0 && <span>💪 Clean sweep: <strong className="text-foreground">+{rules.cleanSweep}</strong></span>}
+              </div>
+            </div>
+            {/* Tiebreaker rules */}
+            <div>
+              <h4 className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-1.5">Kolejność ustalania miejsc</h4>
+              <ol className="list-decimal list-inside text-[10px] font-body text-muted-foreground space-y-0.5">
+                <li>Punkty (malejąco)</li>
+                <li>Różnica legów (malejąco)</li>
+                <li>Bezpośredni mecz (head-to-head)</li>
+                <li>Średnia 3-rzutowa (malejąco)</li>
+                <li>Najwyższy checkout (malejąco)</li>
+              </ol>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </section>
   );
 };
