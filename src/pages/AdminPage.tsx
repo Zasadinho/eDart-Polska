@@ -18,6 +18,7 @@ import AdminChannelPanel from "@/components/AdminChannelPanel";
 import DiscordWebhookPanel from "@/components/DiscordWebhookPanel";
 import RoleManagementPanel from "@/components/RoleManagementPanel";
 import SelfHostConfigPanel from "@/components/SelfHostConfigPanel";
+import EmailConfigPanel from "@/components/EmailConfigPanel";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
