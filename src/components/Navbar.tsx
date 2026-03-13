@@ -31,6 +31,7 @@ const moreNavItems: NavItem[] = [
   { label: "Jak grać?", href: "/how-to-play", icon: <Gamepad2 className="h-3.5 w-3.5" /> },
   { label: "Osiągnięcia", href: "/achievements", icon: <Zap className="h-3.5 w-3.5" /> },
   { label: "Wyzwania", href: "/challenges", icon: <Flame className="h-3.5 w-3.5" /> },
+  { label: "Regulamin", href: "/rules", icon: <BookOpen className="h-3.5 w-3.5" /> },
   { label: "Pobieranie", href: "/downloads", icon: <Download className="h-3.5 w-3.5" />, authOnly: true },
   { label: "Zgłoś błąd", href: "/report-bug", icon: <Bug className="h-3.5 w-3.5" />, authOnly: true },
 ];

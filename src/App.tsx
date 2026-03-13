@@ -90,6 +90,7 @@ const App = () => (
                 <Route path="/downloads" element={<P path="/downloads"><DownloadsPage /></P>} />
                 <Route path="/how-to-play" element={<P path="/how-to-play"><HowToPlayPage /></P>} />
                 <Route path="/challenges" element={<P path="/challenges"><WeeklyChallengesPage /></P>} />
+                <Route path="/rules" element={<P path="/rules"><RulesPage /></P>} />
                 <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="*" element={<NotFound />} />
