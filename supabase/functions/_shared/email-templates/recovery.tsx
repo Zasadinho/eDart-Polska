@@ -8,12 +8,9 @@ import {
   Container,
   Head,
   Heading,
-  Hr,
   Html,
   Img,
-  Link,
   Preview,
-  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -28,42 +25,20 @@ export const RecoveryEmail = ({
 }: RecoveryEmailProps) => (
   <Html lang="pl" dir="ltr">
     <Head />
-    <Preview>🔑 Resetowanie hasła – eDART Polska</Preview>
+    <Preview>Resetowanie hasła – {siteName}</Preview>
     <Body style={main}>
-      <Container style={wrapper}>
-        <Section style={header}>
-          <Img
-            src="https://uiolhzctnbskdjteufkj.supabase.co/storage/v1/object/public/avatars/email-logo.jpg"
-            width="80"
-            height="auto"
-            alt="eDART Polska"
-            style={logo}
-          />
-        </Section>
-        <Section style={content}>
-          <Heading style={h1}>Resetowanie hasła 🔑</Heading>
-          <Text style={text}>
-            Ktoś poprosił o zresetowanie hasła do Twojego konta w <strong>eDART Polska</strong>. 
-            Kliknij przycisk poniżej, aby ustawić nowe hasło.
-          </Text>
-          <Section style={buttonContainer}>
-            <Button style={button} href={confirmationUrl}>
-              Ustaw nowe hasło
-            </Button>
-          </Section>
-          <Text style={smallText}>
-            Link wygaśnie za kilka minut.
-          </Text>
-        </Section>
-        <Hr style={divider} />
-        <Section style={footerSection}>
-          <Text style={footer}>
-            Nie prosiłeś o zmianę hasła? Zignoruj tę wiadomość — Twoje hasło pozostanie bez zmian.
-          </Text>
-          <Text style={footerBrand}>
-            <Link href="https://edartpolska.pl" style={footerLink}>edartpolska.pl</Link> · Polska Liga Darta
-          </Text>
-        </Section>
+      <Container style={container}>
+        <Img src="https://uiolhzctnbskdjteufkj.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
+        <Heading style={h1}>Resetowanie hasła</Heading>
+        <Text style={text}>
+          Otrzymaliśmy prośbę o zresetowanie hasła do konta {siteName}. Kliknij poniższy przycisk, aby ustawić nowe hasło.
+        </Text>
+        <Button style={button} href={confirmationUrl}>
+          Zresetuj hasło
+        </Button>
+        <Text style={footer}>
+          Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość. Twoje hasło nie zostanie zmienione.
+        </Text>
       </Container>
     </Body>
   </Html>
@@ -71,58 +46,30 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = {
-  backgroundColor: '#0f1318',
-  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
-  padding: '40px 0',
-}
-const wrapper = {
-  backgroundColor: '#181d25',
-  borderRadius: '12px',
-  border: '1px solid #262d38',
-  maxWidth: '480px',
-  margin: '0 auto',
-  overflow: 'hidden' as const,
-}
-const header = {
-  backgroundColor: '#dc2626',
-  padding: '24px 30px',
-  textAlign: 'center' as const,
-}
-const logo = { borderRadius: '8px' }
-const content = { padding: '32px 30px 24px' }
+const main = { backgroundColor: '#0f1318', fontFamily: "'Inter', Arial, sans-serif" }
+const container = { padding: '40px 25px', maxWidth: '480px', margin: '0 auto' }
+const logo = { margin: '0 0 24px' }
 const h1 = {
-  fontSize: '24px',
+  fontSize: '22px',
   fontWeight: 'bold' as const,
-  color: '#ece8e1',
-  margin: '0 0 16px',
   fontFamily: "'Oswald', Arial, sans-serif",
+  color: '#ece8e1',
+  margin: '0 0 20px',
   textTransform: 'uppercase' as const,
-  letterSpacing: '0.5px',
 }
 const text = {
-  fontSize: '15px',
-  color: '#8b919e',
-  lineHeight: '1.7',
-  margin: '0 0 24px',
+  fontSize: '14px',
+  color: '#7a8194',
+  lineHeight: '1.6',
+  margin: '0 0 25px',
 }
-const smallText = { fontSize: '13px', color: '#6b7280', margin: '16px 0 0' }
-const buttonContainer = { textAlign: 'center' as const, margin: '8px 0' }
 const button = {
-  backgroundColor: '#dc2626',
+  backgroundColor: 'hsl(0, 72%, 51%)',
   color: '#ffffff',
   fontSize: '14px',
+  fontWeight: '600' as const,
   borderRadius: '8px',
-  padding: '14px 32px',
+  padding: '12px 24px',
   textDecoration: 'none',
-  fontWeight: 'bold' as const,
-  fontFamily: "'Oswald', Arial, sans-serif",
-  textTransform: 'uppercase' as const,
-  letterSpacing: '1px',
-  display: 'inline-block' as const,
 }
-const divider = { borderColor: '#262d38', margin: '0' }
-const footerSection = { padding: '20px 30px' }
-const footer = { fontSize: '12px', color: '#4b5563', margin: '0 0 8px', lineHeight: '1.5' }
-const footerBrand = { fontSize: '11px', color: '#374151', margin: '0' }
-const footerLink = { color: '#dc2626', textDecoration: 'none' }
+const footer = { fontSize: '12px', color: '#555555', margin: '30px 0 0' }
