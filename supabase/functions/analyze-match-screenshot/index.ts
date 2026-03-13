@@ -246,10 +246,10 @@ Deno.serve(async (req) => {
       ? `Przeanalizuj ${screenshot_urls.length > 1 ? "te zrzuty ekranu" : "ten zrzut ekranu"} z meczu darta. Mecz ligowy: "${match_context.player1_name}" vs "${match_context.player2_name}". Dopasuj graczy ze screena do tych z kontekstu i zwróć statystyki w odpowiedniej kolejności (player1_* = ${match_context.player1_name}, player2_* = ${match_context.player2_name}).`
       : `Przeanalizuj ${screenshot_urls.length > 1 ? "te zrzuty ekranu" : "ten zrzut ekranu"} z meczu darta i wyodrębnij statystyki.`;
 
-    const response = await fetch(AI_GATEWAY, {
+    const response = await fetch(aiConfig.url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${aiConfig.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
