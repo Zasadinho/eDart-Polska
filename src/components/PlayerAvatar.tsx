@@ -1,3 +1,5 @@
+import { cdnUrl } from "@/lib/cdnUrl";
+
 interface PlayerAvatarProps {
   avatarUrl?: string | null;
   initials: string;
