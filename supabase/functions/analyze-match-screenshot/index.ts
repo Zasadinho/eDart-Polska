@@ -6,7 +6,40 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const LOVABLE_AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const OPENAI_GATEWAY = "https://api.openai.com/v1/chat/completions";
+const GEMINI_GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+
+/** Resolve which AI endpoint + key to use. Custom key from app_config takes priority. */
+async function resolveAiConfig(serviceClient: any): Promise<{ url: string; apiKey: string }> {
+  // Check if custom AI API key is configured in app_config
+  const { data } = await serviceClient
+    .from("app_config")
+    .select("value")
+    .eq("key", "custom_ai_api_key")
+    .maybeSingle();
+
+  const customKey = data?.value?.trim();
+
+  if (customKey) {
+    // Detect provider from key prefix
+    if (customKey.startsWith("sk-")) {
+      return { url: OPENAI_GATEWAY, apiKey: customKey };
+    }
+    if (customKey.startsWith("AIza")) {
+      return { url: GEMINI_GATEWAY, apiKey: customKey };
+    }
+    // Fallback: treat as OpenAI-compatible
+    return { url: OPENAI_GATEWAY, apiKey: customKey };
+  }
+
+  // Default: use Lovable AI gateway
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!lovableKey) {
+    throw new Error("AI not configured");
+  }
+  return { url: LOVABLE_AI_GATEWAY, apiKey: lovableKey };
+}
 
 const buildSystemPrompt = (matchContext?: { player1_name: string; player2_name: string }) => {
   let prompt = `Jesteś ekspertem od darta. Analizujesz zrzuty ekranu z aplikacji do darta (DartCounter, DartsMind, Autodarts lub inne).
