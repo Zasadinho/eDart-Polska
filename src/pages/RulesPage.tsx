@@ -111,7 +111,7 @@ const RulesPage = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Czy na pewno chcesz usunąć ten regulamin?")) return;
-    await supabase.from("league_rules").delete().eq("id", id);
+    await supabase.from("league_rules" as any).delete().eq("id", id);
     toast({ title: "Usunięto regulamin" });
     fetchRules();
   };

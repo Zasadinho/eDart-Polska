@@ -84,6 +84,12 @@ const LeagueTable = () => {
                         )}
                       </div>
                     </td>
+                    <td className="text-center px-1.5 py-2 text-xs font-body">
+                      {(() => {
+                        const ld = (entry.stats as any).legDifference ?? (entry.stats.legsWon - entry.stats.legsLost);
+                        return <span className={ld > 0 ? "text-secondary font-semibold" : ld < 0 ? "text-destructive font-semibold" : "text-muted-foreground"}>{ld > 0 ? `+${ld}` : ld}</span>;
+                      })()}
+                    </td>
                     <td className="text-center px-1.5 py-2 text-xs font-body text-muted-foreground">{entry.stats.avg.toFixed(1)}</td>
                     <td className="text-center px-1.5 py-2 text-xs font-body text-muted-foreground">{entry.stats.oneEighties}</td>
                     <td className="text-center px-1.5 py-2 text-xs font-body text-muted-foreground">{entry.stats.highestCheckout}</td>
