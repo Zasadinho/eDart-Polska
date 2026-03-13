@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "ace-darts-arena"
+const SITE_NAME = "eDART Polska"
 const SENDER_DOMAIN = "notify.edartspolska.pl"
 const ROOT_DOMAIN = "edartspolska.pl"
 const FROM_DOMAIN = "edartspolska.pl" // Domain shown in From address (may be root or sender subdomain)
