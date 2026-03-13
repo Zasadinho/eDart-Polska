@@ -21,6 +21,7 @@ import SelfHostConfigPanel from "@/components/SelfHostConfigPanel";
 import LeagueStatusPanel from "@/components/LeagueStatusPanel";
 import ActivityReportPanel from "@/components/ActivityReportPanel";
 import EmailConfigPanel from "@/components/EmailConfigPanel";
+import IntegrationsPanel from "@/components/IntegrationsPanel";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
