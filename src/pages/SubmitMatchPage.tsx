@@ -636,6 +636,18 @@ const SubmitMatchPage = () => {
       return;
     }
 
+    // Require screenshots for DartCounter/DartsMind
+    if ((sourcePlatform === "dartcounter" || sourcePlatform === "dartsmind") && screenshotUrls.length === 0) {
+      toast({ title: "Brak zrzutów ekranu", description: "Dla DartCounter/DartsMind wymagany jest minimum 1 zrzut ekranu z podsumowania meczu.", variant: "destructive" });
+      return;
+    }
+
+    // Require stats filled for DartCounter/DartsMind
+    if ((sourcePlatform === "dartcounter" || sourcePlatform === "dartsmind") && !stats.avg1 && !stats.avg2) {
+      toast({ title: "Brak statystyk", description: "Uzupełnij statystyki (co najmniej średnią) przed wysłaniem wyniku. Użyj analizy AI lub wpisz ręcznie.", variant: "destructive" });
+      return;
+    }
+
     const optNum = (key: string) => (stats[key] ? parseFloat(stats[key]) : undefined);
     const attemptsP1 = optNum("checkoutAttempts1") ?? 0;
     const attemptsP2 = optNum("checkoutAttempts2") ?? 0;
@@ -858,7 +870,7 @@ const SubmitMatchPage = () => {
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
                   <div>
                     <h3 className="font-display font-bold text-sm text-primary uppercase tracking-wider">
-                      📊 Dane z Autodarts
+                      📊 Dane z analizy
                     </h3>
                   </div>
 
@@ -906,6 +918,9 @@ const SubmitMatchPage = () => {
 
                   <p className="text-[10px] text-muted-foreground text-center">
                     Dane z {sourcePlatform === "autodarts" ? "Autodarts" : sourcePlatform === "dartcounter" ? "DartCounter" : "DartsMind"} uzupełniły formularz poniżej.
+                  </p>
+                  <p className="text-[10px] text-accent text-center mt-1">
+                    ⚠️ Jeśli dane są niezgodne ze screenshotem, popraw je ręcznie w formularzu przed wysłaniem.
                   </p>
                 </div>
               )}

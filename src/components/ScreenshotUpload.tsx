@@ -79,8 +79,8 @@ const ScreenshotUpload = ({ onStatsExtracted, matchId, disabled, matchContext }:
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    if (uploadedUrls.length + files.length > 5) {
-      toast({ title: "Limit", description: "Maksymalnie 5 zrzutów ekranu.", variant: "destructive" });
+    if (uploadedUrls.length + files.length > 2) {
+      toast({ title: "Limit", description: "Maksymalnie 2 zrzuty ekranu.", variant: "destructive" });
       return;
     }
 
@@ -229,7 +229,7 @@ const ScreenshotUpload = ({ onStatsExtracted, matchId, disabled, matchContext }:
           variant="outline"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || uploading || uploadedUrls.length >= 5}
+          disabled={disabled || uploading || uploadedUrls.length >= 2}
           className="font-display uppercase tracking-wider text-xs"
         >
           {uploading ? (
@@ -260,8 +260,8 @@ const ScreenshotUpload = ({ onStatsExtracted, matchId, disabled, matchContext }:
       </div>
 
       <p className="text-[10px] text-muted-foreground font-body">
-        Prześlij zrzuty ekranu z podsumowania meczu. AI rozpozna statystyki automatycznie.
-        {uploadedUrls.length > 0 && ` (${uploadedUrls.length}/5)`}
+        Prześlij zrzuty ekranu z podsumowania meczu (wymagane). AI rozpozna statystyki automatycznie.
+        {uploadedUrls.length > 0 && ` (${uploadedUrls.length}/2)`}
       </p>
     </div>
   );
