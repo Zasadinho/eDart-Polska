@@ -905,9 +905,21 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                   </Button>
                 )}
                 {l.is_active ? (
-                  <Button size="sm" variant="outline" onClick={() => { updateLeague(l.id, { is_active: false }); toast({ title: "Zakończona", description: l.name }); }}>Zakończ</Button>
+                  <Button size="sm" variant="outline" onClick={async () => {
+                    await updateLeague(l.id, { is_active: false });
+                    toast({ title: "Zakończona", description: l.name });
+                    supabase.functions.invoke("discord-webhook", {
+                      body: { action: "send_league_ended", league_name: l.name, league_id: l.id },
+                    }).catch(() => {});
+                  }}>Zakończ</Button>
                 ) : (
-                  <Button size="sm" variant="outline" onClick={() => { updateLeague(l.id, { is_active: true }); toast({ title: "Reaktywowana", description: l.name }); }}>Reaktywuj</Button>
+                  <Button size="sm" variant="outline" onClick={async () => {
+                    await updateLeague(l.id, { is_active: true });
+                    toast({ title: "Reaktywowana", description: l.name });
+                    supabase.functions.invoke("discord-webhook", {
+                      body: { action: "send_league_started", league_name: l.name, league_id: l.id },
+                    }).catch(() => {});
+                  }}>Reaktywuj</Button>
                 )}
                 <Button size="sm" variant="ghost" onClick={() => startEdit(l)}><Edit2 className="h-4 w-4" /></Button>
                 <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { deleteLeague(l.id); toast({ title: "Usunięta", description: l.name }); }}><Trash2 className="h-4 w-4" /></Button>
@@ -1550,7 +1562,13 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
       });
     }
 
-    // Discord webhooks for all disqualified matches
+    // Discord webhook — disqualification
+    const leagueName = league?.name || "Liga";
+    await supabase.functions.invoke("discord-webhook", {
+      body: { action: "send_disqualification", player_name: playerName, league_name: leagueName, league_id: leagueId },
+    }).catch(() => {});
+
+    // Discord webhooks for all disqualified matches (walkovers)
     for (const m of upcomingMatches) {
       await supabase.functions.invoke("discord-webhook", {
         body: { action: "send_match_result", match_data: { match_id: m.id } },

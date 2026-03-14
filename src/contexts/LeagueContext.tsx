@@ -576,11 +576,23 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
 
   const approvePlayer = useCallback(async (playerId: string) => {
     await supabase.from("players").update({ approved: true }).eq("id", playerId);
+    let playerName = "";
     setPendingPlayers((prev) => {
       const player = prev.find((p) => p.id === playerId);
-      if (player) setPlayerList((bp) => [...bp, { ...player, approved: true, leagueIds: [] }]);
+      if (player) {
+        playerName = player.name;
+        setPlayerList((bp) => [...bp, { ...player, approved: true, leagueIds: [] }]);
+      }
       return prev.filter((p) => p.id !== playerId);
     });
+    // Discord webhook — player approved
+    if (playerName) {
+      try {
+        await supabase.functions.invoke("discord-webhook", {
+          body: { action: "send_player_approved", player_name: playerName },
+        });
+      } catch (e) { console.error("Discord webhook error:", e); }
+    }
   }, []);
 
   const addLeague = useCallback(async (league: Omit<League, "id">) => {
@@ -605,6 +617,12 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       };
       setLeagueList((prev) => [...prev, newLeague]);
       if (!activeLeagueId) setActiveLeagueId(data.id);
+      // Discord webhook — league created
+      try {
+        await supabase.functions.invoke("discord-webhook", {
+          body: { action: "send_league_created", league_name: data.name, season: data.season, format: data.format, description: data.description },
+        });
+      } catch (e) { console.error("Discord webhook error:", e); }
     }
     return { data, error };
   }, [activeLeagueId]);
