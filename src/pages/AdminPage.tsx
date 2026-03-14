@@ -29,6 +29,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BEST_OF_OPTIONS, type LeagueType, type LeaguePlatform, type BonusRules, DEFAULT_BONUS_RULES } from "@/data/mockData";
 import { generateRoundRobin, generateBracket, generateGroupStage, shuffle, getRecommendedGroups } from "@/lib/tournamentUtils";
 import MatchStatFields from "@/components/MatchStatFields";
+import { generatePlayoffBracket, areAllGroupMatchesCompleted } from "@/lib/bracketAdvancement";
 import { cdnUrl } from "@/lib/cdnUrl";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
