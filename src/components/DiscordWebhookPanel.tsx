@@ -12,18 +12,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const EVENT_TYPES = [
   { value: "match_result", label: "🏆 Wyniki meczów", description: "Pełne statystyki po zatwierdzonym meczu" },
   { value: "walkover", label: "⚠️ Walkowery", description: "Powiadomienia o walkowerach" },
+  { value: "match_pending", label: "⏳ Mecz do zatwierdzenia", description: "Zgłoszony wynik czeka na akceptację" },
+  { value: "match_rejected", label: "❌ Wynik odrzucony", description: "Gdy admin odrzuci zgłoszony wynik" },
+  { value: "match_reset", label: "🔄 Mecz zresetowany", description: "Gdy mecz zostanie cofnięty do zaplanowanego" },
   { value: "match_proposal", label: "📅 Propozycje terminów", description: "Nowe propozycje terminów meczów" },
   { value: "match_proposal_accepted", label: "✅ Termin zaakceptowany", description: "Gdy gracz zaakceptuje termin" },
-  { value: "match_pending", label: "⏳ Mecz do zatwierdzenia", description: "Zgłoszony wynik czeka na akceptację" },
+  { value: "match_reminder", label: "⏰ Przypomnienie o meczu", description: "Automatyczne przypomnienie o nadchodzącym meczu" },
   { value: "new_player", label: "👤 Nowi gracze", description: "Gdy nowy gracz dołączy do systemu" },
+  { value: "player_approved", label: "✅ Gracz zatwierdzony", description: "Gdy admin zatwierdzi gracza" },
   { value: "announcement", label: "📢 Ogłoszenia", description: "Nowe ogłoszenia od adminów" },
   { value: "league_registration", label: "📋 Zapisy do lig", description: "Gdy gracz zapisze się do ligi" },
   { value: "league_unregistration", label: "📤 Wypisanie z ligi", description: "Gdy gracz wypisze się z ligi" },
   { value: "league_started", label: "🚀 Start ligi", description: "Gdy liga zostanie uruchomiona" },
   { value: "league_ended", label: "🏁 Koniec ligi", description: "Gdy liga zostanie zakończona" },
+  { value: "league_created", label: "🆕 Nowa liga", description: "Gdy zostanie utworzona nowa liga" },
   { value: "disqualification", label: "🚫 Dyskwalifikacja", description: "Gdy gracz zostanie zdyskwalifikowany" },
   { value: "weekly_challenge", label: "🎖️ Wyzwania tygodnia", description: "Nowe wyzwania tygodniowe" },
   { value: "high_score_alert", label: "🔥 Wybitny wynik", description: "180, 9-darter, wysoki checkout" },
+  { value: "milestone", label: "🏆 Kamień milowy", description: "Osiągnięcia graczy (10. mecz, 50. 180 itp.)" },
+  { value: "season_summary", label: "📊 Podsumowanie sezonu", description: "Statystyki po zakończonym sezonie" },
+  { value: "rules_updated", label: "📜 Zmiana regulaminu", description: "Gdy regulamin zostanie zaktualizowany" },
+  { value: "bug_report", label: "🐛 Zgłoszenie błędu", description: "Gdy gracz zgłosi błąd w systemie" },
 ];
 
 interface Webhook {
