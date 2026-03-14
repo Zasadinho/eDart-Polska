@@ -9,7 +9,7 @@ const CONFIG = {
   RATE_LIMIT_MS: 2000,             // min time between API calls
   CACHE_TTL_MS: 180000,            // 3 min cache for league checks
   SUBMISSION_LOCK_TTL_MS: 30000,   // 30s lock to prevent duplicate submissions
-  TOKEN_REFRESH_ALARM_MIN: 25,     // refresh token every 25 minutes
+  TOKEN_REFRESH_ALARM_MIN: 30,     // refresh token every 30 minutes
   DEBUG_MODE: true,                // enable for debugging
 };
 
