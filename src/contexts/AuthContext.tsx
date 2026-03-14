@@ -68,13 +68,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
+    let errorTimeout: NodeJS.Timeout | null = null;
 
     const initSession = async () => {
       setLoading(true);
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         if (!mounted) return;
+        if (error) {
+          setErrorMsg("Błąd pobierania sesji. Spróbuj odświeżyć stronę.");
+        }
         await syncUserState(session?.user ?? null);
+      } catch (e) {
+        if (mounted) setErrorMsg("Błąd połączenia z serwerem. Sprawdź internet lub spróbuj później.");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -83,7 +89,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setLoading(true);
-      // Signal auth state change to extension (no sensitive data)
       window.postMessage({ type: "EDART_AUTH_STATE_CHANGED" }, window.location.origin);
       void syncUserState(session?.user ?? null).finally(() => {
         if (mounted) setLoading(false);
@@ -92,9 +97,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     initSession();
 
+    // Fallback: wymuś zakończenie loading po 10s
+    errorTimeout = setTimeout(() => {
+      if (mounted && loading) {
+        setLoading(false);
+        setErrorMsg("Błąd ładowania. Spróbuj odświeżyć stronę.");
+      }
+    }, 10000);
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
+      if (errorTimeout) clearTimeout(errorTimeout);
     };
   }, [syncUserState]);
 
@@ -148,6 +162,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error?.message ?? null };
   };
 
+
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -156,6 +172,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-8 w-full" />
+        </div>
+      </div>
+    );
+  }
+  if (errorMsg) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-full max-w-lg space-y-4 p-4 text-center">
+          <div className="text-lg text-destructive font-bold mb-2">{errorMsg}</div>
+          <button className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded" onClick={() => window.location.reload()}>Odśwież stronę</button>
         </div>
       </div>
     );
