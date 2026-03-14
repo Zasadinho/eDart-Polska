@@ -262,7 +262,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     // Parallel fetches for speed
     const [leaguesRes, playersRes, plRes] = await Promise.all([
-      supabase.from("leagues").select("id,name,season,description,is_active,format,max_legs,league_type,bonus_rules,registration_open,meetings_per_pair,registration_deadline,platform").order("created_at"),
+      supabase.from("leagues").select("id,name,season,description,is_active,format,max_legs,league_type,bonus_rules,registration_open,meetings_per_pair,registration_deadline,platform,third_place_match,lucky_loser").order("created_at"),
       supabase.from("players_public" as any).select("id,name,avatar,approved,avatar_url,user_id").order("name"),
       supabase.from("player_leagues").select("player_id,league_id"),
     ]);
@@ -276,6 +276,8 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       meetings_per_pair: l.meetings_per_pair ?? 1,
       registration_deadline: l.registration_deadline ?? null,
       platform: (l as any).platform ?? "autodarts",
+      third_place_match: l.third_place_match ?? false,
+      lucky_loser: l.lucky_loser ?? false,
     }));
     setLeagueList(leagues);
     if (leagues.length > 0 && !activeLeagueId) {
