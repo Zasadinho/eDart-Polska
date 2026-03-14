@@ -513,10 +513,37 @@
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
         if (!key) continue;
-        const parsed = safeJsonParse(storage.getItem(key));
+        const raw = storage.getItem(key);
+        if (!raw) continue;
+
+        // Direct access_token in JSON
+        const parsed = safeJsonParse(raw);
         if (parsed?.access_token) return parsed.access_token;
+
+        // OIDC / Keycloak pattern: oidc.user:... stores token inside
+        if (key.startsWith("oidc.user:") || key.startsWith("kc-")) {
+          if (parsed?.access_token) return parsed.access_token;
+          if (parsed?.id_token) return parsed.id_token;
+        }
+
+        // Auth0 pattern: @@auth0spajs@@
+        if (key.includes("auth0")) {
+          if (parsed?.body?.access_token) return parsed.body.access_token;
+        }
       }
     }
+
+    // Also check cookies for token (some apps use httpOnly=false cookies)
+    try {
+      const cookies = document.cookie.split(";");
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split("=");
+        if (name && (name.includes("access_token") || name.includes("ad_token")) && value) {
+          return decodeURIComponent(value);
+        }
+      }
+    } catch (e) { /* ignore */ }
+
     return null;
   }
 
