@@ -290,18 +290,22 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     setPlayerList(approved);
     setPendingPlayers(pending);
 
-    // Fetch matches - only active leagues, limit 2000 for scale
-    const activeLeagueIds = leagues.filter(l => l.is_active).map(l => l.id);
-    let matchQuery = supabase.from("matches")
-      .select("id,league_id,player1_id,player2_id,score1,score2,legs_won1,legs_won2,status,date,round,autodarts_link,avg1,avg2,one_eighties1,one_eighties2,high_checkout1,high_checkout2,ton60_1,ton60_2,ton80_1,ton80_2,ton_plus1,ton_plus2,ton40_1,ton40_2,darts_thrown1,darts_thrown2,checkout_attempts1,checkout_attempts2,checkout_hits1,checkout_hits2,bracket_round,bracket_position,group_name,first_9_avg1,first_9_avg2,confirmed_date,screenshot_urls,source_platform,is_walkover,nine_darters1,nine_darters2,avg_until_170_1,avg_until_170_2")
-      .order("date", { ascending: false })
-      .limit(2000);
-
-    if (activeLeagueIds.length > 0) {
-      matchQuery = matchQuery.in("league_id", activeLeagueIds);
+    // Fetch matches for all leagues
+    const allLeagueIds = leagues.map(l => l.id);
+    let allMatchesData: any[] = [];
+    
+    // Fetch in batches to avoid hitting row limits
+    for (let i = 0; i < allLeagueIds.length; i += 10) {
+      const batch = allLeagueIds.slice(i, i + 10);
+      const { data } = await supabase.from("matches")
+        .select("id,league_id,player1_id,player2_id,score1,score2,legs_won1,legs_won2,status,date,round,autodarts_link,avg1,avg2,one_eighties1,one_eighties2,high_checkout1,high_checkout2,ton60_1,ton60_2,ton80_1,ton80_2,ton_plus1,ton_plus2,ton40_1,ton40_2,darts_thrown1,darts_thrown2,checkout_attempts1,checkout_attempts2,checkout_hits1,checkout_hits2,bracket_round,bracket_position,group_name,first_9_avg1,first_9_avg2,confirmed_date,screenshot_urls,source_platform,is_walkover,nine_darters1,nine_darters2,avg_until_170_1,avg_until_170_2")
+        .in("league_id", batch)
+        .order("date", { ascending: false })
+        .limit(1000);
+      if (data) allMatchesData = allMatchesData.concat(data);
     }
-
-    const { data: matchesData } = await matchQuery;
+    
+    const matchesData = allMatchesData;
     setMatchList((matchesData || []).map((m: any) => mapDbMatch(m, allPlayers)));
 
     setLoading(false);
