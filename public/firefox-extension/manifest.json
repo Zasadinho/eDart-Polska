@@ -1,29 +1,34 @@
 {
   "manifest_version": 2,
   "name": "eDART Polska - Autodarts Stats",
-  "version": "1.6.0",
-  "description": "Automatycznie pobiera token Autodarts i wysyła statystyki do eDART Polska",
+  "version": "2.0.0",
+  "description": "Automatycznie wysyła wyniki meczów ligowych z Autodarts do eDART Polska",
   "browser_specific_settings": {
     "gecko": {
-      "id": "edart-polska@autodarts.pl",
+      "id": "edart-extension@edartpolska.pl",
       "strict_min_version": "109.0"
     }
   },
   "permissions": [
-    "cookies",
     "storage",
-    "webRequest",
     "notifications",
-    "https://login.autodarts.io/*",
-    "https://play.autodarts.io/*",
+    "webRequest",
     "https://api.autodarts.io/*",
+    "https://play.autodarts.io/*",
     "https://edartpolska.pl/*",
     "https://www.edartpolska.pl/*",
     "https://*.lovable.app/*",
     "https://uiolhzctnbskdjteufkj.supabase.co/*"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "config.js",
+      "cache.js",
+      "playerConfig.js",
+      "notifications.js",
+      "api.js",
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
@@ -41,6 +46,10 @@
       "run_at": "document_idle"
     }
   ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
   "icons": {
     "48": "icon48.png",
     "128": "icon128.png"

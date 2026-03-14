@@ -5,123 +5,115 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      width: 320px;
+      width: 360px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: #0a0a0a;
       color: #e0e0e0;
       padding: 16px;
     }
     .header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #222;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #222;
     }
-    .header h1 {
-      font-size: 16px;
-      font-weight: 700;
-      color: #fff;
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header h1 { font-size: 16px; font-weight: 700; color: #fff; }
+    .badge {
+      font-size: 10px; background: #dc2626; color: white;
+      padding: 2px 6px; border-radius: 4px; font-weight: 600;
     }
-    .header .badge {
-      font-size: 10px;
-      background: #dc2626;
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
+    .gear { font-size: 18px; cursor: pointer; color: #888; text-decoration: none; }
+    .gear:hover { color: #fff; }
+
     .status {
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      font-size: 13px;
+      padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px;
     }
-    .status.connected {
-      background: #052e16;
-      border: 1px solid #166534;
-      color: #4ade80;
+    .status.connected { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+    .status.disconnected { background: #1c1917; border: 1px solid #44403c; color: #a8a29e; }
+    .status .icon { font-size: 16px; margin-right: 6px; }
+
+    .section { margin-bottom: 14px; }
+    .section-title {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+      color: #666; margin-bottom: 6px;
     }
-    .status.disconnected {
-      background: #1c1917;
-      border: 1px solid #44403c;
-      color: #a8a29e;
+
+    .match-card {
+      padding: 8px 10px; background: #111; border-radius: 6px;
+      border: 1px solid #1a1a1a; margin-bottom: 4px; font-size: 12px;
     }
-    .status .icon { font-size: 18px; margin-right: 8px; }
-    .info {
-      font-size: 12px;
-      color: #888;
-      line-height: 1.5;
-      margin-bottom: 12px;
+    .match-card .players { color: #ccc; margin-bottom: 2px; }
+    .match-card .meta { color: #666; font-size: 11px; display: flex; justify-content: space-between; }
+    .match-card .status-badge {
+      font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 600;
     }
-    .steps {
-      font-size: 12px;
-      color: #aaa;
-      line-height: 1.6;
-    }
-    .steps ol {
-      padding-left: 20px;
-    }
-    .steps li { margin-bottom: 4px; }
-    .steps a { color: #60a5fa; text-decoration: none; }
-    .steps a:hover { text-decoration: underline; }
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-    .btn-primary {
-      background: #dc2626;
-      color: white;
-    }
-    .btn-primary:hover { background: #b91c1c; }
-    .btn-secondary {
-      background: #27272a;
-      color: #e0e0e0;
-      border: 1px solid #3f3f46;
-    }
-    .btn-secondary:hover { background: #3f3f46; }
+    .status-submitted { background: #052e16; color: #4ade80; }
+    .status-already { background: #1e1b4b; color: #a78bfa; }
+    .status-failed { background: #1c1917; color: #ef4444; }
+
+    .info { font-size: 12px; color: #888; line-height: 1.5; margin-bottom: 10px; }
     .token-preview {
-      font-family: monospace;
-      font-size: 11px;
-      color: #666;
-      word-break: break-all;
-      margin-top: 4px;
+      font-family: monospace; font-size: 11px; color: #555;
+      word-break: break-all; margin-top: 4px;
     }
+
+    .stats-row {
+      display: flex; gap: 8px; margin-bottom: 12px;
+    }
+    .stat-box {
+      flex: 1; background: #111; border: 1px solid #1a1a1a;
+      border-radius: 6px; padding: 8px; text-align: center;
+    }
+    .stat-box .value { font-size: 18px; font-weight: 700; color: #fff; }
+    .stat-box .label { font-size: 10px; color: #666; margin-top: 2px; }
+
+    .btn {
+      display: block; width: 100%; padding: 10px; border: none;
+      border-radius: 6px; font-size: 13px; font-weight: 600;
+      cursor: pointer; margin-top: 6px; text-align: center; text-decoration: none;
+    }
+    .btn-primary { background: #dc2626; color: white; }
+    .btn-primary:hover { background: #b91c1c; }
+    .btn-secondary { background: #27272a; color: #e0e0e0; border: 1px solid #3f3f46; }
+    .btn-secondary:hover { background: #3f3f46; }
+
+    .empty { font-size: 12px; color: #555; text-align: center; padding: 12px 0; }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>🎯 eDART Polska</h1>
-    <span class="badge">Autodarts</span>
+    <div class="header-left">
+      <h1>🎯 eDART Polska</h1>
+      <span class="badge">v2.0</span>
+    </div>
+    <a class="gear" id="openSettings" title="Ustawienia">⚙️</a>
   </div>
-  
+
   <div id="status" class="status disconnected">
     <span class="icon">⏳</span> Sprawdzanie...
   </div>
-  
-  <div class="info" id="info"></div>
-  
-  <div class="steps" id="steps" style="display:none">
-    <p><strong>Jak to działa:</strong></p>
-    <ol>
-      <li>Otwórz <a href="https://play.autodarts.io" target="_blank">play.autodarts.io</a> i zaloguj się</li>
-      <li>Zagraj lub otwórz dowolny mecz w historii</li>
-      <li>Token zostanie przechwycony automatycznie</li>
-      <li>Wróć do <a href="https://edartpolska.pl/submit" target="_blank">eDART Polska</a> i kliknij "Pobierz"</li>
-    </ol>
+
+  <div id="statsSection" class="section" style="display:none">
+    <div class="section-title">Twoje statystyki</div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="value" id="totalMatches">0</div><div class="label">Mecze</div></div>
+      <div class="stat-box"><div class="value" id="winRate">-</div><div class="label">Wygrane</div></div>
+      <div class="stat-box"><div class="value" id="avgScore">-</div><div class="label">Śr. avg</div></div>
+    </div>
   </div>
 
-  <button class="btn btn-primary" id="copyBtn" style="display:none">📋 Kopiuj token</button>
-  <button class="btn btn-secondary" id="openAutodarts">🔗 Otwórz Autodarts</button>
+  <div id="historySection" class="section">
+    <div class="section-title">Ostatnie mecze ligowe</div>
+    <div id="matchHistory"></div>
+  </div>
 
+  <div id="autodartsId" class="info" style="display:none"></div>
+
+  <button class="btn btn-primary" id="copyBtn" style="display:none">📋 Kopiuj token</button>
+  <a class="btn btn-secondary" href="https://edartpolska.pl/matches" target="_blank">📊 Otwórz eDART — Mecze</a>
+  <button class="btn btn-secondary" id="openAutodarts" style="margin-top:4px">🔗 Otwórz Autodarts</button>
+
+  <script src="config.js"></script>
+  <script src="playerConfig.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
