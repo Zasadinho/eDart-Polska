@@ -71,18 +71,14 @@ async function getAutodartsTokenState(forceRefresh = false) {
 
 browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'GET_AUTODARTS_TOKEN') {
-    browserAPI.storage.local.get(['autodarts_token', 'token_timestamp'], (result) => {
-      sendResponse({
-        token: result.autodarts_token || null,
-        timestamp: result.token_timestamp || null,
-        fresh: result.token_timestamp ? (Date.now() - result.token_timestamp < 300000) : false
-      });
-    });
+    getAutodartsTokenState(message?.forceRefresh === true)
+      .then((tokenState) => sendResponse(tokenState))
+      .catch(() => sendResponse({ token: null, timestamp: null, fresh: false }));
     return true;
   }
 
   if (message.type === 'CLEAR_TOKEN') {
-    browserAPI.storage.local.remove(['autodarts_token', 'token_timestamp']);
+    browserAPI.storage.local.remove(['autodarts_token', 'token_timestamp', 'autodarts_token_source']);
     sendResponse({ success: true });
     return true;
   }
