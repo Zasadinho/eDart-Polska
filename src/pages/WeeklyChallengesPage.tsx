@@ -4,6 +4,7 @@ import { Trophy, Medal, Clock, Star, Flame, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import PlayerAvatar from "@/components/PlayerAvatar";
 import PageHeader from "@/components/PageHeader";
+import { pl } from "@/lib/pluralize";
 import { Link } from "react-router-dom";
 
 interface Challenge {
@@ -230,7 +231,7 @@ const WeeklyChallengesPage = () => {
                           <Link to={`/players/${entry.player_id}`} className="flex-1 font-body font-medium text-sm text-foreground hover:text-primary transition-colors truncate">
                             {entry.player_name}
                           </Link>
-                          <span className="text-xs text-muted-foreground font-body">{entry.match_count} mecz.</span>
+                          <span className="text-xs text-muted-foreground font-body">{pl.match(entry.match_count)}</span>
                           <span className="font-display font-bold text-foreground text-sm min-w-[3rem] text-right">
                             {formatScore(ch.challenge_type, entry.score)}
                           </span>

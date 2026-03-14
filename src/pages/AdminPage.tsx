@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, Settings, Check, Clock, CheckCircle2, XCircle, UserPlus, Award, Shuffle, Brackets, Layers, Plug, ScrollText, Download, Bug, Zap, MessageCircle, Ban, AlertTriangle, Search } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import { pl } from "@/lib/pluralize";
 import { Switch } from "@/components/ui/switch";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import ExportPanel from "@/components/ExportPanel";
@@ -276,13 +277,13 @@ const ApprovalTab = ({ pendingApproval, approveMatch, rejectMatch, updateMatchRe
 
   const bulkApprove = () => {
     selectedIds.forEach(id => approveMatch(id));
-    toast({ title: `✅ Zatwierdzono ${selectedIds.size} meczów!` });
+    toast({ title: `✅ Zatwierdzono ${pl.match(selectedIds.size)}!` });
     setSelectedIds(new Set());
   };
 
   const bulkReject = () => {
     selectedIds.forEach(id => rejectMatch(id));
-    toast({ title: `❌ Odrzucono ${selectedIds.size} meczów!` });
+    toast({ title: `❌ Odrzucono ${pl.match(selectedIds.size)}!` });
     setSelectedIds(new Set());
   };
 
@@ -652,7 +653,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
             status: "upcoming",
           });
         }
-        toast({ title: "🎯 Harmonogram wygenerowany!", description: `${matchesToInsert.length} meczów w ${roundsToGenerate.length} kolejkach.` });
+        toast({ title: "🎯 Harmonogram wygenerowany!", description: `${pl.match(matchesToInsert.length)} w ${roundsToGenerate.length} kolejkach.` });
 
       } else if (lt === "bracket") {
         // Single elimination bracket
@@ -688,7 +689,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
             group_name: m.groupName,
           });
         }
-        toast({ title: "🎪 Faza grupowa wygenerowana!", description: `${groupCount} grup, ${groupMatches.length} meczów.` });
+        toast({ title: "🎪 Faza grupowa wygenerowana!", description: `${groupCount} grup, ${pl.match(groupMatches.length)}.` });
       }
 
       await refreshData();
@@ -983,10 +984,10 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                         <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground font-body space-y-1">
                           <div>👥 <strong className="text-foreground">{selectedPlayers.length}</strong> graczy w <strong className="text-foreground">{numGroups}</strong> grupach</div>
                           <div>📊 ~<strong className="text-foreground">{Math.ceil(selectedPlayers.length / numGroups)}</strong> graczy na grupę</div>
-                          <div>⚽ ~<strong className="text-foreground">{(() => {
+                          <div>⚽ ~{(() => {
                             const perGroup = Math.ceil(selectedPlayers.length / numGroups);
-                            return perGroup * (perGroup - 1) / 2;
-                          })()}</strong> meczów w grupie (każdy z każdym)</div>
+                            return pl.match(perGroup * (perGroup - 1) / 2);
+                          })()} w grupie (każdy z każdym)</div>
                           <div>🏆 Po fazie grupowej — drabinka z najlepszymi z każdej grupy</div>
                         </div>
                       )}
@@ -1123,7 +1124,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                         const existingRounds = getExistingRounds(l.id);
                         const availableRounds = rounds - existingRounds.length;
                         const roundsToGen = generateMode === "all" ? availableRounds : selectedRounds.length;
-                        return `📊 ${selectedPlayers.length} graczy → ${matchCount} meczów w ${rounds} kolejkach (do wygenerowania: ${roundsToGen} kolejek)`;
+                        return `📊 ${selectedPlayers.length} graczy → ${pl.match(matchCount)} w ${rounds} kolejkach (do wygenerowania: ${roundsToGen} kolejek)`;
                       })()}
                       {l.league_type === "bracket" && `🏆 ${selectedPlayers.length} graczy → drabinka eliminacyjna`}
                       {l.league_type === "group_bracket" && `🎪 ${selectedPlayers.length} graczy w ${numGroups} grupach → faza grupowa + drabinka`}
@@ -1576,7 +1577,7 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
     }
 
     refreshData();
-    toast({ title: "🚫 Gracz zdyskwalifikowany!", description: `${playerName} — ${upcomingMatches.length} meczów przegranych walkowerem.` });
+    toast({ title: "🚫 Gracz zdyskwalifikowany!", description: `${playerName} — ${pl.match(upcomingMatches.length)} przegranych walkowerem.` });
   };
 
   const handleCompleteWithStats = async (m: any) => {
