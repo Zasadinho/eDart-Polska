@@ -43,6 +43,12 @@ const ReportBugPage = () => {
       toast({ title: "Błąd", description: "Nie udało się wysłać zgłoszenia.", variant: "destructive" });
     } else {
       setSent(true);
+      // Discord webhook — bug report
+      try {
+        await supabase.functions.invoke("discord-webhook", {
+          body: { action: "send_bug_report", title: title.trim(), description: description.trim() },
+        });
+      } catch (e) { console.error("Discord webhook error:", e); }
       setTitle("");
       setDescription("");
       toast({ title: "Zgłoszenie wysłane ✅", description: "Dziękujemy za zgłoszenie!" });

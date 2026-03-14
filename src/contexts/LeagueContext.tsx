@@ -617,6 +617,12 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       };
       setLeagueList((prev) => [...prev, newLeague]);
       if (!activeLeagueId) setActiveLeagueId(data.id);
+      // Discord webhook — league created
+      try {
+        await supabase.functions.invoke("discord-webhook", {
+          body: { action: "send_league_created", league_name: data.name, season: data.season, format: data.format, description: data.description },
+        });
+      } catch (e) { console.error("Discord webhook error:", e); }
     }
     return { data, error };
   }, [activeLeagueId]);

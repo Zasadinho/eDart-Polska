@@ -104,6 +104,18 @@ const MatchProposalSection = ({ matchId, myPlayerId, opponentName, matchDeadline
       toast({ title: "Błąd", description: "Nie udało się zaakceptować.", variant: "destructive" });
     } else {
       toast({ title: "✅ Termin zaakceptowany!", description: `Mecz zaplanowany na ${new Date(proposal.proposed_date).toLocaleDateString("pl-PL")}` });
+      // Discord webhook — match proposal accepted
+      try {
+        await supabase.functions.invoke("discord-webhook", {
+          body: {
+            action: "send_match_proposal_accepted",
+            accepter_name: accepterName || "Gracz",
+            proposer_name: proposerName || "Przeciwnik",
+            proposed_date: new Date(proposal.proposed_date).toLocaleDateString("pl-PL"),
+            proposed_time: proposal.proposed_time || null,
+          },
+        });
+      } catch (e) { console.error("Discord webhook error:", e); }
     }
     setSubmitting(false);
     fetchProposals();

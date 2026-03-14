@@ -96,6 +96,13 @@ const RulesPage = () => {
         return;
       }
       toast({ title: "Zaktualizowano regulamin" });
+      // Discord webhook — rules updated
+      try {
+        const league = leagues?.find((l: any) => l.id === leagueId);
+        await supabase.functions.invoke("discord-webhook", {
+          body: { action: "send_rules_updated", league_name: league?.name || null, league_id: leagueId || null, rule_title: title.trim() },
+        });
+      } catch (e) { console.error("Discord webhook error:", e); }
     } else {
       const { error } = await supabase.from("league_rules" as any).insert(payload);
       if (error) {
@@ -103,6 +110,13 @@ const RulesPage = () => {
         return;
       }
       toast({ title: "Dodano regulamin" });
+      // Discord webhook — rules updated
+      try {
+        const league = leagues?.find((l: any) => l.id === leagueId);
+        await supabase.functions.invoke("discord-webhook", {
+          body: { action: "send_rules_updated", league_name: league?.name || null, league_id: leagueId || null, rule_title: title.trim() },
+        });
+      } catch (e) { console.error("Discord webhook error:", e); }
     }
 
     setDialogOpen(false);
