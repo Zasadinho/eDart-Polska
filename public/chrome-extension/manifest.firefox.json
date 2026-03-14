@@ -1,10 +1,18 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "eDART Polska - Autodarts Stats",
   "version": "2.0.0",
   "description": "Automatycznie wysyła wyniki meczów ligowych z Autodarts do eDART Polska",
-  "permissions": ["storage", "notifications", "webRequest"],
-  "host_permissions": [
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "edart-extension@edartpolska.pl",
+      "strict_min_version": "109.0"
+    }
+  },
+  "permissions": [
+    "storage",
+    "notifications",
+    "webRequest",
     "https://api.autodarts.io/*",
     "https://play.autodarts.io/*",
     "https://edartpolska.pl/*",
@@ -13,8 +21,14 @@
     "https://uiolhzctnbskdjteufkj.supabase.co/*"
   ],
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "scripts": [
+      "config.js",
+      "cache.js",
+      "playerConfig.js",
+      "notifications.js",
+      "api.js",
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
@@ -32,12 +46,15 @@
       "run_at": "document_idle"
     }
   ],
-  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
   "icons": {
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "action": {
+  "browser_action": {
     "default_popup": "popup.html",
     "default_icon": "icon48.png"
   }

@@ -1,5 +1,5 @@
 // Content script - runs on play.autodarts.io
-// Captures auth token + finished match stats + live match tracking
+// Captures auth token + finished match stats
 // After a finished match, sends to background for auto-submission to eDART
 
 (function () {
@@ -106,7 +106,7 @@
     return null;
   }
 
-  // ─── Turn-by-turn stat computation (mirrors server logic) ───
+  // ─── Turn-by-turn stat computation ───
   function getDartPoints(dart) {
     const seg = dart?.segment || dart || {};
     const bed = String(seg.bed ?? "").toLowerCase();
@@ -227,7 +227,6 @@
       else if (points >= 100) st.ton100++;
       else if (points >= 60) st.ton60++;
 
-      // Checkout attempts (PDC darts at double)
       if (dartsArr && scoreBeforeTurn != null) {
         let runningRemaining = scoreBeforeTurn;
         for (const d of dartsArr) {
@@ -260,7 +259,6 @@
     const idMap = buildPlayerIdMap(players);
     const s = [emptyStats(), emptyStats()];
 
-    // Set legs won from scores
     if (Array.isArray(match?.scores) && match.scores.length >= 2) {
       const sc1 = match.scores[0], sc2 = match.scores[1];
       if (typeof sc1 === "object" && sc1 !== null) {
@@ -286,30 +284,16 @@
       computed: true,
       stats: [
         {
-          avg: avgFromTurns(s[0]),
-          first9Avg: f9FromTurns(s[0]),
-          oneEighties: s[0].oneEighties,
-          highCheckout: s[0].highCheckout,
-          ton60: s[0].ton60,
-          ton100: s[0].ton100,
-          ton140: s[0].ton140,
-          ton170: s[0].ton170,
-          dartsThrown: s[0].totalDarts,
-          checkoutAttempts: s[0].checkoutAttempts,
-          checkoutHits: s[0].checkoutHits,
+          avg: avgFromTurns(s[0]), first9Avg: f9FromTurns(s[0]),
+          oneEighties: s[0].oneEighties, highCheckout: s[0].highCheckout,
+          ton60: s[0].ton60, ton100: s[0].ton100, ton140: s[0].ton140, ton170: s[0].ton170,
+          dartsThrown: s[0].totalDarts, checkoutAttempts: s[0].checkoutAttempts, checkoutHits: s[0].checkoutHits,
         },
         {
-          avg: avgFromTurns(s[1]),
-          first9Avg: f9FromTurns(s[1]),
-          oneEighties: s[1].oneEighties,
-          highCheckout: s[1].highCheckout,
-          ton60: s[1].ton60,
-          ton100: s[1].ton100,
-          ton140: s[1].ton140,
-          ton170: s[1].ton170,
-          dartsThrown: s[1].totalDarts,
-          checkoutAttempts: s[1].checkoutAttempts,
-          checkoutHits: s[1].checkoutHits,
+          avg: avgFromTurns(s[1]), first9Avg: f9FromTurns(s[1]),
+          oneEighties: s[1].oneEighties, highCheckout: s[1].highCheckout,
+          ton60: s[1].ton60, ton100: s[1].ton100, ton140: s[1].ton140, ton170: s[1].ton170,
+          dartsThrown: s[1].totalDarts, checkoutAttempts: s[1].checkoutAttempts, checkoutHits: s[1].checkoutHits,
         },
       ],
     };
@@ -327,58 +311,39 @@
     const score1 = normalizeScoreValue(match?.scores?.[0]);
     const score2 = normalizeScoreValue(match?.scores?.[1]);
 
-    // Try to get stats from player.stats first
-    let avg1 = readAvg(s1);
-    let avg2 = readAvg(s2);
+    let avg1 = readAvg(s1), avg2 = readAvg(s2);
     let first9Avg1 = s1.first9Average ?? s1.firstNineAvg ?? s1.first9Avg ?? null;
     let first9Avg2 = s2.first9Average ?? s2.firstNineAvg ?? s2.first9Avg ?? null;
     let oneEighties1 = s1.oneEighties ?? s1["180s"] ?? 0;
     let oneEighties2 = s2.oneEighties ?? s2["180s"] ?? 0;
     let highCheckout1 = s1.highestCheckout ?? s1.bestCheckout ?? 0;
     let highCheckout2 = s2.highestCheckout ?? s2.bestCheckout ?? 0;
-    let ton60_1 = s1.ton60 ?? s1["60+"] ?? 0;
-    let ton60_2 = s2.ton60 ?? s2["60+"] ?? 0;
-    let ton80_1 = s1.ton80 ?? s1["80+"] ?? 0;
-    let ton80_2 = s2.ton80 ?? s2["80+"] ?? 0;
-    let ton_plus1 = s1.tonPlus ?? s1["100+"] ?? 0;
-    let ton_plus2 = s2.tonPlus ?? s2["100+"] ?? 0;
-    let darts_thrown1 = s1.dartsThrown ?? s1.darts ?? 0;
-    let darts_thrown2 = s2.dartsThrown ?? s2.darts ?? 0;
+    let ton60_1 = s1.ton60 ?? s1["60+"] ?? 0, ton60_2 = s2.ton60 ?? s2["60+"] ?? 0;
+    let ton80_1 = s1.ton80 ?? s1["80+"] ?? 0, ton80_2 = s2.ton80 ?? s2["80+"] ?? 0;
+    let ton_plus1 = s1.tonPlus ?? s1["100+"] ?? 0, ton_plus2 = s2.tonPlus ?? s2["100+"] ?? 0;
+    let darts_thrown1 = s1.dartsThrown ?? s1.darts ?? 0, darts_thrown2 = s2.dartsThrown ?? s2.darts ?? 0;
     let checkout_attempts1 = s1.checkoutAttempts ?? s1.checkoutDarts ?? 0;
     let checkout_attempts2 = s2.checkoutAttempts ?? s2.checkoutDarts ?? 0;
     let checkout_hits1 = s1.checkoutHits ?? s1.checkouts ?? 0;
     let checkout_hits2 = s2.checkoutHits ?? s2.checkouts ?? 0;
 
-    // If player.stats is empty, compute from games/turns
     const hasApiStats = !!(avg1 || avg2 || darts_thrown1 || darts_thrown2 || oneEighties1 || oneEighties2 || highCheckout1 || highCheckout2);
-    
+
     if (!hasApiStats) {
       const computed = computeStatsFromGames(match);
       if (computed) {
-        const cs1 = computed.stats[0];
-        const cs2 = computed.stats[1];
-        avg1 = cs1.avg;
-        avg2 = cs2.avg;
-        first9Avg1 = cs1.first9Avg;
-        first9Avg2 = cs2.first9Avg;
-        oneEighties1 = cs1.oneEighties;
-        oneEighties2 = cs2.oneEighties;
-        highCheckout1 = cs1.highCheckout;
-        highCheckout2 = cs2.highCheckout;
-        ton60_1 = cs1.ton60;
-        ton60_2 = cs2.ton60;
-        ton80_1 = cs1.ton100;  // ton80 in DB = 100+ range
-        ton80_2 = cs2.ton100;
-        ton_plus1 = cs1.ton140; // ton_plus in DB = 140+ range
-        ton_plus2 = cs2.ton140;
-        darts_thrown1 = cs1.dartsThrown;
-        darts_thrown2 = cs2.dartsThrown;
-        checkout_attempts1 = cs1.checkoutAttempts;
-        checkout_attempts2 = cs2.checkoutAttempts;
-        checkout_hits1 = cs1.checkoutHits;
-        checkout_hits2 = cs2.checkoutHits;
-        console.log("[eDART] Stats computed from game turns:", 
-          `avg1=${avg1}, avg2=${avg2}, darts1=${darts_thrown1}, darts2=${darts_thrown2}`);
+        const cs1 = computed.stats[0], cs2 = computed.stats[1];
+        avg1 = cs1.avg; avg2 = cs2.avg;
+        first9Avg1 = cs1.first9Avg; first9Avg2 = cs2.first9Avg;
+        oneEighties1 = cs1.oneEighties; oneEighties2 = cs2.oneEighties;
+        highCheckout1 = cs1.highCheckout; highCheckout2 = cs2.highCheckout;
+        ton60_1 = cs1.ton60; ton60_2 = cs2.ton60;
+        ton80_1 = cs1.ton100; ton80_2 = cs2.ton100;
+        ton_plus1 = cs1.ton140; ton_plus2 = cs2.ton140;
+        darts_thrown1 = cs1.dartsThrown; darts_thrown2 = cs2.dartsThrown;
+        checkout_attempts1 = cs1.checkoutAttempts; checkout_attempts2 = cs2.checkoutAttempts;
+        checkout_hits1 = cs1.checkoutHits; checkout_hits2 = cs2.checkoutHits;
+        console.log("[eDART] Stats computed from turns:", `avg1=${avg1}, avg2=${avg2}`);
       }
     }
 
@@ -389,17 +354,11 @@
       player2_name: p2.name || p2.username || p2.displayName || "Player 2",
       player1_autodarts_id: p1.userId || p1.user_id || p1.id || null,
       player2_autodarts_id: p2.userId || p2.user_id || p2.id || null,
-      score1, score2,
-      avg1, avg2,
-      first_9_avg1: first9Avg1,
-      first_9_avg2: first9Avg2,
-      one_eighties1: oneEighties1,
-      one_eighties2: oneEighties2,
-      high_checkout1: highCheckout1,
-      high_checkout2: highCheckout2,
-      ton60_1, ton60_2,
-      ton80_1, ton80_2,
-      ton_plus1, ton_plus2,
+      score1, score2, avg1, avg2,
+      first_9_avg1: first9Avg1, first_9_avg2: first9Avg2,
+      one_eighties1: oneEighties1, one_eighties2: oneEighties2,
+      high_checkout1: highCheckout1, high_checkout2: highCheckout2,
+      ton60_1, ton60_2, ton80_1, ton80_2, ton_plus1, ton_plus2,
       darts_thrown1, darts_thrown2,
       checkout_attempts1, checkout_attempts2,
       checkout_hits1, checkout_hits2,
@@ -417,11 +376,6 @@
     return normalizeScoreValue(match.scores[0]) > 0 || normalizeScoreValue(match.scores[1]) > 0;
   }
 
-  function isLiveMatch(match) {
-    const state = String(match?.state || "").toLowerCase();
-    return ["playing", "started", "running", "in_progress", "active"].includes(state);
-  }
-
   // ─── Track processed matches ───
   const processedMatches = new Set();
   const notifiedLeagueMatches = new Set();
@@ -436,34 +390,32 @@
       autodarts_last_match: payload,
       autodarts_last_match_timestamp: Date.now(),
     });
-    console.log("[eDART] Captured finished match:", payload.match_id, payload.player1_name, "vs", payload.player2_name,
-      "avg1:", payload.avg1, "avg2:", payload.avg2, "darts1:", payload.darts_thrown1, "darts2:", payload.darts_thrown2);
+    console.log("[eDART] Captured finished match:", payload.match_id, payload.player1_name, "vs", payload.player2_name);
 
     if (!processedMatches.has(payload.match_id)) {
       processedMatches.add(payload.match_id);
-      console.log("[eDART] Sending to background for league check + auto-submit...");
-
       sendMsg({ type: "AUTO_SUBMIT_LEAGUE_MATCH", payload }, (response) => {
         if (response?.is_league_match && response?.submitted) {
-          console.log("[eDART] ✅ Mecz ligowy zgłoszony automatycznie!", response.league_name, response.score);
+          console.log("[eDART] ✅ Mecz ligowy zgłoszony automatycznie!");
+        } else if (response?.already_submitted) {
+          console.log("[eDART] ℹ️ Mecz już zgłoszony przez przeciwnika");
         } else if (response?.is_league_match) {
-          console.log("[eDART] ⚠️ Mecz ligowy wykryty, ale nie zgłoszony:", response.reason);
+          console.log("[eDART] ⚠️ Mecz ligowy, ale nie zgłoszony:", response.reason);
         } else {
-          console.log("[eDART] Mecz towarzyski (nie ligowy)");
+          console.log("[eDART] Mecz towarzyski");
         }
       });
     }
   }
 
-  // ─── Handle match data (live or finished) ───
+  // ─── Handle match data (finished only, no live tracking) ───
   function handleMatchData(match, sourceUrl) {
     if (!match || !isAlive()) return;
 
     if (isFinishedMatch(match)) {
       captureFinishedMatch(match, sourceUrl);
-      const matchId = match?.id || sourceUrl?.match(/matches\/([a-f0-9-]+)/i)?.[1];
-      if (matchId) sendMsg({ type: "LIVE_MATCH_ENDED", matchId });
-    } else if (isLiveMatch(match)) {
+    } else {
+      // Live match — only check if league match for notification
       const players = Array.isArray(match?.players) ? match.players : [];
       if (players.length < 2) return;
       const p1 = players[0] || {};
@@ -483,20 +435,6 @@
           },
         });
       }
-
-      sendMsg({
-        type: "LIVE_MATCH_UPDATE",
-        payload: {
-          autodarts_match_id: matchId,
-          autodarts_link: `https://play.autodarts.io/matches/${matchId}`,
-          player1_name: p1.name || p1.username || p1.displayName || "Player 1",
-          player2_name: p2.name || p2.username || p2.displayName || "Player 2",
-          player1_autodarts_id: p1.userId || p1.user_id || p1.id || null,
-          player2_autodarts_id: p2.userId || p2.user_id || p2.id || null,
-          player1_score: normalizeScoreValue(match?.scores?.[0]),
-          player2_score: normalizeScoreValue(match?.scores?.[1]),
-        },
-      });
     }
   }
 
@@ -514,7 +452,7 @@
     if (historyMatch && !historyMatchIds.has(historyMatch[1])) {
       const matchId = historyMatch[1];
       historyMatchIds.add(matchId);
-      console.log("[eDART] Detected history page for match:", matchId);
+      console.log("[eDART] Detected history page:", matchId);
       safeTimeout(() => fetchHistoryMatch(matchId), 2000);
     }
   }
@@ -523,24 +461,14 @@
     if (!isAlive()) return;
     try {
       const stored = await storageGet(["autodarts_token"]);
-      const token = stored.autodarts_token;
-      if (!token) {
-        console.log("[eDART] No token available to fetch history match");
-        return;
-      }
+      if (!stored.autodarts_token) return;
 
       const res = await fetch(`https://api.autodarts.io/as/v0/matches/${matchId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${stored.autodarts_token}` },
       });
-
-      if (!res.ok) {
-        console.log("[eDART] History match fetch failed:", res.status);
-        return;
-      }
+      if (!res.ok) return;
 
       const matchData = await res.json();
-      console.log("[eDART] History match data loaded, state:", matchData?.state,
-        "games:", Array.isArray(matchData?.games) ? matchData.games.length : 0);
       handleMatchData(matchData, `https://play.autodarts.io/history/matches/${matchId}`);
     } catch (err) {
       if (String(err).includes("Extension context invalidated")) {
@@ -569,14 +497,11 @@
 
   // ─── Autodarts user ID detection ───
   function detectAutodartsUserId() {
-    const storages = [localStorage, sessionStorage];
-    for (const storage of storages) {
+    for (const storage of [localStorage, sessionStorage]) {
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
         if (!key) continue;
-        const value = storage.getItem(key);
-        if (!value) continue;
-        const parsed = safeJsonParse(value);
+        const parsed = safeJsonParse(storage.getItem(key));
         if (parsed?.profile?.sub) return parsed.profile.sub;
       }
     }
@@ -584,21 +509,18 @@
   }
 
   function getAutodartsToken() {
-    const storages = [localStorage, sessionStorage];
-    for (const storage of storages) {
+    for (const storage of [localStorage, sessionStorage]) {
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
         if (!key) continue;
-        const value = storage.getItem(key);
-        if (!value) continue;
-        const parsed = safeJsonParse(value);
+        const parsed = safeJsonParse(storage.getItem(key));
         if (parsed?.access_token) return parsed.access_token;
       }
     }
     return null;
   }
 
-  // ─── Intercept fetch to capture tokens + match data ───
+  // ─── Intercept fetch ───
   const originalFetch = window.fetch;
   window.fetch = function (...args) {
     const request = args[0];
@@ -617,9 +539,8 @@
       if (!authHeader && request instanceof Request) {
         authHeader = request.headers?.get("Authorization");
       }
-      if (authHeader && authHeader.startsWith("Bearer ")) {
-        const token = authHeader.replace("Bearer ", "");
-        storageSet({ autodarts_token: token, token_timestamp: Date.now() });
+      if (authHeader?.startsWith("Bearer ")) {
+        storageSet({ autodarts_token: authHeader.replace("Bearer ", ""), token_timestamp: Date.now() });
       }
     }
 
@@ -638,7 +559,7 @@
     return fetchPromise;
   };
 
-  // ─── Intercept XHR to capture tokens ───
+  // ─── Intercept XHR ───
   const originalOpen = XMLHttpRequest.prototype.open;
   const originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
 
@@ -648,10 +569,9 @@
   };
 
   XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
-    if (isAlive() && this._url && this._url.includes("api.autodarts.io") &&
+    if (isAlive() && this._url?.includes("api.autodarts.io") &&
         name.toLowerCase() === "authorization" && value.startsWith("Bearer ")) {
-      const token = value.replace("Bearer ", "");
-      storageSet({ autodarts_token: token, token_timestamp: Date.now() });
+      storageSet({ autodarts_token: value.replace("Bearer ", ""), token_timestamp: Date.now() });
     }
     return originalSetRequestHeader.apply(this, arguments);
   };
@@ -667,7 +587,6 @@
     console.log("[eDART] Detected Autodarts User ID:", userId);
   }
 
-  // ─── Periodic token refresh ───
   safeInterval(() => {
     const t = getAutodartsToken();
     if (t) storageSet({ autodarts_token: t, token_timestamp: Date.now() });
@@ -675,7 +594,6 @@
     if (uid) storageSet({ autodarts_user_id: uid });
   }, 10000);
 
-  // Check on initial load
   checkForHistoryPage();
-  console.log("[eDART] Content script loaded (v1.6.0 — with turn-based stats)");
+  console.log("[eDART] Content script loaded (v2.0.0)");
 })();
