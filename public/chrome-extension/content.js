@@ -513,10 +513,37 @@
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
         if (!key) continue;
-        const parsed = safeJsonParse(storage.getItem(key));
+        const raw = storage.getItem(key);
+        if (!raw) continue;
+
+        // Direct access_token in JSON
+        const parsed = safeJsonParse(raw);
         if (parsed?.access_token) return parsed.access_token;
+
+        // OIDC / Keycloak pattern: oidc.user:... stores token inside
+        if (key.startsWith("oidc.user:") || key.startsWith("kc-")) {
+          if (parsed?.access_token) return parsed.access_token;
+          if (parsed?.id_token) return parsed.id_token;
+        }
+
+        // Auth0 pattern: @@auth0spajs@@
+        if (key.includes("auth0")) {
+          if (parsed?.body?.access_token) return parsed.body.access_token;
+        }
       }
     }
+
+    // Also check cookies for token (some apps use httpOnly=false cookies)
+    try {
+      const cookies = document.cookie.split(";");
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split("=");
+        if (name && (name.includes("access_token") || name.includes("ad_token")) && value) {
+          return decodeURIComponent(value);
+        }
+      }
+    } catch (e) { /* ignore */ }
+
     return null;
   }
 
@@ -576,23 +603,44 @@
     return originalSetRequestHeader.apply(this, arguments);
   };
 
-  // ─── Initial capture ───
-  const token = getAutodartsToken();
-  if (token) storageSet({ autodarts_token: token, token_timestamp: Date.now() });
+  // ─── Initial capture (with retry for late-loading SPAs) ───
+  function initialCapture() {
+    const token = getAutodartsToken();
+    if (token) {
+      storageSet({ autodarts_token: token, token_timestamp: Date.now() });
+      console.log("[eDART] Token captured from storage on init");
+    }
 
-  const userId = detectAutodartsUserId();
-  if (userId) {
-    storageSet({ autodarts_user_id: userId });
-    sendMsg({ type: "AUTODARTS_USER_ID_DETECTED", userId });
-    console.log("[eDART] Detected Autodarts User ID:", userId);
+    const userId = detectAutodartsUserId();
+    if (userId) {
+      storageSet({ autodarts_user_id: userId });
+      sendMsg({ type: "AUTODARTS_USER_ID_DETECTED", userId });
+      console.log("[eDART] Detected Autodarts User ID:", userId);
+    }
   }
 
+  // Run immediately + retry after short delays (SPA may load auth late)
+  initialCapture();
+  safeTimeout(initialCapture, 2000);
+  safeTimeout(initialCapture, 5000);
+
+  // Periodic re-scan every 5 seconds (was 10s, reduced for faster capture)
   safeInterval(() => {
     const t = getAutodartsToken();
     if (t) storageSet({ autodarts_token: t, token_timestamp: Date.now() });
     const uid = detectAutodartsUserId();
     if (uid) storageSet({ autodarts_user_id: uid });
-  }, 10000);
+  }, 5000);
+
+  // Also watch for storage events (token refresh from another tab)
+  window.addEventListener("storage", (event) => {
+    if (!isAlive()) return;
+    const parsed = safeJsonParse(event.newValue);
+    if (parsed?.access_token) {
+      storageSet({ autodarts_token: parsed.access_token, token_timestamp: Date.now() });
+      console.log("[eDART] Token captured from storage event");
+    }
+  });
 
   checkForHistoryPage();
   console.log("[eDART] Content script loaded (v2.0.0)");

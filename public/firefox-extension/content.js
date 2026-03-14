@@ -513,10 +513,32 @@
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
         if (!key) continue;
-        const parsed = safeJsonParse(storage.getItem(key));
+        const raw = storage.getItem(key);
+        if (!raw) continue;
+
+        const parsed = safeJsonParse(raw);
         if (parsed?.access_token) return parsed.access_token;
+
+        if (key.startsWith("oidc.user:") || key.startsWith("kc-")) {
+          if (parsed?.id_token) return parsed.id_token;
+        }
+
+        if (key.includes("auth0")) {
+          if (parsed?.body?.access_token) return parsed.body.access_token;
+        }
       }
     }
+
+    try {
+      const cookies = document.cookie.split(";");
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split("=");
+        if (name && (name.includes("access_token") || name.includes("ad_token")) && value) {
+          return decodeURIComponent(value);
+        }
+      }
+    } catch (e) { /* ignore */ }
+
     return null;
   }
 
@@ -576,23 +598,41 @@
     return originalSetRequestHeader.apply(this, arguments);
   };
 
-  // ─── Initial capture ───
-  const token = getAutodartsToken();
-  if (token) storageSet({ autodarts_token: token, token_timestamp: Date.now() });
+  // ─── Initial capture (with retry for late-loading SPAs) ───
+  function initialCapture() {
+    const token = getAutodartsToken();
+    if (token) {
+      storageSet({ autodarts_token: token, token_timestamp: Date.now() });
+      console.log("[eDART] Token captured from storage on init");
+    }
 
-  const userId = detectAutodartsUserId();
-  if (userId) {
-    storageSet({ autodarts_user_id: userId });
-    sendMsg({ type: "AUTODARTS_USER_ID_DETECTED", userId });
-    console.log("[eDART] Detected Autodarts User ID:", userId);
+    const userId = detectAutodartsUserId();
+    if (userId) {
+      storageSet({ autodarts_user_id: userId });
+      sendMsg({ type: "AUTODARTS_USER_ID_DETECTED", userId });
+      console.log("[eDART] Detected Autodarts User ID:", userId);
+    }
   }
+
+  initialCapture();
+  safeTimeout(initialCapture, 2000);
+  safeTimeout(initialCapture, 5000);
 
   safeInterval(() => {
     const t = getAutodartsToken();
     if (t) storageSet({ autodarts_token: t, token_timestamp: Date.now() });
     const uid = detectAutodartsUserId();
     if (uid) storageSet({ autodarts_user_id: uid });
-  }, 10000);
+  }, 5000);
+
+  window.addEventListener("storage", (event) => {
+    if (!isAlive()) return;
+    const parsed = safeJsonParse(event.newValue);
+    if (parsed?.access_token) {
+      storageSet({ autodarts_token: parsed.access_token, token_timestamp: Date.now() });
+      console.log("[eDART] Token captured from storage event");
+    }
+  });
 
   checkForHistoryPage();
   console.log("[eDART] Content script loaded (v2.0.0)");

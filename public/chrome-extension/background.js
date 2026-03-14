@@ -252,18 +252,40 @@ browserAPI.notifications.onClicked.addListener((notificationId) => {
 });
 
 // ─── Token capture from web requests ───
-browserAPI.webRequest?.onBeforeSendHeaders?.addListener(
-  (details) => {
-    const authHeader = details.requestHeaders?.find(
-      (h) => h.name.toLowerCase() === "authorization"
-    );
-    if (authHeader?.value?.startsWith("Bearer ")) {
-      const token = authHeader.value.replace("Bearer ", "");
-      browserAPI.storage.local.set({ autodarts_token: token, token_timestamp: Date.now() });
-    }
-  },
-  { urls: ["https://api.autodarts.io/*"] },
-  ["requestHeaders"]
-);
+// MV3 requires "extraHeaders" to read Authorization headers
+const webRequestOptions = ["requestHeaders"];
+try {
+  // Chrome MV3 needs extraHeaders for Authorization header access
+  browserAPI.webRequest?.onBeforeSendHeaders?.addListener(
+    (details) => {
+      const authHeader = details.requestHeaders?.find(
+        (h) => h.name.toLowerCase() === "authorization"
+      );
+      if (authHeader?.value?.startsWith("Bearer ")) {
+        const token = authHeader.value.replace("Bearer ", "");
+        browserAPI.storage.local.set({ autodarts_token: token, token_timestamp: Date.now() });
+        log("Token captured via webRequest");
+      }
+    },
+    { urls: ["https://api.autodarts.io/*"] },
+    ["requestHeaders", "extraHeaders"]
+  );
+} catch (e) {
+  // Fallback without extraHeaders (Firefox or older Chrome)
+  browserAPI.webRequest?.onBeforeSendHeaders?.addListener(
+    (details) => {
+      const authHeader = details.requestHeaders?.find(
+        (h) => h.name.toLowerCase() === "authorization"
+      );
+      if (authHeader?.value?.startsWith("Bearer ")) {
+        const token = authHeader.value.replace("Bearer ", "");
+        browserAPI.storage.local.set({ autodarts_token: token, token_timestamp: Date.now() });
+        log("Token captured via webRequest (fallback)");
+      }
+    },
+    { urls: ["https://api.autodarts.io/*"] },
+    ["requestHeaders"]
+  );
+}
 
 logAlways(`Background loaded (v${CONFIG.VERSION})`);
