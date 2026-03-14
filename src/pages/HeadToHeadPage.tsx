@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Link } from "react-router-dom";
 import PlayerAvatar from "@/components/PlayerAvatar";
 import PageHeader from "@/components/PageHeader";
+import { pl } from "@/lib/pluralize";
 
 const HeadToHeadPage = () => {
   const { players, matches, leagues } = useLeague();
