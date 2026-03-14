@@ -58,7 +58,7 @@ const Navbar = () => {
         <div className="flex h-14 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <img src="/pwa-192x192.png" alt="eDART" className="h-7 w-7 rounded-full transition-transform group-hover:rotate-12" />
+            <img src="/favicon.png" alt="eDART" className="h-7 w-7 transition-transform group-hover:scale-110" />
           </Link>
 
           {/* Desktop nav — centered, icon on top + label below */}
