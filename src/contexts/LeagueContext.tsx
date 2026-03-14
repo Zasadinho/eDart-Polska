@@ -400,7 +400,26 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         } : m
       )
     );
-  }, []);
+
+    // Discord webhook — match pending
+    try {
+      const match = matchList.find(m => m.id === matchId);
+      if (match) {
+        const league = leagueList.find(l => l.id === match.leagueId);
+        await supabase.functions.invoke("discord-webhook", {
+          body: {
+            action: "send_match_pending",
+            player1_name: match.player1Name,
+            player2_name: match.player2Name,
+            score1: data.score1,
+            score2: data.score2,
+            league_name: league?.name || "Liga",
+            league_id: match.leagueId,
+          },
+        });
+      }
+    } catch (e) { console.error("Discord webhook error:", e); }
+  }, [matchList, leagueList]);
 
   const updateMatchResult = useCallback(async (matchId: string, data: MatchResultData) => {
     await supabase.from("matches").update({
