@@ -373,7 +373,6 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
   };
 
   return (
-    <>
       <div
         style={containerStyle}
         className={`rounded-lg border border-border bg-card shadow-lg overflow-hidden ${isMobile ? "relative" : ""}`}
@@ -593,7 +592,7 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 };
 

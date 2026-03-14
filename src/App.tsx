@@ -40,32 +40,6 @@ import RulesPage from "./pages/RulesPage";
 import NotFound from "./pages/NotFound";
 import Footer from "./components/Footer";
 import { ReactNode } from "react";
-import Index from "./pages/Index";
-import TablesPage from "./pages/TablesPage";
-import MatchesPage from "./pages/MatchesPage";
-import PlayersPage from "./pages/PlayersPage";
-import PlayerProfilePage from "./pages/PlayerProfilePage";
-import LoginPage from "./pages/LoginPage";
-import AdminPage from "./pages/AdminPage";
-import StatsPage from "./pages/StatsPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import SettingsPage from "./pages/SettingsPage";
-import MyMatchesPage from "./pages/MyMatchesPage";
-import HeadToHeadPage from "./pages/HeadToHeadPage";
-import CalendarPage from "./pages/CalendarPage";
-import HallOfFamePage from "./pages/HallOfFamePage";
-import AchievementsPage from "./pages/AchievementsPage";
-import ChatPage from "./pages/ChatPage";
-import AnnouncementsPage from "./pages/AnnouncementsPage";
-import ReportBugPage from "./pages/ReportBugPage";
-import DownloadsPage from "./pages/DownloadsPage";
-import HowToPlayPage from "./pages/HowToPlayPage";
-import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
-import TermsPage from "./pages/TermsPage";
-import WeeklyChallengesPage from "./pages/WeeklyChallengesPage";
-import RulesPage from "./pages/RulesPage";
-import Footer from "./components/Footer";
-import { ReactNode } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
