@@ -633,8 +633,18 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         }
         return p;
       }));
+      // Discord webhook — league registration
+      try {
+        const player = playerList.find(p => p.id === playerId);
+        const league = leagueList.find(l => l.id === leagueId);
+        if (player && league) {
+          await supabase.functions.invoke("discord-webhook", {
+            body: { action: "send_league_registration", player_name: player.name, league_name: league.name, league_id: leagueId },
+          });
+        }
+      } catch (e) { console.error("Discord webhook error:", e); }
     }
-  }, []);
+  }, [playerList, leagueList]);
 
   const removePlayerFromLeague = useCallback(async (playerId: string, leagueId: string) => {
     await supabase.from("player_leagues").delete().eq("player_id", playerId).eq("league_id", leagueId);
@@ -644,7 +654,17 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       }
       return p;
     }));
-  }, []);
+    // Discord webhook — league unregistration
+    try {
+      const player = playerList.find(p => p.id === playerId);
+      const league = leagueList.find(l => l.id === leagueId);
+      if (player && league) {
+        await supabase.functions.invoke("discord-webhook", {
+          body: { action: "send_league_unregistration", player_name: player.name, league_name: league.name, league_id: leagueId },
+        });
+      }
+    } catch (e) { console.error("Discord webhook error:", e); }
+  }, [playerList, leagueList]);
 
   // Ton stats with win rate data
   const calcTonStats = useCallback((filterLeagueId?: string): TonLeaderEntry[] => {
