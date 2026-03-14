@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Shield, UserCheck, Plus, Calendar, Lock, Trash2, Edit2, Users, Trophy, Settings, Check, Clock, CheckCircle2, XCircle, UserPlus, Award, Shuffle, Brackets, Layers, Plug, ScrollText, Download, Bug, Zap, MessageCircle, Ban, AlertTriangle, Search } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import { pl } from "@/lib/pluralize";
 import { Switch } from "@/components/ui/switch";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import ExportPanel from "@/components/ExportPanel";
