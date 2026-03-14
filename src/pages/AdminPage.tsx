@@ -1577,7 +1577,7 @@ const MatchesTab = ({ matches, players, leagues, addMatch, deleteMatch, toast }:
     }
 
     refreshData();
-    toast({ title: "🚫 Gracz zdyskwalifikowany!", description: `${playerName} — ${upcomingMatches.length} meczów przegranych walkowerem.` });
+    toast({ title: "🚫 Gracz zdyskwalifikowany!", description: `${playerName} — ${pl.match(upcomingMatches.length)} przegranych walkowerem.` });
   };
 
   const handleCompleteWithStats = async (m: any) => {
