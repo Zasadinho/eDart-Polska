@@ -593,7 +593,6 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      </div>
     </>
   );
 };
