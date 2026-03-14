@@ -33,6 +33,16 @@ Deno.serve(async (req) => {
       send_disqualification: () => handleDisqualification(supabaseUrl, serviceRoleKey, body),
       send_weekly_challenge: () => handleWeeklyChallenge(supabaseUrl, serviceRoleKey, body),
       send_high_score_alert: () => handleHighScoreAlert(supabaseUrl, serviceRoleKey, body),
+      // New event types
+      send_match_rejected: () => handleMatchRejected(supabaseUrl, serviceRoleKey, body),
+      send_match_reset: () => handleMatchReset(supabaseUrl, serviceRoleKey, body),
+      send_player_approved: () => handlePlayerApproved(supabaseUrl, serviceRoleKey, body),
+      send_league_created: () => handleLeagueCreated(supabaseUrl, serviceRoleKey, body),
+      send_season_summary: () => handleSeasonSummary(supabaseUrl, serviceRoleKey, body),
+      send_milestone: () => handleMilestone(supabaseUrl, serviceRoleKey, body),
+      send_rules_updated: () => handleRulesUpdated(supabaseUrl, serviceRoleKey, body),
+      send_bug_report: () => handleBugReport(supabaseUrl, serviceRoleKey, body),
+      send_match_reminder: () => handleMatchReminder(supabaseUrl, serviceRoleKey, body),
     };
 
     if (internalHandlers[action]) return await internalHandlers[action]();
@@ -321,8 +331,8 @@ async function handleMatchProposalAccepted(url: string, key: string, body: any) 
 }
 
 async function handleMatchPending(url: string, key: string, body: any) {
-  const { player1_name, player2_name, score1, score2, league_name } = body;
-  const webhooks = await getWebhooks(url, key, "match_pending");
+  const { player1_name, player2_name, score1, score2, league_name, league_id } = body;
+  const webhooks = await getWebhooks(url, key, "match_pending", league_id);
   const embed = {
     title: "⏳ Wynik do zatwierdzenia",
     description: `**${player1_name || "?"}** ${score1 ?? 0} : ${score2 ?? 0} **${player2_name || "?"}**\n\nLiga: **${league_name || "?"}**\nCzeka na akceptację admina.`,
@@ -397,6 +407,157 @@ async function handleHighScoreAlert(url: string, key: string, body: any) {
     title: "🔥 Wybitny wynik!",
     description: `**${player_name}** — ${achievement || "niesamowity wynik!"}${league_name ? `\n\nLiga: **${league_name}**` : ""}`,
     color: 0xFFA500,
+    timestamp: new Date().toISOString(),
+    footer: { text: "eDART Polska" },
+  };
+  return json(await sendEmbeds(webhooks, embed));
+}
+
+// ===== NEW EVENT HANDLERS =====
+
+async function handleMatchRejected(url: string, key: string, body: any) {
+  const { player1_name, player2_name, score1, score2, league_name, league_id, reason } = body;
+  const webhooks = await getWebhooks(url, key, "match_rejected", league_id);
+  const embed = {
+    title: "❌ Wynik odrzucony",
+    description: `Wynik meczu **${player1_name || "?"}** ${score1 ?? 0} : ${score2 ?? 0} **${player2_name || "?"}** został odrzucony przez admina.\n\nLiga: **${league_name || "?"}**${reason ? `\n📝 Powód: ${reason}` : ""}`,
+    color: 0xE74C3C,
+    timestamp: new Date().toISOString(),
+    footer: { text: "eDART Polska" },
+  };
+  return json(await sendEmbeds(webhooks, embed));
+}
+
+async function handleMatchReset(url: string, key: string, body: any) {
+  const { player1_name, player2_name, league_name, league_id } = body;
+  const webhooks = await getWebhooks(url, key, "match_reset", league_id);
+  const embed = {
+    title: "🔄 Mecz zresetowany",
+    description: `Mecz **${player1_name || "?"}** vs **${player2_name || "?"}** został zresetowany do zaplanowanego.\n\nLiga: **${league_name || "?"}**`,
+    color: 0x607D8B,
+    timestamp: new Date().toISOString(),
+    footer: { text: "eDART Polska" },
+  };
+  return json(await sendEmbeds(webhooks, embed));
+}
+
+async function handlePlayerApproved(url: string, key: string, body: any) {
+  const { player_name } = body;
+  if (!player_name) return json({ error: "player_name required" }, 400);
+  const webhooks = await getWebhooks(url, key, "player_approved");
+  const embed = {
+    title: "✅ Gracz zatwierdzony",
+    description: `**${player_name}** został zatwierdzony i może teraz uczestniczyć w rozgrywkach! 🎯`,
+    color: 0x2ECC71,
+    timestamp: new Date().toISOString(),
+    footer: { text: "eDART Polska" },
+  };
+  return json(await sendEmbeds(webhooks, embed));
+}
+
+async function handleLeagueCreated(url: string, key: string, body: any) {
+  const { league_name, season, format, description } = body;
+  if (!league_name) return json({ error: "league_name required" }, 400);
+  const webhooks = await getWebhooks(url, key, "league_created");
+  const embed = {
+    title: "🆕 Nowa liga utworzona!",
+    description: `**${league_name}** — ${season || ""}${format ? `\n📋 Format: ${format}` : ""}${description ? `\n\n${description.length > 300 ? description.slice(0, 300) + "..." : description}` : ""}`,
+    color: 0x3498DB,
+    timestamp: new Date().toISOString(),
+    footer: { text: "eDART Polska" },
+  };
+  return json(await sendEmbeds(webhooks, embed));
+}
+
+async function handleSeasonSummary(url: string, key: string, body: any) {
+  const { league_name, league_id, winner_name, total_matches, total_180s, total_9darters, best_avg, best_avg_player } = body;
+  if (!league_name) return json({ error: "league_name required" }, 400);
+  const webhooks = await getWebhooks(url, key, "season_summary", league_id);
+  const lines: string[] = [];
+  if (winner_name) lines.push(`🏆 Zwycięzca: **${winner_name}**`);
+  if (total_matches) lines.push(`📊 Łącznie meczów: **${total_matches}**`);
+  if (total_180s) lines.push(`🎯 Łącznie 180-tek: **${total_180s}**`);
+  if (total_9darters) lines.push(`⭐ 9-darters w sezonie: **${total_9darters}**`);
+  if (best_avg && best_avg_player) lines.push(`📈 Najlepsza średnia: **${Number(best_avg).toFixed(2)}** (${best_avg_player})`);
+  const embed = {
+    title: `📊 Podsumowanie sezonu — ${league_name}`,
+    description: lines.join("\n") || "Sezon zakończony!",
+    color: 0x9B59B6,
+    timestamp: new Date().toISOString(),
+    footer: { text: "eDART Polska" },
+  };
+  return json(await sendEmbeds(webhooks, embed));
+}
+
+async function handleMilestone(url: string, key: string, body: any) {
+  const { player_name, milestone_type, milestone_value, league_name, league_id } = body;
+  if (!player_name || !milestone_type) return json({ error: "player_name and milestone_type required" }, 400);
+  const webhooks = await getWebhooks(url, key, "milestone", league_id);
+
+  const milestoneLabels: Record<string, string> = {
+    "matches_10": "🎮 Rozegrał(a) 10. mecz!",
+    "matches_25": "🎮 Rozegrał(a) 25. mecz!",
+    "matches_50": "🎮 Rozegrał(a) 50. mecz!",
+    "matches_100": "🎮 Rozegrał(a) 100. mecz!",
+    "wins_10": "🏅 10. zwycięstwo!",
+    "wins_25": "🏅 25. zwycięstwo!",
+    "wins_50": "🏅 50. zwycięstwo!",
+    "one_eighties_10": "🎯 10. rzut 180!",
+    "one_eighties_50": "🎯 50. rzut 180!",
+    "one_eighties_100": "🎯 100. rzut 180!",
+    "first_9darter": "⭐ Pierwszy 9-darter w karierze!",
+    "avg_80": "📊 Średnia powyżej 80!",
+    "avg_90": "📊 Średnia powyżej 90!",
+    "avg_100": "📊 Średnia powyżej 100!",
+    "win_streak_5": "🔥 5 wygranych z rzędu!",
+    "win_streak_10": "🔥 10 wygranych z rzędu!",
+  };
+
+  const label = milestoneLabels[milestone_type] || milestone_value || milestone_type;
+  const embed = {
+    title: "🏆 Kamień milowy!",
+    description: `**${player_name}** — ${label}${league_name ? `\n\nLiga: **${league_name}**` : ""}`,
+    color: 0xF1C40F,
+    timestamp: new Date().toISOString(),
+    footer: { text: "eDART Polska" },
+  };
+  return json(await sendEmbeds(webhooks, embed));
+}
+
+async function handleRulesUpdated(url: string, key: string, body: any) {
+  const { league_name, league_id, rule_title } = body;
+  const webhooks = await getWebhooks(url, key, "rules_updated", league_id);
+  const embed = {
+    title: "📜 Regulamin zaktualizowany",
+    description: `Zasady ${league_name ? `ligi **${league_name}**` : "ogólne"} zostały zaktualizowane.${rule_title ? `\n\n📄 Zmieniono: **${rule_title}**` : ""}\n\nSprawdź aktualny regulamin na stronie.`,
+    color: 0x3498DB,
+    timestamp: new Date().toISOString(),
+    footer: { text: "eDART Polska" },
+  };
+  return json(await sendEmbeds(webhooks, embed));
+}
+
+async function handleBugReport(url: string, key: string, body: any) {
+  const { title, description, reporter_name } = body;
+  if (!title) return json({ error: "title required" }, 400);
+  const webhooks = await getWebhooks(url, key, "bug_report");
+  const embed = {
+    title: `🐛 Zgłoszenie błędu: ${title}`,
+    description: `${description ? (description.length > 400 ? description.slice(0, 400) + "..." : description) : "Brak opisu"}${reporter_name ? `\n\n👤 Zgłosił(a): **${reporter_name}**` : ""}`,
+    color: 0xE74C3C,
+    timestamp: new Date().toISOString(),
+    footer: { text: "eDART Polska" },
+  };
+  return json(await sendEmbeds(webhooks, embed));
+}
+
+async function handleMatchReminder(url: string, key: string, body: any) {
+  const { player1_name, player2_name, league_name, league_id, days_left } = body;
+  const webhooks = await getWebhooks(url, key, "match_reminder", league_id);
+  const embed = {
+    title: "⏰ Przypomnienie o meczu",
+    description: `**${player1_name || "?"}** vs **${player2_name || "?"}**\n\nLiga: **${league_name || "?"}**${days_left != null ? `\n⏳ Pozostało dni: **${days_left}**` : ""}\n\nUmówcie się na termin meczu!`,
+    color: 0xE67E22,
     timestamp: new Date().toISOString(),
     footer: { text: "eDART Polska" },
   };

@@ -12,18 +12,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const EVENT_TYPES = [
   { value: "match_result", label: "🏆 Wyniki meczów", description: "Pełne statystyki po zatwierdzonym meczu" },
   { value: "walkover", label: "⚠️ Walkowery", description: "Powiadomienia o walkowerach" },
+  { value: "match_pending", label: "⏳ Mecz do zatwierdzenia", description: "Zgłoszony wynik czeka na akceptację" },
+  { value: "match_rejected", label: "❌ Wynik odrzucony", description: "Gdy admin odrzuci zgłoszony wynik" },
+  { value: "match_reset", label: "🔄 Mecz zresetowany", description: "Gdy mecz zostanie cofnięty do zaplanowanego" },
   { value: "match_proposal", label: "📅 Propozycje terminów", description: "Nowe propozycje terminów meczów" },
   { value: "match_proposal_accepted", label: "✅ Termin zaakceptowany", description: "Gdy gracz zaakceptuje termin" },
-  { value: "match_pending", label: "⏳ Mecz do zatwierdzenia", description: "Zgłoszony wynik czeka na akceptację" },
+  { value: "match_reminder", label: "⏰ Przypomnienie o meczu", description: "Automatyczne przypomnienie o nadchodzącym meczu" },
   { value: "new_player", label: "👤 Nowi gracze", description: "Gdy nowy gracz dołączy do systemu" },
+  { value: "player_approved", label: "✅ Gracz zatwierdzony", description: "Gdy admin zatwierdzi gracza" },
   { value: "announcement", label: "📢 Ogłoszenia", description: "Nowe ogłoszenia od adminów" },
   { value: "league_registration", label: "📋 Zapisy do lig", description: "Gdy gracz zapisze się do ligi" },
   { value: "league_unregistration", label: "📤 Wypisanie z ligi", description: "Gdy gracz wypisze się z ligi" },
   { value: "league_started", label: "🚀 Start ligi", description: "Gdy liga zostanie uruchomiona" },
   { value: "league_ended", label: "🏁 Koniec ligi", description: "Gdy liga zostanie zakończona" },
+  { value: "league_created", label: "🆕 Nowa liga", description: "Gdy zostanie utworzona nowa liga" },
   { value: "disqualification", label: "🚫 Dyskwalifikacja", description: "Gdy gracz zostanie zdyskwalifikowany" },
   { value: "weekly_challenge", label: "🎖️ Wyzwania tygodnia", description: "Nowe wyzwania tygodniowe" },
   { value: "high_score_alert", label: "🔥 Wybitny wynik", description: "180, 9-darter, wysoki checkout" },
+  { value: "milestone", label: "🏆 Kamień milowy", description: "Osiągnięcia graczy (10. mecz, 50. 180 itp.)" },
+  { value: "season_summary", label: "📊 Podsumowanie sezonu", description: "Statystyki po zakończonym sezonie" },
+  { value: "rules_updated", label: "📜 Zmiana regulaminu", description: "Gdy regulamin zostanie zaktualizowany" },
+  { value: "bug_report", label: "🐛 Zgłoszenie błędu", description: "Gdy gracz zgłosi błąd w systemie" },
 ];
 
 interface Webhook {
@@ -260,60 +269,104 @@ const DiscordWebhookPanel = ({ leagues }: { leagues: any[] }) => {
 
       {/* Preview */}
       <div className="rounded-lg border border-border bg-card p-6 card-glow">
-        <h4 className="font-display font-bold text-foreground mb-3 text-sm">Przykładowe wiadomości na Discord</h4>
-        <div className="space-y-3">
+        <h4 className="font-display font-bold text-foreground mb-3 text-sm">Przykładowe wiadomości na Discord ({EVENT_TYPES.length} typów)</h4>
+        <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
           {/* Match result */}
-          <div className="rounded-lg bg-[#36393f] p-3 text-sm">
-            <div className="text-[#b9bbbe] text-[10px] mb-1.5">🎯 <span className="text-white font-semibold">eDART Polska</span></div>
-            <div className="border-l-4 border-[#57F287] pl-3 space-y-1">
-              <div className="text-white font-bold text-xs">🏆 Wynik meczu — Liga Sezon 1</div>
-              <div className="text-[#dcddde] text-xs">
-                <span className="text-[#00b0f4] font-semibold">Jan Kowalski</span> <span className="text-white font-bold">3</span> : <span className="text-white font-bold">1</span> <span className="text-[#00b0f4] font-semibold">Adam Nowak</span>
-              </div>
-              <div className="text-[#b9bbbe] text-[10px] space-y-0.5">
-                <div>📊 Średnia: 65.20 / 58.10 · First 9: 72.30 / 61.50</div>
-                <div>🎯 180s: 2 / 0 · High CO: 104 / 0</div>
-                <div>🎲 60+: 5/3 · 100+: 4/2 · 140+: 1/0 · 170+: 0/0</div>
-                <div>🎯 Lotki: 156 / 172 · CO%: 28.57% (2/7) / 20.00% (1/5)</div>
-              </div>
+          <DiscordPreview color="#57F287" title="🏆 Wynik meczu — Liga Sezon 1">
+            <div className="text-[#dcddde] text-xs">
+              <span className="text-[#00b0f4] font-semibold">Jan Kowalski</span> <span className="text-white font-bold">3</span> : <span className="text-white font-bold">1</span> <span className="text-[#00b0f4] font-semibold">Adam Nowak</span>
             </div>
-          </div>
+            <div className="text-[#b9bbbe] text-[10px] space-y-0.5">
+              <div>📊 Średnia: 65.20 / 58.10 · First 9: 72.30 / 61.50</div>
+              <div>🎯 180s: 2 / 0 · ⭐ 9-darters: 0 / 0 · High CO: 104 / 0</div>
+              <div>🎲 60+: 5/3 · 100+: 4/2 · 140+: 1/0 · 170+: 0/0</div>
+              <div>🎯 Lotki: 156 / 172 · CO%: 28.57% (2/7) / 20.00% (1/5)</div>
+            </div>
+          </DiscordPreview>
+          {/* Match pending */}
+          <DiscordPreview color="#F1C40F" title="⏳ Wynik do zatwierdzenia">
+            <div className="text-[#dcddde] text-xs">
+              <span className="font-semibold">Jan Kowalski</span> 3 : 2 <span className="font-semibold">Adam Nowak</span>
+              <br/>Liga: <span className="text-[#00b0f4]">Liga Sezon 1</span> · Czeka na akceptację admina.
+            </div>
+          </DiscordPreview>
+          {/* Match rejected */}
+          <DiscordPreview color="#E74C3C" title="❌ Wynik odrzucony">
+            <div className="text-[#dcddde] text-xs">Wynik meczu Jan Kowalski 3:2 Adam Nowak został odrzucony przez admina.</div>
+          </DiscordPreview>
+          {/* Match reset */}
+          <DiscordPreview color="#607D8B" title="🔄 Mecz zresetowany">
+            <div className="text-[#dcddde] text-xs">Mecz Jan Kowalski vs Adam Nowak został zresetowany do zaplanowanego.</div>
+          </DiscordPreview>
+          {/* Match reminder */}
+          <DiscordPreview color="#E67E22" title="⏰ Przypomnienie o meczu">
+            <div className="text-[#dcddde] text-xs">Jan Kowalski vs Adam Nowak · Liga Sezon 1 · Pozostało 3 dni</div>
+          </DiscordPreview>
           {/* Walkover */}
-          <div className="rounded-lg bg-[#36393f] p-3 text-sm">
-            <div className="text-[#b9bbbe] text-[10px] mb-1.5">🎯 <span className="text-white font-semibold">eDART Polska</span></div>
-            <div className="border-l-4 border-[#ED4245] pl-3 space-y-1">
-              <div className="text-white font-bold text-xs">⚠️ Walkower — Liga Sezon 1</div>
-              <div className="text-[#dcddde] text-xs">Jan Kowalski 3 : 0 Adam Nowak — wygrywa Jan Kowalski</div>
-            </div>
-          </div>
+          <DiscordPreview color="#ED4245" title="⚠️ Walkower — Liga Sezon 1">
+            <div className="text-[#dcddde] text-xs">Jan Kowalski 3 : 0 Adam Nowak — wygrywa Jan Kowalski</div>
+          </DiscordPreview>
+          {/* Announcement */}
+          <DiscordPreview color="#FEE75C" title="📢 Zmiana zasad w sezonie 2">
+            <div className="text-[#dcddde] text-xs">Od nowego sezonu obowiązują zaktualizowane zasady punktacji...</div>
+          </DiscordPreview>
           {/* New player */}
-          <div className="rounded-lg bg-[#36393f] p-3 text-sm">
-            <div className="text-[#b9bbbe] text-[10px] mb-1.5">🎯 <span className="text-white font-semibold">eDART Polska</span></div>
-            <div className="border-l-4 border-[#5865F2] pl-3">
-              <div className="text-white font-bold text-xs">👤 Nowy gracz dołączył!</div>
-              <div className="text-[#dcddde] text-xs">Witamy <span className="text-[#00b0f4]">Piotr Wiśniewski</span> w eDART Polska! 🎯</div>
-            </div>
-          </div>
-          {/* High score alert */}
-          <div className="rounded-lg bg-[#36393f] p-3 text-sm">
-            <div className="text-[#b9bbbe] text-[10px] mb-1.5">🎯 <span className="text-white font-semibold">eDART Polska</span></div>
-            <div className="border-l-4 border-[#FFA500] pl-3">
-              <div className="text-white font-bold text-xs">🔥 Wybitny wynik!</div>
-              <div className="text-[#dcddde] text-xs">Jan Kowalski rzucił <span className="text-[#FFA500] font-bold">2x 180</span> i checkout <span className="text-[#FFA500] font-bold">170</span> w meczu vs Adam Nowak!</div>
-            </div>
-          </div>
+          <DiscordPreview color="#5865F2" title="👤 Nowy gracz dołączył!">
+            <div className="text-[#dcddde] text-xs">Witamy <span className="text-[#00b0f4]">Piotr Wiśniewski</span> w eDART Polska! 🎯</div>
+          </DiscordPreview>
+          {/* Player approved */}
+          <DiscordPreview color="#2ECC71" title="✅ Gracz zatwierdzony">
+            <div className="text-[#dcddde] text-xs">Piotr Wiśniewski został zatwierdzony i może uczestniczyć w rozgrywkach!</div>
+          </DiscordPreview>
+          {/* League created */}
+          <DiscordPreview color="#3498DB" title="🆕 Nowa liga utworzona!">
+            <div className="text-[#dcddde] text-xs">Liga Zimowa 2026 — Sezon 3 · Format: Best of 7</div>
+          </DiscordPreview>
           {/* League registration */}
-          <div className="rounded-lg bg-[#36393f] p-3 text-sm">
-            <div className="text-[#b9bbbe] text-[10px] mb-1.5">🎯 <span className="text-white font-semibold">eDART Polska</span></div>
-            <div className="border-l-4 border-[#00b0f4] pl-3">
-              <div className="text-white font-bold text-xs">📋 Nowy zapis do ligi</div>
-              <div className="text-[#dcddde] text-xs">Piotr zapisał się do <span className="text-[#00b0f4]">Liga Sezon 2</span></div>
+          <DiscordPreview color="#00b0f4" title="📋 Nowy zapis do ligi">
+            <div className="text-[#dcddde] text-xs">Piotr zapisał się do <span className="text-[#00b0f4]">Liga Sezon 2</span></div>
+          </DiscordPreview>
+          {/* High score alert */}
+          <DiscordPreview color="#FFA500" title="🔥 Wybitny wynik!">
+            <div className="text-[#dcddde] text-xs">🎯 Jan Kowalski — 2x 180 · ✅ checkout 170</div>
+          </DiscordPreview>
+          {/* Milestone */}
+          <DiscordPreview color="#F1C40F" title="🏆 Kamień milowy!">
+            <div className="text-[#dcddde] text-xs">Jan Kowalski — 🎯 50. rzut 180!</div>
+          </DiscordPreview>
+          {/* Season summary */}
+          <DiscordPreview color="#9B59B6" title="📊 Podsumowanie sezonu — Liga Sezon 1">
+            <div className="text-[#dcddde] text-xs space-y-0.5">
+              <div>🏆 Zwycięzca: Jan Kowalski</div>
+              <div>📊 Łącznie meczów: 45 · 🎯 180-tek: 127 · ⭐ 9-darters: 2</div>
             </div>
-          </div>
+          </DiscordPreview>
+          {/* Rules updated */}
+          <DiscordPreview color="#3498DB" title="📜 Regulamin zaktualizowany">
+            <div className="text-[#dcddde] text-xs">Zasady ligi Liga Sezon 2 zostały zaktualizowane.</div>
+          </DiscordPreview>
+          {/* Bug report */}
+          <DiscordPreview color="#E74C3C" title="🐛 Zgłoszenie błędu: Nie wyświetla się tabela">
+            <div className="text-[#dcddde] text-xs">Po kliknięciu w tabelę liga nie ładuje się... · Zgłosił: Jan Kowalski</div>
+          </DiscordPreview>
+          {/* Disqualification */}
+          <DiscordPreview color="#E74C3C" title="🚫 Dyskwalifikacja">
+            <div className="text-[#dcddde] text-xs">Adam Nowak został zdyskwalifikowany z ligi Liga Sezon 1</div>
+          </DiscordPreview>
         </div>
       </div>
     </div>
   );
 };
+
+const DiscordPreview = ({ color, title, children }: { color: string; title: string; children: React.ReactNode }) => (
+  <div className="rounded-lg bg-[#36393f] p-3 text-sm">
+    <div className="text-[#b9bbbe] text-[10px] mb-1.5">🎯 <span className="text-white font-semibold">eDART Polska</span></div>
+    <div className="pl-3 space-y-1" style={{ borderLeft: `4px solid ${color}` }}>
+      <div className="text-white font-bold text-xs">{title}</div>
+      {children}
+    </div>
+  </div>
+);
 
 export default DiscordWebhookPanel;

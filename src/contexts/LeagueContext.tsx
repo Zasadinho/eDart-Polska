@@ -400,7 +400,26 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         } : m
       )
     );
-  }, []);
+
+    // Discord webhook — match pending
+    try {
+      const match = matchList.find(m => m.id === matchId);
+      if (match) {
+        const league = leagueList.find(l => l.id === match.leagueId);
+        await supabase.functions.invoke("discord-webhook", {
+          body: {
+            action: "send_match_pending",
+            player1_name: match.player1Name,
+            player2_name: match.player2Name,
+            score1: data.score1,
+            score2: data.score2,
+            league_name: league?.name || "Liga",
+            league_id: match.leagueId,
+          },
+        });
+      }
+    } catch (e) { console.error("Discord webhook error:", e); }
+  }, [matchList, leagueList]);
 
   const updateMatchResult = useCallback(async (matchId: string, data: MatchResultData) => {
     await supabase.from("matches").update({
@@ -486,6 +505,24 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       });
     }
 
+    // Discord webhook — match rejected
+    try {
+      if (match) {
+        const league = leagueList.find(l => l.id === match.leagueId);
+        await supabase.functions.invoke("discord-webhook", {
+          body: {
+            action: "send_match_rejected",
+            player1_name: match.player1Name,
+            player2_name: match.player2Name,
+            score1: match.score1,
+            score2: match.score2,
+            league_name: league?.name || "Liga",
+            league_id: match.leagueId,
+          },
+        });
+      }
+    } catch (e) { console.error("Discord webhook error:", e); }
+
     setMatchList((prev) => prev.map((m) => m.id === matchId ? {
       ...m, status: "upcoming" as const,
       score1: undefined, score2: undefined, legsWon1: undefined, legsWon2: undefined,
@@ -498,7 +535,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       avgUntil170_1: undefined, avgUntil170_2: undefined,
       autodartsLink: undefined,
     } : m));
-  }, [matchList]);
+  }, [matchList, leagueList]);
 
   const getPendingApprovalMatches = useCallback(() => {
     return matchList.filter(m => m.status === "pending_approval");
@@ -614,8 +651,18 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         }
         return p;
       }));
+      // Discord webhook — league registration
+      try {
+        const player = playerList.find(p => p.id === playerId);
+        const league = leagueList.find(l => l.id === leagueId);
+        if (player && league) {
+          await supabase.functions.invoke("discord-webhook", {
+            body: { action: "send_league_registration", player_name: player.name, league_name: league.name, league_id: leagueId },
+          });
+        }
+      } catch (e) { console.error("Discord webhook error:", e); }
     }
-  }, []);
+  }, [playerList, leagueList]);
 
   const removePlayerFromLeague = useCallback(async (playerId: string, leagueId: string) => {
     await supabase.from("player_leagues").delete().eq("player_id", playerId).eq("league_id", leagueId);
@@ -625,7 +672,17 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       }
       return p;
     }));
-  }, []);
+    // Discord webhook — league unregistration
+    try {
+      const player = playerList.find(p => p.id === playerId);
+      const league = leagueList.find(l => l.id === leagueId);
+      if (player && league) {
+        await supabase.functions.invoke("discord-webhook", {
+          body: { action: "send_league_unregistration", player_name: player.name, league_name: league.name, league_id: leagueId },
+        });
+      }
+    } catch (e) { console.error("Discord webhook error:", e); }
+  }, [playerList, leagueList]);
 
   // Ton stats with win rate data
   const calcTonStats = useCallback((filterLeagueId?: string): TonLeaderEntry[] => {

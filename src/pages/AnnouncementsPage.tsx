@@ -70,6 +70,12 @@ const AnnouncementsPage = () => {
       toast({ title: "Błąd", description: "Nie udało się dodać ogłoszenia.", variant: "destructive" });
     } else {
       toast({ title: "Ogłoszenie dodane!" });
+      // Discord webhook — announcement
+      try {
+        await supabase.functions.invoke("discord-webhook", {
+          body: { action: "send_announcement", title: title.trim(), content: content.trim() },
+        });
+      } catch (e) { console.error("Discord webhook error:", e); }
       setTitle("");
       setContent("");
       setShowForm(false);
