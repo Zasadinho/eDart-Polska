@@ -488,11 +488,11 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     if (match?.bracketRound && match.score1 != null && match.score2 != null) {
       const winnerId = (match.score1 ?? 0) > (match.score2 ?? 0) ? match.player1Id : match.player2Id;
       const winnerName = (match.score1 ?? 0) > (match.score2 ?? 0) ? match.player1Name : match.player2Name;
+      const loserId = (match.score1 ?? 0) > (match.score2 ?? 0) ? match.player2Id : match.player1Id;
       try {
-        const result = await advanceBracketWinner(matchId, match.leagueId, winnerId, winnerName);
+        const result = await advanceBracketWinner(matchId, match.leagueId, winnerId, winnerName, loserId);
         if (result.advanced) {
           console.log(`[Bracket] Advanced ${winnerName} to next round`);
-          // Refresh data to show updated bracket
           setTimeout(() => fetchData(), 500);
         }
       } catch (e) {
