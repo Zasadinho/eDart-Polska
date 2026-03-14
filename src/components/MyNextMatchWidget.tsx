@@ -95,7 +95,7 @@ const MyNextMatchWidget = () => {
             </span>
           ) : (
             <span className="text-xs font-display uppercase text-accent border border-accent/30 rounded-full px-2 py-0.5">
-              Za {daysLeft} dni
+              {daysLeft === 1 ? "Za 1 dzień" : `Za ${daysLeft} dni`}
             </span>
           )}
           {next.round && (
