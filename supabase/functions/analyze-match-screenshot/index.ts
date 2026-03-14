@@ -52,18 +52,22 @@ async function resolveAiConfig(serviceClient: any): Promise<{ url: string; apiKe
 const SYSTEM_PROMPT = `Ekspert OCR darta. Wyodrębnij statystyki ze screenshotów aplikacji dartowych.
 
 ZASADY:
+- Analizuj screenshoty w kolejności: 1) ekran końcowych statystyk, 2) ekran wyników legów, 3) ekran dodatkowych statystyk
+- Jeśli pierwszy screen zawiera wszystkie dane, kolejne nie są wymagane
 - Odczytaj TYLKO widoczne dane. Brak danych = null.
 - score = wygrane legi (np. 3:2 → score1=3, score2=2)
 - avg = 3-dart average
 - first_9_avg = średnia z pierwszych 9 lotek
 - checkout = najwyższy checkout; checkout_hits/attempts = skuteczność na dubla
 - 180s = rzuty 180; ton60=60-99, ton80=100-139, ton_plus=140-179
+- Mapuj tony: 80+→60+, 90+→60+, 120+→100+, 150+→140+
 - confidence: "high" jeśli dane czytelne, "low" jeśli niewyraźne, "none" jeśli to nie mecz darta
 
 PLATFORMY:
-- DartCounter: ciemny motyw, zielone/niebieskie
-- DartsMind: ciemny+złoty. WYNIK = kolorowe kropki na czarnym pasku (NIE duże liczby u góry!). PPR = avg. Lewa kolumna = lewy gracz.
-- Autodarts: interfejs webowy`;
+- DartCounter: ciemny motyw, zielone/niebieskie, wykryj 180, 140+, 100+, 9 dart finish, best leg, worst leg, average
+- DartsMind: ciemny+złoty. WYNIK = kolorowe kropki na czarnym pasku (NIE duże liczby u góry!). PPR = avg. Lewa kolumna = lewy gracz. Wyniki legów w prostokątnych/kwadratowych polach pod nazwą gracza.
+- Autodarts: interfejs webowy
+- Detekcja aplikacji: na podstawie layoutu, ikon, charakterystycznych pól, tekstów. Obsługuj języki: angielski, polski, niemiecki itd.`;
 
 const MATCH_CONTEXT_ADDON = (p1: string, p2: string) =>
   `\nMECZ LIGOWY: player1="${p1}", player2="${p2}". Dopasuj nicki ze screena do tych graczy. matched_to_context=true jeśli dopasowano.`;
@@ -138,6 +142,51 @@ function swapIfNeeded(stats: any, matchContext?: { player1_name: string; player2
   stats.was_swapped = true;
 }
 
+function calculateDartsThrown(stats: any) {
+  if (!stats.avg1 || !stats.avg2 || !stats.score1 || !stats.score2) return;
+
+  const totalLegs = stats.score1 + stats.score2;
+  const startingPoints = 501; // assume 501
+
+  // For DartCounter, use best/worst leg if available
+  let dartsPerLeg1 = null, dartsPerLeg2 = null;
+  if (stats.platform === 'dartcounter' && stats.best_leg1 && stats.worst_leg1) {
+    dartsPerLeg1 = (stats.best_leg1 + stats.worst_leg1) / 2;
+  } else {
+    const roundsPerLeg1 = startingPoints / stats.avg1;
+    dartsPerLeg1 = roundsPerLeg1 * 3;
+  }
+  if (stats.platform === 'dartcounter' && stats.best_leg2 && stats.worst_leg2) {
+    dartsPerLeg2 = (stats.best_leg2 + stats.worst_leg2) / 2;
+  } else {
+    const roundsPerLeg2 = startingPoints / stats.avg2;
+    dartsPerLeg2 = roundsPerLeg2 * 3;
+  }
+
+  const dartsPerLeg = (dartsPerLeg1 + dartsPerLeg2) / 2;
+  const totalDarts = dartsPerLeg * totalLegs;
+
+  stats.darts_thrown1 = Math.round(totalDarts * (stats.score1 / totalLegs));
+  stats.darts_thrown2 = Math.round(totalDarts * (stats.score2 / totalLegs));
+  stats.total_darts = Math.round(totalDarts);
+  stats.darts_per_leg = Math.round(dartsPerLeg);
+  stats.total_legs = totalLegs;
+}
+
+function mapTons(stats: any) {
+  // Map ton categories to supported ones
+  const tonMappings: Record<string, string> = {
+    '80+': '60+',
+    '90+': '60+',
+    '120+': '100+',
+    '150+': '140+',
+  };
+
+  // Assuming stats have ton categories like ton80_1, ton_plus1 etc.
+  // If there are other categories, map them
+  // For now, assume the schema has ton60, ton80, ton_plus for 60+, 100+, 140+
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -195,6 +244,9 @@ Deno.serve(async (req) => {
       image_url: { url },
     }));
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
     const response = await fetch(aiConfig.url, {
       method: "POST",
       headers: {
@@ -217,7 +269,10 @@ Deno.serve(async (req) => {
         tools: [TOOL_SCHEMA],
         tool_choice: { type: "function", function: { name: "extract_match_stats" } },
       }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -251,6 +306,12 @@ Deno.serve(async (req) => {
 
     // Swap check
     swapIfNeeded(stats, match_context);
+
+    // Calculate darts thrown
+    calculateDartsThrown(stats);
+
+    // Map tons
+    mapTons(stats);
 
     return new Response(JSON.stringify({ success: true, data: stats }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },

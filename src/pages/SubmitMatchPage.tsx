@@ -26,7 +26,7 @@ import { Link } from "react-router-dom";
 import MatchStatFields from "@/components/MatchStatFields";
 import ScreenshotUpload from "@/components/ScreenshotUpload";
 import PageHeader from "@/components/PageHeader";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type AutoPayload = Record<string, any>;
 type SourcePlatform = "autodarts" | "dartcounter" | "dartsmind";
@@ -830,7 +830,19 @@ const SubmitMatchPage = () => {
     resetForm();
   };
 
-  if (loading || loadingPlayer) return null;
+  if (loading || loadingPlayer) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Skeleton className="h-8 w-64 mb-6" />
+        <div className="space-y-6">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (

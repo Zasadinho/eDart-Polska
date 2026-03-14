@@ -79,8 +79,8 @@ const ScreenshotUpload = ({ onStatsExtracted, matchId, disabled, matchContext }:
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    if (uploadedUrls.length + files.length > 2) {
-      toast({ title: "Limit", description: "Maksymalnie 2 zrzuty ekranu.", variant: "destructive" });
+    if (uploadedUrls.length + files.length > 3) {
+      toast({ title: "Limit", description: "Maksymalnie 3 zrzuty ekranu.", variant: "destructive" });
       return;
     }
 
@@ -229,7 +229,7 @@ const ScreenshotUpload = ({ onStatsExtracted, matchId, disabled, matchContext }:
           variant="outline"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || uploading || uploadedUrls.length >= 2}
+          disabled={disabled || uploading || uploadedUrls.length >= 3}
           className="font-display uppercase tracking-wider text-xs"
         >
           {uploading ? (

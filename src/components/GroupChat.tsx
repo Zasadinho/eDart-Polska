@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Hash, Lock, Trophy, Monitor, Trash2, Ban, Clock } from "lucide-react";
+import { Send, Hash, Lock, Trophy, Monitor, Trash2, Ban, Clock, Menu } from "lucide-react";
 import { toast } from "sonner";
 import { format, isToday, isYesterday } from "date-fns";
 import { pl } from "date-fns/locale";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Channel {
   id: string;
@@ -44,6 +45,7 @@ interface GroupChatProps {
 
 const GroupChat = ({ compact = false }: GroupChatProps) => {
   const { user, isAdmin, isModerator } = useAuth();
+  const isMobile = useIsMobile();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [activeChannel, setActiveChannel] = useState<string | null>(null);
   const [messages, setMessages] = useState<GroupMessage[]>([]);
@@ -59,6 +61,7 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
   const [banDialog, setBanDialog] = useState<{ open: boolean; userId: string; userName: string }>({ open: false, userId: "", userName: "" });
   const [banDuration, setBanDuration] = useState("1h");
   const [banReason, setBanReason] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const canModerate = isAdmin || isModerator;
@@ -122,6 +125,12 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
   }, [user, isAdmin, isModerator, activeChannel]);
 
   useEffect(() => { loadAccessData(); checkBan(); }, [loadAccessData, checkBan]);
+
+  useEffect(() => {
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  }, [isMobile]);
 
   // Load sender info (name + nick) for a set of user IDs
   const loadSenderInfos = useCallback(async (senderIds: string[]) => {
