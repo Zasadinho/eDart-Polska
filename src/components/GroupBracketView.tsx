@@ -1,6 +1,7 @@
 import { useLeague } from "@/contexts/LeagueContext";
 import { Trophy, Medal, Award, Users } from "lucide-react";
 import type { Match, PlayerLeagueStats } from "@/data/mockData";
+import { useRef, useEffect, useState } from "react";
 
 const FormBadge = ({ result }: { result: "W" | "L" }) => {
   const styles = {
