@@ -100,9 +100,13 @@ export interface TonLeaderEntry {
 
 const LeagueContext = createContext<LeagueContextType | null>(null);
 
+const TBD_PLAYER_ID = "00000000-0000-0000-0000-000000000000";
+
 const mapDbMatch = (m: any, players: Player[]): Match => {
   const p1 = players.find(p => p.id === m.player1_id);
   const p2 = players.find(p => p.id === m.player2_id);
+  const p1Name = m.player1_id === TBD_PLAYER_ID ? "TBD" : (p1?.name || "?");
+  const p2Name = m.player2_id === TBD_PLAYER_ID ? "TBD" : (p2?.name || "?");
   return {
     id: m.id,
     leagueId: m.league_id,
