@@ -4,6 +4,7 @@ import { Trophy, Medal, Clock, Star, Flame, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import PlayerAvatar from "@/components/PlayerAvatar";
 import PageHeader from "@/components/PageHeader";
+import { pl } from "@/lib/pluralize";
 import { Link } from "react-router-dom";
 
 interface Challenge {
