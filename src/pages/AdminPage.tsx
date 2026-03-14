@@ -762,7 +762,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     setRoundDeadlines({});
   };
 
-  const approvedPlayers = players.filter((p: any) => p.approved);
+  const approvedPlayers = players.filter((p: any) => p.approved && p.id !== "00000000-0000-0000-0000-000000000000" && p.name !== "TBD");
 
   return (
     <>
