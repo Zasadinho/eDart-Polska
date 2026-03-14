@@ -1124,7 +1124,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
                         const existingRounds = getExistingRounds(l.id);
                         const availableRounds = rounds - existingRounds.length;
                         const roundsToGen = generateMode === "all" ? availableRounds : selectedRounds.length;
-                        return `📊 ${selectedPlayers.length} graczy → ${matchCount} meczów w ${rounds} kolejkach (do wygenerowania: ${roundsToGen} kolejek)`;
+                        return `📊 ${selectedPlayers.length} graczy → ${pl.match(matchCount)} w ${rounds} kolejkach (do wygenerowania: ${roundsToGen} kolejek)`;
                       })()}
                       {l.league_type === "bracket" && `🏆 ${selectedPlayers.length} graczy → drabinka eliminacyjna`}
                       {l.league_type === "group_bracket" && `🎪 ${selectedPlayers.length} graczy w ${numGroups} grupach → faza grupowa + drabinka`}
