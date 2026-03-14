@@ -133,82 +133,90 @@
     return _origSetHeader.apply(this, arguments);
   };
 
-  // --- Layer 3: Scan localStorage/sessionStorage for Keycloak/OIDC tokens ---
+  // --- Layer 3: Scan localStorage/sessionStorage (fallback z v1.5 + deep scan) ---
+  function findTokenDeep(value, depth = 0) {
+    if (!value || depth > 6) return null;
+
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/.test(trimmed) && trimmed.length > 50) {
+        return trimmed;
+      }
+
+      const bearer = trimmed.match(/^Bearer\s+(.+)$/i);
+      if (bearer?.[1] && bearer[1].length > 50) return bearer[1].trim();
+
+      const parsed = safeJsonParse(trimmed);
+      return parsed ? findTokenDeep(parsed, depth + 1) : null;
+    }
+
+    if (typeof value !== "object") return null;
+
+    for (const key of ["access_token", "accessToken", "token", "id_token"]) {
+      if (value[key]) {
+        const found = findTokenDeep(value[key], depth + 1);
+        if (found) return found;
+      }
+    }
+
+    for (const nested of Object.values(value)) {
+      const found = findTokenDeep(nested, depth + 1);
+      if (found) return found;
+    }
+
+    return null;
+  }
+
+  function findUserIdDeep(value, depth = 0) {
+    if (!value || depth > 6) return null;
+
+    if (typeof value === "string") {
+      const parsed = safeJsonParse(value);
+      return parsed ? findUserIdDeep(parsed, depth + 1) : null;
+    }
+
+    if (typeof value !== "object") return null;
+
+    for (const key of ["sub", "userId", "user_id", "id"]) {
+      if (typeof value[key] === "string" && value[key].length > 6) {
+        return value[key];
+      }
+    }
+
+    for (const nested of Object.values(value)) {
+      const found = findUserIdDeep(nested, depth + 1);
+      if (found) return found;
+    }
+
+    return null;
+  }
+
   function scanStorageForToken() {
     for (const storage of [localStorage, sessionStorage]) {
       try {
         for (let i = 0; i < storage.length; i++) {
           const key = storage.key(i);
           if (!key) continue;
+
           const raw = storage.getItem(key);
-          if (!raw || raw.length < 30) continue;
+          if (!raw) continue;
 
-          // Known Keycloak/OIDC patterns
-          if (key.startsWith("oidc.user:") || key.startsWith("kc-") || key.includes("autodarts")) {
+          const token = findTokenDeep(raw, 0);
+          if (token) {
             const parsed = safeJsonParse(raw);
-            if (parsed?.access_token) return { token: parsed.access_token, userId: parsed.profile?.sub || null };
-            if (parsed?.token) return { token: parsed.token, userId: null };
-          }
-
-          // Generic auth token keys
-          if (/access.?token|auth.?token|bearer/i.test(key)) {
-            const parsed = safeJsonParse(raw);
-            if (parsed?.access_token) return { token: parsed.access_token, userId: parsed.profile?.sub || null };
-            // Raw JWT
-            if (raw.includes(".") && raw.split(".").length === 3 && raw.length > 50) {
-              return { token: raw, userId: null };
-            }
+            const userId = findUserIdDeep(parsed ?? raw, 0);
+            return {
+              token,
+              userId: typeof userId === "string" ? userId : null,
+              sourceKey: key,
+            };
           }
         }
-      } catch { /* ignore */ }
-    }
-
-    // Fallback: scan ALL keys for any JWT-shaped value in parsed objects
-    for (const storage of [localStorage, sessionStorage]) {
-      try {
-        for (let i = 0; i < storage.length; i++) {
-          const key = storage.key(i);
-          if (!key) continue;
-          const raw = storage.getItem(key);
-          if (!raw || raw.length < 50) continue;
-
-          const parsed = safeJsonParse(raw);
-          if (!parsed || typeof parsed !== "object") continue;
-
-          // Deep search for access_token
-          const token = deepFindField(parsed, ["access_token", "accessToken", "token", "id_token"], 0);
-          if (token && typeof token === "string" && token.includes(".") && token.length > 50) {
-            const userId = deepFindField(parsed, ["sub", "userId", "user_id"], 0);
-            return { token, userId: typeof userId === "string" ? userId : null };
-          }
-        }
-      } catch { /* ignore */ }
-    }
-
-    return null;
-  }
-
-  function deepFindField(obj, fieldNames, depth) {
-    if (!obj || depth > 5) return null;
-    if (typeof obj !== "object") return null;
-
-    for (const name of fieldNames) {
-      if (name in obj && obj[name]) return obj[name];
-    }
-
-    for (const val of Object.values(obj)) {
-      if (val && typeof val === "object") {
-        const found = deepFindField(val, fieldNames, depth + 1);
-        if (found) return found;
-      }
-      if (typeof val === "string") {
-        const parsed = safeJsonParse(val);
-        if (parsed && typeof parsed === "object") {
-          const found = deepFindField(parsed, fieldNames, depth + 1);
-          if (found) return found;
-        }
+      } catch {
+        // ignore storage access errors
       }
     }
+
     return null;
   }
 
@@ -465,17 +473,40 @@
     if (msg?.type !== "EDART_REFRESH_TOKEN") return false;
     console.log("[eDART] Token refresh requested by background:", msg.reason);
 
-    // Try storage scan
-    const result = scanStorageForToken();
-    if (result?.token) {
-      saveToken(result.token, "refresh-request:" + (msg.reason || "manual"));
+    let responded = false;
+    const finish = (payload) => {
+      if (responded) return;
+      responded = true;
+      sendResponse(payload);
+    };
+
+    const attempt = (label) => {
+      const result = scanStorageForToken();
+      if (!result?.token) return false;
+
+      saveToken(result.token, `${label}:${msg.reason || "manual"}`);
       if (result.userId) {
         storageSet({ autodarts_user_id: result.userId });
         sendMsg({ type: "AUTODARTS_USER_ID_DETECTED", userId: result.userId });
       }
-    }
 
-    sendResponse({ ok: true, hasToken: !!result?.token });
+      finish({ ok: true, hasToken: true, sourceKey: result.sourceKey || null });
+      return true;
+    };
+
+    if (attempt("refresh-immediate")) return true;
+
+    const retryDelays = [350, 1200, 2800];
+    retryDelays.forEach((delay, index) => {
+      safeTimeout(() => {
+        if (responded) return;
+        const ok = attempt(`refresh-retry-${index + 1}`);
+        if (!ok && index === retryDelays.length - 1) {
+          finish({ ok: true, hasToken: false });
+        }
+      }, delay);
+    });
+
     return true;
   });
 

@@ -5,6 +5,7 @@
   "description": "Automatycznie wysyła wyniki meczów ligowych z Autodarts do eDART Polska",
   "permissions": ["storage", "notifications", "webRequest", "alarms"],
   "host_permissions": [
+    "https://login.autodarts.io/*",
     "https://api.autodarts.io/*",
     "https://play.autodarts.io/*",
     "https://edartpolska.pl/*",

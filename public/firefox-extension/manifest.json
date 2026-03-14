@@ -14,6 +14,7 @@
     "notifications",
     "webRequest",
     "alarms",
+    "https://login.autodarts.io/*",
     "https://api.autodarts.io/*",
     "https://play.autodarts.io/*",
     "https://edartpolska.pl/*",
