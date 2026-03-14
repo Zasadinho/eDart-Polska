@@ -363,7 +363,6 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   }, [matchList, playerList, getLeagueRules]);
 
   const submitMatchResult = useCallback(async (matchId: string, data: MatchResultData) => {
-    // Players submit results as "pending_approval" - admin/moderator must approve
     await supabase.from("matches").update({
       score1: data.score1, score2: data.score2,
       legs_won1: data.score1, legs_won2: data.score2,
@@ -383,6 +382,8 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       checkout_hits2: data.checkoutHits2 ?? 0,
       first_9_avg1: data.first9Avg1 ?? null,
       first_9_avg2: data.first9Avg2 ?? null,
+      nine_darters1: data.nineDarters1 ?? 0,
+      nine_darters2: data.nineDarters2 ?? 0,
       autodarts_link: data.autodartsLink,
       screenshot_urls: data.screenshotUrls ?? [],
       source_platform: data.sourcePlatform ?? 'autodarts',
