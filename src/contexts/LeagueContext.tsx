@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateLeagueStandings } from "@/lib/leagueRanking";
+import { advanceBracketWinner } from "@/lib/bracketAdvancement";
 import {
   Player, Match, League, PlayerLeagueStats, Achievement,
   achievements, BonusRules, DEFAULT_BONUS_RULES, LeaguePlatform,
@@ -99,16 +100,20 @@ export interface TonLeaderEntry {
 
 const LeagueContext = createContext<LeagueContextType | null>(null);
 
+const TBD_PLAYER_ID = "00000000-0000-0000-0000-000000000000";
+
 const mapDbMatch = (m: any, players: Player[]): Match => {
   const p1 = players.find(p => p.id === m.player1_id);
   const p2 = players.find(p => p.id === m.player2_id);
+  const p1Name = m.player1_id === TBD_PLAYER_ID ? "TBD" : (p1?.name || "?");
+  const p2Name = m.player2_id === TBD_PLAYER_ID ? "TBD" : (p2?.name || "?");
   return {
     id: m.id,
     leagueId: m.league_id,
     player1Id: m.player1_id,
     player2Id: m.player2_id,
-    player1Name: p1?.name || "?",
-    player2Name: p2?.name || "?",
+    player1Name: p1Name,
+    player2Name: p2Name,
     score1: m.score1,
     score2: m.score2,
     legsWon1: m.legs_won1,
@@ -476,7 +481,23 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     setMatchList((prev) => prev.map((m) => m.id === matchId ? { ...m, status: "completed" as const } : m));
-  }, [matchList]);
+
+    // Auto-advance bracket winner to next round
+    if (match?.bracketRound && match.score1 != null && match.score2 != null) {
+      const winnerId = (match.score1 ?? 0) > (match.score2 ?? 0) ? match.player1Id : match.player2Id;
+      const winnerName = (match.score1 ?? 0) > (match.score2 ?? 0) ? match.player1Name : match.player2Name;
+      try {
+        const result = await advanceBracketWinner(matchId, match.leagueId, winnerId, winnerName);
+        if (result.advanced) {
+          console.log(`[Bracket] Advanced ${winnerName} to next round`);
+          // Refresh data to show updated bracket
+          setTimeout(() => fetchData(), 500);
+        }
+      } catch (e) {
+        console.error("Bracket advancement error:", e);
+      }
+    }
+  }, [matchList, fetchData]);
 
   const rejectMatch = useCallback(async (matchId: string) => {
     const match = matchList.find(m => m.id === matchId);

@@ -217,6 +217,8 @@ const GroupBracketView = () => {
 const BracketMatchCard = ({ match }: { match: Match }) => {
   const isCompleted = match.status === "completed";
   const isPending = match.status === "pending_approval";
+  const isTBD1 = match.player1Name === "TBD";
+  const isTBD2 = match.player2Name === "TBD";
   const p1Won = isCompleted && (match.score1 ?? 0) > (match.score2 ?? 0);
   const p2Won = isCompleted && (match.score2 ?? 0) > (match.score1 ?? 0);
 
@@ -227,7 +229,7 @@ const BracketMatchCard = ({ match }: { match: Match }) => {
       <div className={`flex items-center justify-between px-3 py-2.5 border-b border-border/50 ${p1Won ? "bg-secondary/10" : ""}`}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {p1Won && <Trophy className="h-3 w-3 text-secondary flex-shrink-0" />}
-          <span className={`text-sm font-body truncate ${p1Won ? "text-secondary font-semibold" : "text-foreground"}`}>
+          <span className={`text-sm font-body truncate ${isTBD1 ? "text-muted-foreground italic" : p1Won ? "text-secondary font-semibold" : "text-foreground"}`}>
             {match.player1Name}
           </span>
         </div>
@@ -240,7 +242,7 @@ const BracketMatchCard = ({ match }: { match: Match }) => {
       <div className={`flex items-center justify-between px-3 py-2.5 ${p2Won ? "bg-secondary/10" : ""}`}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {p2Won && <Trophy className="h-3 w-3 text-secondary flex-shrink-0" />}
-          <span className={`text-sm font-body truncate ${p2Won ? "text-secondary font-semibold" : "text-foreground"}`}>
+          <span className={`text-sm font-body truncate ${isTBD2 ? "text-muted-foreground italic" : p2Won ? "text-secondary font-semibold" : "text-foreground"}`}>
             {match.player2Name}
           </span>
         </div>
