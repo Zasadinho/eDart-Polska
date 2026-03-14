@@ -714,7 +714,21 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
           }
         }
         
-        toast({ title: "🏆 Drabinka wygenerowana!", description: `Turniej dla ${playerIds.length} graczy (${insertedCount} meczów).` });
+        // Pre-create third-place match placeholder if enabled
+        if (thirdPlaceEnabled) {
+          const TBD_ID_C = "00000000-0000-0000-0000-000000000000";
+          await supabase.from("matches").insert({
+            league_id: league.id,
+            player1_id: TBD_ID_C,
+            player2_id: TBD_ID_C,
+            date: startDate,
+            status: "upcoming",
+            bracket_round: "Mecz o 3. miejsce",
+            bracket_position: 1,
+          });
+        }
+        
+        toast({ title: "🏆 Drabinka wygenerowana!", description: `Turniej dla ${playerIds.length} graczy (${insertedCount} meczów).${thirdPlaceEnabled ? " + mecz o 3. miejsce" : ""}${luckyLoserEnabled ? " + Lucky Loser" : ""}` });
 
       } else if (lt === "group_bracket") {
         // Group stage + bracket
