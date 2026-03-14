@@ -64,7 +64,7 @@ const LeagueTable = () => {
             </thead>
             <tbody>
               {standings.map((entry, index) => {
-                const achiev = getPlayerAchievements(entry.id, activeLeagueId);
+                const achiev = getPlayerGlobalAchievements(entry.id);
                 return (
                   <tr key={entry.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                     <td className="px-2 py-2"><RankIcon rank={(entry as any).rank ?? (index + 1)} /></td>
