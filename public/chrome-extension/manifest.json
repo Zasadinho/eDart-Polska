@@ -1,13 +1,12 @@
 {
   "manifest_version": 3,
   "name": "eDART Polska - Autodarts Stats",
-  "version": "1.6.0",
-  "description": "Automatycznie pobiera token Autodarts i wysyła statystyki do eDART Polska",
-  "permissions": ["cookies", "storage", "webRequest", "notifications"],
+  "version": "2.0.0",
+  "description": "Automatycznie wysyła wyniki meczów ligowych z Autodarts do eDART Polska",
+  "permissions": ["storage", "notifications", "webRequest"],
   "host_permissions": [
-    "https://login.autodarts.io/*",
-    "https://play.autodarts.io/*",
     "https://api.autodarts.io/*",
+    "https://play.autodarts.io/*",
     "https://edartpolska.pl/*",
     "https://www.edartpolska.pl/*",
     "https://*.lovable.app/*",
@@ -32,6 +31,7 @@
       "run_at": "document_idle"
     }
   ],
+  "options_page": "options.html",
   "icons": {
     "48": "icon48.png",
     "128": "icon128.png"
