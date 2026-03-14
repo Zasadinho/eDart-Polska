@@ -87,19 +87,13 @@ browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 const messageHandlers = {
-  GET_AUTODARTS_TOKEN(message, sendResponse) {
-    browserAPI.storage.local.get(["autodarts_token", "token_timestamp"], (result) => {
-      const age = Date.now() - (result.token_timestamp || 0);
-      sendResponse({
-        token: result.autodarts_token || null,
-        timestamp: result.token_timestamp || null,
-        fresh: age < CONFIG.TOKEN_FRESH_MS,
-      });
-    });
+  async GET_AUTODARTS_TOKEN(message, sendResponse) {
+    const tokenState = await getAutodartsTokenState(message?.forceRefresh === true);
+    sendResponse(tokenState);
   },
 
-  CLEAR_TOKEN(message, sendResponse) {
-    browserAPI.storage.local.remove(["autodarts_token", "token_timestamp"]);
+  async CLEAR_TOKEN(message, sendResponse) {
+    await storageRemoveLocal(["autodarts_token", "token_timestamp", "autodarts_token_source"]);
     sendResponse({ success: true });
   },
 
