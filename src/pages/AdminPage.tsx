@@ -689,7 +689,7 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
             group_name: m.groupName,
           });
         }
-        toast({ title: "🎪 Faza grupowa wygenerowana!", description: `${groupCount} grup, ${groupMatches.length} meczów.` });
+        toast({ title: "🎪 Faza grupowa wygenerowana!", description: `${groupCount} grup, ${pl.match(groupMatches.length)}.` });
       }
 
       await refreshData();
