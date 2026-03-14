@@ -631,6 +631,8 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       registration_open: league.registration_open ?? false,
       meetings_per_pair: league.meetings_per_pair ?? 1,
       platform: league.platform ?? "autodarts",
+      third_place_match: league.third_place_match ?? false,
+      lucky_loser: league.lucky_loser ?? false,
     } as any).select().single();
     if (data) {
       const newLeague: League = {
@@ -641,6 +643,8 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
         registration_open: (data as any).registration_open ?? false,
         meetings_per_pair: (data as any).meetings_per_pair ?? 1,
         platform: (data as any).platform ?? "autodarts",
+        third_place_match: (data as any).third_place_match ?? false,
+        lucky_loser: (data as any).lucky_loser ?? false,
       };
       setLeagueList((prev) => [...prev, newLeague]);
       if (!activeLeagueId) setActiveLeagueId(data.id);
