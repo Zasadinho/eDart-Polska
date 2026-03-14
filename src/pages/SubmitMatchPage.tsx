@@ -490,6 +490,8 @@ const SubmitMatchPage = () => {
           avg2: finalPayload.avg2 ?? undefined,
           oneEighties1: asNumber(finalPayload.one_eighties1),
           oneEighties2: asNumber(finalPayload.one_eighties2),
+          nineDarters1: asNumber(finalPayload.nine_darters1),
+          nineDarters2: asNumber(finalPayload.nine_darters2),
           highCheckout1: asNumber(finalPayload.high_checkout1),
           highCheckout2: asNumber(finalPayload.high_checkout2),
           ton60_1: asNumber(finalPayload.ton60_1),
