@@ -54,7 +54,8 @@ export async function advanceBracketWinner(
   if (!nextRoundName) return { advanced: false };
 
   // However, not all rounds may exist — find the actual next round
-  const allRoundNames = [...new Set(allBracketMatches.map(m => m.bracket_round!))];
+  const allRoundNames = [...new Set(allBracketMatches.map(m => m.bracket_round!))]
+    .sort((a, b) => roundOrder.indexOf(a) - roundOrder.indexOf(b));
   const actualNextRound = allRoundNames.find(r => {
     const idx = roundOrder.indexOf(r);
     return idx > currentRoundIdx;
