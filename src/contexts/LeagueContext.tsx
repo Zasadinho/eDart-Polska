@@ -505,6 +505,24 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       });
     }
 
+    // Discord webhook — match rejected
+    try {
+      if (match) {
+        const league = leagueList.find(l => l.id === match.leagueId);
+        await supabase.functions.invoke("discord-webhook", {
+          body: {
+            action: "send_match_rejected",
+            player1_name: match.player1Name,
+            player2_name: match.player2Name,
+            score1: match.score1,
+            score2: match.score2,
+            league_name: league?.name || "Liga",
+            league_id: match.leagueId,
+          },
+        });
+      }
+    } catch (e) { console.error("Discord webhook error:", e); }
+
     setMatchList((prev) => prev.map((m) => m.id === matchId ? {
       ...m, status: "upcoming" as const,
       score1: undefined, score2: undefined, legsWon1: undefined, legsWon2: undefined,
@@ -517,7 +535,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       avgUntil170_1: undefined, avgUntil170_2: undefined,
       autodartsLink: undefined,
     } : m));
-  }, [matchList]);
+  }, [matchList, leagueList]);
 
   const getPendingApprovalMatches = useCallback(() => {
     return matchList.filter(m => m.status === "pending_approval");
