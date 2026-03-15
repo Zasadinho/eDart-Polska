@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, ArrowLeft, Users, Search, X, Hash, Maximize2, Minimize2 } from "lucide-react";
+import { MessageCircle, Send, ArrowLeft, Users, Search, X, Hash, Maximize2, Minimize2, GripVertical } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { pl } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -45,18 +45,23 @@ const FloatingChat = () => {
   const [showNewChat, setShowNewChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [totalUnread, setTotalUnread] = useState(0);
-  const [chatSize, setChatSize] = useState({ width: 420, height: 600 });
+  const [chatSize, setChatSize] = useState({ width: 420, height: 520 });
   const [isMaximized, setIsMaximized] = useState(false);
+  const [chatPos, setChatPos] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!user) return;
     loadContacts();
     loadAllPlayers();
 
-    // Load chat size from localStorage
+    // Load chat size and position from localStorage
     const savedSize = localStorage.getItem(`chat-size-${user.id}`);
     const savedMaximized = localStorage.getItem(`chat-maximized-${user.id}`);
+    const savedPos = localStorage.getItem(`chat-pos-${user.id}`);
 
     if (savedSize) {
       try {
@@ -65,6 +70,11 @@ const FloatingChat = () => {
     }
     if (savedMaximized) {
       setIsMaximized(savedMaximized === 'true');
+    }
+    if (savedPos) {
+      try {
+        setChatPos(JSON.parse(savedPos));
+      } catch (e) {}
     }
   }, [user]);
 
@@ -155,7 +165,22 @@ const FloatingChat = () => {
     setSending(false);
   };
 
-  const saveChatSettings = (size?: { width: number; height: number }, maximized?: boolean) => {
+  const clampPosition = useCallback((x: number, y: number, w: number, h: number) => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    return {
+      x: Math.max(0, Math.min(x, vw - w)),
+      y: Math.max(0, Math.min(y, vh - h)),
+    };
+  }, []);
+
+  const getDefaultPos = useCallback(() => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    return { x: vw - chatSize.width - 20, y: vh - chatSize.height - 96 };
+  }, [chatSize]);
+
+  const saveChatSettings = (size?: { width: number; height: number }, maximized?: boolean, pos?: { x: number; y: number }) => {
     if (!user) return;
     if (size) {
       localStorage.setItem(`chat-size-${user.id}`, JSON.stringify(size));
@@ -163,7 +188,42 @@ const FloatingChat = () => {
     if (maximized !== undefined) {
       localStorage.setItem(`chat-maximized-${user.id}`, maximized.toString());
     }
+    if (pos) {
+      localStorage.setItem(`chat-pos-${user.id}`, JSON.stringify(pos));
+    }
   };
+
+  const latestPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  const onDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const pos = chatPos || getDefaultPos();
+    dragRef.current = { startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+    setIsDragging(true);
+
+    const onMove = (ev: MouseEvent) => {
+      if (!dragRef.current) return;
+      const dx = ev.clientX - dragRef.current.startX;
+      const dy = ev.clientY - dragRef.current.startY;
+      const newPos = clampPosition(dragRef.current.origX + dx, dragRef.current.origY + dy, chatSize.width, chatSize.height);
+      setChatPos(newPos);
+      latestPosRef.current = newPos;
+    };
+
+    const onUp = () => {
+      setIsDragging(false);
+      if (latestPosRef.current) {
+        saveChatSettings(undefined, undefined, latestPosRef.current);
+      }
+      dragRef.current = null;
+      latestPosRef.current = null;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, [chatPos, chatSize, clampPosition, getDefaultPos]);
 
   const handleResize = (delta: { width: number; height: number }) => {
     const newSize = {
@@ -216,25 +276,29 @@ const FloatingChat = () => {
       <AnimatePresence>
         {isOpen && !isMobile && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              y: 0,
-              width: isMaximized ? '100vw' : chatSize.width,
-              height: isMaximized ? '100vh' : chatSize.height,
-            }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`fixed z-50 rounded-xl border border-border bg-card shadow-2xl flex flex-col overflow-hidden ${isMaximized ? 'inset-0' : 'bottom-24 right-5'}`}
-            style={{
-              width: isMaximized ? '100vw' : chatSize.width,
-              height: isMaximized ? '100vh' : chatSize.height,
+            ref={chatBoxRef}
+            className={`fixed z-50 rounded-xl border border-border bg-card shadow-2xl flex flex-col overflow-hidden ${isMaximized ? 'inset-0' : ''}`}
+            style={isMaximized ? {
+              width: '100vw',
+              height: '100vh',
+            } : {
+              width: chatSize.width,
+              height: chatSize.height,
+              left: (chatPos || getDefaultPos()).x,
+              top: (chatPos || getDefaultPos()).y,
             }}
           >
             {/* Header with controls */}
-            <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2">
-              <div className="flex border-b border-border bg-muted/30">
+            <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2 select-none">
+              <div className="flex items-center gap-1">
+                <div onMouseDown={onDragStart} className="cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground transition-colors" title="Przeciągnij">
+                  <GripVertical className="h-4 w-4" />
+                </div>
+              <div className="flex">
                 <button
                   onClick={() => { setChatMode("private"); setActiveChat(null); }}
                   className={`px-3 py-1 text-xs font-display uppercase tracking-wider flex items-center justify-center gap-1 transition-colors ${chatMode === "private" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
@@ -247,6 +311,7 @@ const FloatingChat = () => {
                 >
                   <Hash className="h-3 w-3" /> Grupowe
                 </button>
+              </div>
               </div>
               <div className="flex items-center gap-1">
                 <button onClick={toggleMaximize} className="p-1 text-muted-foreground hover:text-foreground transition-colors">
