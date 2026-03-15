@@ -262,10 +262,11 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     // Parallel fetches for speed
-    const [leaguesRes, playersRes, plRes] = await Promise.all([
+    const [leaguesRes, playersRes, plRes, nicksRes] = await Promise.all([
       supabase.from("leagues").select("id,name,season,description,is_active,format,max_legs,league_type,bonus_rules,registration_open,meetings_per_pair,registration_deadline,platform,third_place_match,lucky_loser").order("created_at"),
-      supabase.from("players_public" as any).select("id,name,avatar,approved,avatar_url,user_id,autodarts_user_id,dartcounter_id,dartsmind_id").order("name"),
+      supabase.from("players_public" as any).select("id,name,avatar,approved,avatar_url,user_id").order("name"),
       supabase.from("player_leagues").select("player_id,league_id"),
+      supabase.from("players").select("id,autodarts_user_id,dartcounter_id,dartsmind_id"),
     ]);
     const leaguesData = leaguesRes.data;
     const leagues: League[] = (leaguesData || []).map((l: any) => ({
@@ -286,17 +287,20 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const playerLeagues = plRes.data || [];
+    const nicksMap = new Map((nicksRes.data || []).map((n: any) => [n.id, n]));
 
-    const allPlayers: Player[] = (playersRes.data || []).map((p: any) => ({
+    const allPlayers: Player[] = (playersRes.data || []).map((p: any) => {
+      const nicks = nicksMap.get(p.id);
+      return {
       id: p.id, name: p.name, avatar: p.avatar, approved: p.approved,
       phone: p.phone ?? null, discord: p.discord ?? null,
       avatar_url: p.avatar_url ?? null,
       user_id: p.user_id ?? null,
-      autodarts_user_id: p.autodarts_user_id ?? null,
-      dartcounter_id: p.dartcounter_id ?? null,
-      dartsmind_id: p.dartsmind_id ?? null,
+      autodarts_user_id: nicks?.autodarts_user_id ?? null,
+      dartcounter_id: nicks?.dartcounter_id ?? null,
+      dartsmind_id: nicks?.dartsmind_id ?? null,
       leagueIds: playerLeagues.filter((pl: any) => pl.player_id === p.id).map((pl: any) => pl.league_id),
-    }));
+    }});
     const approved = allPlayers.filter(p => p.approved && p.id !== TBD_PLAYER_ID);
     const pending = allPlayers.filter(p => !p.approved);
     setPlayerList(approved);
