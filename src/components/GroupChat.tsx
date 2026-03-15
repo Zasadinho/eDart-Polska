@@ -315,7 +315,7 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
     return <Hash className="h-3 w-3 text-muted-foreground" />;
   };
 
-  const onDragStart = (event: PointerEvent) => {
+  const onDragStart = (event: React.PointerEvent) => {
     if (isMobile) return;
     dragRef.current = {
       startX: event.clientX,
@@ -327,7 +327,7 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
     (event.target as HTMLElement).setPointerCapture(event.pointerId);
   };
 
-  const onResizeStart = (event: PointerEvent) => {
+  const onResizeStart = (event: React.PointerEvent) => {
     if (isMobile) return;
     resizeRef.current = {
       startX: event.clientX,
