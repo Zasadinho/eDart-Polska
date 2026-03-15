@@ -1,8 +1,8 @@
 import { useEffect, useState, createContext, useContext, ReactNode } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Lock } from "lucide-react";
+import { Lock, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -79,11 +79,36 @@ export const ProtectedRoute = ({ children, path }: { children: ReactNode; path: 
 
   if (!isAllowed) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center max-w-md">
-        <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <h1 className="text-2xl font-display font-bold text-foreground mb-2">Wymagane Logowanie</h1>
-        <p className="text-muted-foreground font-body mb-4">Ta strona jest dostępna tylko dla zalogowanych użytkowników.</p>
-        <Link to="/login"><Button variant="hero" size="lg">Zaloguj się</Button></Link>
+      <div className="relative min-h-screen">
+        {/* Render actual page content behind blur */}
+        <div className="pointer-events-none select-none blur-md brightness-50" aria-hidden="true">
+          {children}
+        </div>
+
+        {/* Overlay */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="mx-4 max-w-sm w-full rounded-xl border border-border bg-card p-8 shadow-2xl text-center">
+            <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <Lock className="h-7 w-7 text-primary" />
+            </div>
+            <h2 className="text-xl font-display font-bold text-foreground mb-2">Wymagane logowanie</h2>
+            <p className="text-sm text-muted-foreground font-body mb-6">
+              Zaloguj się lub utwórz konto, aby uzyskać dostęp do tej strony.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Link to="/login">
+                <Button variant="hero" size="lg" className="w-full gap-2">
+                  <LogIn className="h-4 w-4" /> Zaloguj się
+                </Button>
+              </Link>
+              <Link to="/login?mode=register">
+                <Button variant="outline" size="lg" className="w-full gap-2">
+                  <UserPlus className="h-4 w-4" /> Załóż konto
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
