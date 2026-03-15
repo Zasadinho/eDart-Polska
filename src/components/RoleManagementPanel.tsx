@@ -9,7 +9,6 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Trash2, Edit2, UserPlus, Award, Shield, Search,
@@ -314,14 +313,76 @@ const RoleManagementPanel = () => {
     <div className="space-y-6 max-h-[calc(100vh-16rem)] overflow-y-auto overscroll-contain">
       <h2 className="text-xl font-display font-bold text-foreground">Zarządzanie rolami</h2>
 
-      <Tabs defaultValue="custom" className="w-full">
-        <TabsList className="w-full grid grid-cols-2 sticky top-0 z-10">
-          <TabsTrigger value="custom">🎭 Role niestandardowe</TabsTrigger>
-          <TabsTrigger value="system">🛡️ Role systemowe</TabsTrigger>
-        </TabsList>
+      {/* ─── SYSTEM ROLES SECTION ─── */}
+      <div className="space-y-4">
+        <div className="rounded-lg border border-border bg-gradient-to-br from-primary/5 to-transparent p-5 card-glow">
+          <h3 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" /> Role systemowe
+          </h3>
+          <form onSubmit={handleAddLegacy} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Użytkownik</Label>
+                <Select value={legacyUserId} onValueChange={setLegacyUserId}>
+                  <SelectTrigger className="bg-muted/30 border-border"><SelectValue placeholder="Wybierz..." /></SelectTrigger>
+                  <SelectContent>
+                    {profiles.map((p) => (
+                      <SelectItem key={p.user_id} value={p.user_id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Rola</Label>
+                <Select value={legacyRole} onValueChange={setLegacyRole}>
+                  <SelectTrigger className="bg-muted/30 border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">🛡️ Admin</SelectItem>
+                    <SelectItem value="moderator">⚡ Moderator</SelectItem>
+                    <SelectItem value="user">👤 Gracz</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button type="submit" variant="hero" className="w-full">
+                  <Award className="h-4 w-4 mr-1" /> Przypisz
+                </Button>
+              </div>
+            </div>
+          </form>
 
-        {/* ─── CUSTOM ROLES TAB ─── */}
-        <TabsContent value="custom" className="space-y-4 mt-4">
+          <div className="mt-4 pt-4 border-t border-border">
+            <h4 className="text-sm font-display font-semibold text-foreground mb-3">Obecne role systemowe</h4>
+            {legacyRoles.length === 0 ? (
+              <p className="text-muted-foreground text-sm">Brak przypisanych ról.</p>
+            ) : (
+              <div className="space-y-2">
+                {legacyRoles.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between rounded-lg bg-muted/30 border border-border p-3">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-display uppercase px-2 py-1 rounded-full border ${
+                        r.role === "admin" ? "bg-primary/20 border-primary/30 text-primary" :
+                        r.role === "moderator" ? "bg-accent/20 border-accent/30 text-accent" :
+                        "bg-secondary/20 border-secondary/30 text-secondary"
+                      }`}>{r.role}</span>
+                      <span className="font-body text-sm text-foreground">{r.name}</span>
+                    </div>
+                    <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDeleteLegacy(r.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── CUSTOM ROLES SECTION ─── */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <h3 className="font-display font-bold text-lg text-foreground">🎭 Role niestandardowe</h3>
+        </div>
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground font-body">
               Twórz własne role z uprawnieniami do stron, akcji i widoczności statystyk.
@@ -422,82 +483,44 @@ const RoleManagementPanel = () => {
               })}
             </div>
           )}
-        </TabsContent>
+      </div>
 
-        {/* ─── SYSTEM ROLES TAB ─── */}
-        <TabsContent value="system" className="space-y-4 mt-4">
-          <div className="rounded-lg border border-border bg-card p-5 card-glow">
-            <h3 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
-              <UserPlus className="h-4 w-4 text-primary" /> Przypisz rolę systemową
-            </h3>
-            <form onSubmit={handleAddLegacy} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Użytkownik</Label>
-                  <Select value={legacyUserId} onValueChange={setLegacyUserId}>
-                    <SelectTrigger className="bg-muted/30 border-border"><SelectValue placeholder="Wybierz..." /></SelectTrigger>
-                    <SelectContent>
-                      {profiles.map((p) => (
-                        <SelectItem key={p.user_id} value={p.user_id}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Rola</Label>
-                  <Select value={legacyRole} onValueChange={setLegacyRole}>
-                    <SelectTrigger className="bg-muted/30 border-border"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">🛡️ Admin</SelectItem>
-                      <SelectItem value="moderator">⚡ Moderator</SelectItem>
-                      <SelectItem value="user">👤 Gracz</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-end">
-                  <Button type="submit" variant="hero" className="w-full">
-                    <Award className="h-4 w-4 mr-1" /> Przypisz
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-5 card-glow">
-            <h3 className="font-display font-bold text-foreground mb-3">Obecne role systemowe</h3>
-            {legacyRoles.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Brak przypisanych ról.</p>
-            ) : (
-              <div className="space-y-2">
-                {legacyRoles.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between rounded-lg bg-muted/30 border border-border p-3">
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs font-display uppercase px-2 py-1 rounded-full border ${
-                        r.role === "admin" ? "bg-primary/20 border-primary/30 text-primary" :
-                        r.role === "moderator" ? "bg-accent/20 border-accent/30 text-accent" :
-                        "bg-secondary/20 border-secondary/30 text-secondary"
-                      }`}>{r.role}</span>
-                      <span className="font-body text-sm text-foreground">{r.name}</span>
-                    </div>
-                    <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDeleteLegacy(r.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-5 card-glow">
-            <h3 className="font-display font-bold text-foreground mb-3">Legenda</h3>
-            <div className="space-y-2 text-sm font-body text-muted-foreground">
-              <div><span className="text-primary font-semibold">Admin</span> — Pełna kontrola</div>
-              <div><span className="text-accent font-semibold">Moderator</span> — Zatwierdzanie meczów</div>
-              <div><span className="text-secondary font-semibold">Gracz</span> — Zgłaszanie wyników</div>
+      {/* ─── SUGGESTIONS SECTION ─── */}
+      <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/10 p-5">
+        <h3 className="font-display font-bold text-foreground mb-3 flex items-center gap-2">
+          💡 Sugestie dostępnych funkcji
+        </h3>
+        <div className="space-y-2 text-sm font-body text-muted-foreground space-y-3">
+          <div className="flex gap-2">
+            <span className="text-accent">✨</span>
+            <div>
+              <p className="font-semibold text-foreground">Niestandardowe role na poziomie lig</p>
+              <p className="text-xs mt-0.5">Przypisuj role specyficzne dla każdej ligi niezależnie</p>
             </div>
           </div>
-        </TabsContent>
-      </Tabs>
+          <div className="flex gap-2">
+            <span className="text-primary">🔐</span>
+            <div>
+              <p className="font-semibold text-foreground">Uprawnienia do zarządzania turniejami</p>
+              <p className="text-xs mt-0.5">Umożliw użytkownikom tworzenie i edycję turniejów w wybranych ligach</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-secondary">📊</span>
+            <div>
+              <p className="font-semibold text-foreground">Ograniczenia widoczności danych do czasu</p>
+              <p className="text-xs mt-0.5">Schowaj wyniki/statystyki dla ról aż do ogłoszenia zwycięzcy</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-accent">👥</span>
+            <div>
+              <p className="font-semibold text-foreground">Grupy ról i grupyPermissionsGroup</p>
+              <p className="text-xs mt-0.5">Zarządzaj zbiorowo wieloma rolami za jednym razem</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ─── CREATE/EDIT ROLE DIALOG ─── */}
       <Dialog open={roleDialog.open} onOpenChange={(open) => { if (!open) setRoleDialog({ open: false }); }}>
