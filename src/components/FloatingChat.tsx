@@ -78,6 +78,19 @@ const FloatingChat = () => {
     }
   }, [user]);
 
+  // Listen for external "open private chat" events (e.g. from player profile)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const userId = (e as CustomEvent<string>).detail;
+      if (!userId || isMobile) return;
+      setChatMode("private");
+      setIsOpen(true);
+      loadMessages(userId);
+    };
+    window.addEventListener("open-private-chat", handler);
+    return () => window.removeEventListener("open-private-chat", handler);
+  }, [isMobile]);
+
   useEffect(() => {
     if (!user) return;
     const channel = supabase
