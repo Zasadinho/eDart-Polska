@@ -20,6 +20,7 @@ import AdminChannelPanel from "@/components/AdminChannelPanel";
 import DiscordWebhookPanel from "@/components/DiscordWebhookPanel";
 import RoleManagementPanel from "@/components/RoleManagementPanel";
 import SelfHostConfigPanel from "@/components/SelfHostConfigPanel";
+import SecurityAuditPanel from "@/components/SecurityAuditPanel";
 import LeagueStatusPanel from "@/components/LeagueStatusPanel";
 import ActivityReportPanel from "@/components/ActivityReportPanel";
 import EmailConfigPanel from "@/components/EmailConfigPanel";
@@ -37,7 +38,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 
-type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles" | "integrations" | "discord" | "audit" | "export" | "bugs" | "chats" | "channels" | "league-status" | "activity" | "challenges" | "self-host";
+type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles" | "integrations" | "discord" | "audit" | "export" | "bugs" | "chats" | "channels" | "league-status" | "activity" | "challenges" | "self-host" | "security";
 
 const LEAGUE_TYPE_LABELS: Record<LeagueType, string> = {
   league: "Liga (Round-Robin)",
@@ -99,6 +100,7 @@ const AdminPage = () => {
     { id: "challenges", label: "Wyzwania", icon: <Trophy className="h-4 w-4" />, adminOnly: true },
     { id: "bugs", label: "Błędy", icon: <Bug className="h-4 w-4" /> },
     { id: "self-host", label: "Self-Host", icon: <Settings className="h-4 w-4" />, adminOnly: true },
+    { id: "security", label: "🔒 Bezpieczeństwo", icon: <Lock className="h-4 w-4" />, adminOnly: true },
   ];
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
@@ -148,6 +150,7 @@ const AdminPage = () => {
           {activeTab === "challenges" && isAdmin && <WeeklyChallengesPanel />}
           {activeTab === "bugs" && <BugReportsPanel />}
           {activeTab === "self-host" && isAdmin && <SelfHostConfigPanel />}
+          {activeTab === "security" && isAdmin && <SecurityAuditPanel />}
         </motion.div>
       </AnimatePresence>
       </div>
