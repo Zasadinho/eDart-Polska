@@ -23,7 +23,7 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
     <Preview>Twój kod weryfikacyjny – eDART Polska</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://uiolhzctnbskdjteufkj.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
+        <Img src="https://uoklwwalgkbafjqjahmi.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
         <Heading style={h1}>Kod weryfikacyjny</Heading>
         <Text style={text}>Użyj poniższego kodu, aby potwierdzić swoją tożsamość:</Text>
         <Text style={codeStyle}>{token}</Text>

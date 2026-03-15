@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { calculateLeagueStandings } from "@/lib/leagueRanking";
 import { advanceBracketWinner } from "@/lib/bracketAdvancement";
 import { translateError } from "@/lib/translateError";
+import { logAuditAction } from "@/lib/auditLog";
 import {
   Player, Match, League, PlayerLeagueStats, Achievement,
   achievements, BonusRules, DEFAULT_BONUS_RULES, LeaguePlatform,
@@ -743,9 +744,14 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   }, [playerList]);
 
   const deleteMatch = useCallback(async (matchId: string) => {
+    const match = matchList.find(m => m.id === matchId);
     await supabase.from("matches").delete().eq("id", matchId);
     setMatchList((prev) => prev.filter((m) => m.id !== matchId));
-  }, []);
+    logAuditAction("delete_match", "match", matchId, {
+      player1: match?.player1Name, player2: match?.player2Name,
+      score: match ? `${match.score1}-${match.score2}` : undefined,
+    });
+  }, [matchList]);
 
   const addPendingPlayer = useCallback(async (name: string) => {
     const initials = name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
@@ -834,13 +840,15 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const deleteLeague = useCallback(async (id: string) => {
+    const league = leagueList.find(l => l.id === id);
     // Delete related matches and player_leagues first
     await supabase.from("matches").delete().eq("league_id", id);
     await supabase.from("player_leagues").delete().eq("league_id", id);
     await supabase.from("leagues").delete().eq("id", id);
     setLeagueList((prev) => prev.filter((l) => l.id !== id));
     setMatchList((prev) => prev.filter((m) => m.leagueId !== id));
-  }, []);
+    logAuditAction("delete_league", "league", id, { name: league?.name, season: league?.season });
+  }, [leagueList]);
 
   const updatePlayer = useCallback(async (id: string, data: Partial<Player>) => {
     const updateData: any = {};
@@ -853,10 +861,12 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const deletePlayer = useCallback(async (id: string) => {
+    const player = playerList.find(p => p.id === id);
     await supabase.from("player_leagues").delete().eq("player_id", id);
     await supabase.from("players").delete().eq("id", id);
     setPlayerList((prev) => prev.filter((p) => p.id !== id));
-  }, []);
+    logAuditAction("delete_player", "player", id, { name: player?.name });
+  }, [playerList]);
 
   const assignPlayerToLeague = useCallback(async (playerId: string, leagueId: string) => {
     const { error } = await supabase.from("player_leagues").insert({ player_id: playerId, league_id: leagueId });

@@ -1,7 +1,6 @@
 const ALLOWED_ORIGINS = [
   "https://edartpolska.pl",
   "https://ace-darts-arena.vercel.app",
-  "https://ace-darts-arena.lovable.app",
 ];
 
 export function getCorsHeaders(req: Request) {

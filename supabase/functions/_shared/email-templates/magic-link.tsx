@@ -28,7 +28,7 @@ export const MagicLinkEmail = ({
     <Preview>Link do logowania – {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://uiolhzctnbskdjteufkj.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
+        <Img src="https://uoklwwalgkbafjqjahmi.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
         <Heading style={h1}>Link do logowania</Heading>
         <Text style={text}>
           Kliknij poniższy przycisk, aby zalogować się do {siteName}. Link wygaśnie za kilka minut.

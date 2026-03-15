@@ -13,8 +13,7 @@ const SUPABASE_STORAGE_PATTERN =
 const IS_CDN_HOST =
   typeof window !== "undefined" &&
   (window.location.hostname === "edartpolska.pl" ||
-   window.location.hostname.endsWith(".vercel.app") ||
-   window.location.hostname.endsWith(".lovable.app"));
+   window.location.hostname.endsWith(".vercel.app"));
 
 export function cdnUrl(url: string | null | undefined): string | null | undefined {
   if (!url) return url;

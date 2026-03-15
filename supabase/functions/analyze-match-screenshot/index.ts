@@ -4,7 +4,6 @@ import { isSafeUrl } from "../_shared/validate.ts";
 
 const OPENAI_GATEWAY = "https://api.openai.com/v1/chat/completions";
 const GEMINI_GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const LOVABLE_AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 async function resolveAiConfig(serviceClient: any): Promise<{ url: string; apiKey: string; model: string }> {
   const { data } = await serviceClient
@@ -32,16 +31,7 @@ async function resolveAiConfig(serviceClient: any): Promise<{ url: string; apiKe
     return { url: OPENAI_GATEWAY, apiKey: customKey, model: configMap["custom_ai_model"] || "gpt-4o" };
   }
 
-  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-  if (lovableKey) {
-    return {
-      url: LOVABLE_AI_GATEWAY,
-      apiKey: lovableKey,
-      model: configMap["custom_ai_model"] || "google/gemini-2.5-flash-lite",
-    };
-  }
-
-  throw new Error("AI not configured.");
+  throw new Error("AI not configured. Set custom_ai_api_key in app_config.");
 }
 
 // Compact, focused system prompt — optimized for speed

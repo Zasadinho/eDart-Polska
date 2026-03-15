@@ -19,8 +19,8 @@
     "https://play.autodarts.io/*",
     "https://edartpolska.pl/*",
     "https://www.edartpolska.pl/*",
-    "https://*.lovable.app/*",
-    "https://uiolhzctnbskdjteufkj.supabase.co/*"
+    "https://ace-darts-arena.vercel.app/*",
+    "https://uoklwwalgkbafjqjahmi.supabase.co/*"
   ],
   "background": {
     "scripts": [
@@ -42,8 +42,7 @@
       "matches": [
         "https://edartpolska.pl/*",
         "https://www.edartpolska.pl/*",
-        "https://*.lovable.app/*",
-        "https://*.lovableproject.com/*"
+        "https://ace-darts-arena.vercel.app/*"
       ],
       "js": ["inject-token.js"],
       "run_at": "document_start"

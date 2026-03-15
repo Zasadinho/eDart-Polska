@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { safeStat, safeAvg, isUuid } from "../_shared/validate.ts";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -35,6 +36,12 @@ Deno.serve(async (req) => {
     }
 
     const userId = claimsData.claims.sub as string;
+
+    // Rate limit: max 10 match submissions per minute
+    const rl = await checkRateLimit(userId, "submit_match", 10, 1);
+    if (!rl.allowed) {
+      return rateLimitResponse(corsHeaders);
+    }
 
     // Check if user is admin/moderator
     const { data: isAdminOrMod } = await supabase.rpc("is_moderator_or_admin", { _user_id: userId });

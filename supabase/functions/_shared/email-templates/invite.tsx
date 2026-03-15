@@ -31,7 +31,7 @@ export const InviteEmail = ({
     <Preview>Zaproszenie do {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://uiolhzctnbskdjteufkj.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
+        <Img src="https://uoklwwalgkbafjqjahmi.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
         <Heading style={h1}>Zaproszenie</Heading>
         <Text style={text}>
           Zostałeś zaproszony do{' '}

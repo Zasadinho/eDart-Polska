@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { safeStat, safeAvg } from "../_shared/validate.ts";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const API_BASE = "https://api.autodarts.io";
 
@@ -268,6 +269,12 @@ Deno.serve(async (req) => {
           if (claimsData?.claims?.sub) {
             callerUserId = claimsData.claims.sub as string;
             console.log(`[auto-submit] Authenticated user: ${callerUserId}`);
+
+            // Rate limit: max 10 auto-submissions per minute
+            const rl = await checkRateLimit(callerUserId, "auto_submit", 10, 1);
+            if (!rl.allowed) {
+              return rateLimitResponse(corsHeaders);
+            }
           }
         } catch (e) {
           console.log(`[auto-submit] JWT auth failed (will try autodarts_id fallback): ${e}`);
@@ -559,9 +566,6 @@ Deno.serve(async (req) => {
               return null;
             };
 
-            const p1ApiStats = players[0]?.stats || {};
-            const p2ApiStats = players[1]?.stats || {};
-
             console.log(`[auto-submit] Turn-based: P1 darts=${st[0].totalDarts} score=${st[0].totalScore}, P2 darts=${st[1].totalDarts} score=${st[1].totalScore}`);
 
             const avgFromTurns = (s: PlayerStats) => s.totalDarts > 0 ? Math.round((s.totalScore / s.totalDarts) * 3 * 100) / 100 : null;
@@ -578,38 +582,64 @@ Deno.serve(async (req) => {
               return numOrNull(apiSt.first9Average, apiSt.firstNineAvg, apiSt.first9Avg, apiSt.first9avg);
             };
 
-            const adP1AutoId = players[0].userId || players[0].id || null;
+            // Map API players to eDART player IDs to correctly align st[] with DB match players.
+            // The API may return players in a different order than the extension saw,
+            // so we must match API players to DB players by their autodarts user IDs.
+            let apiIdx0EdartId: string | null = null;
+            let apiIdx1EdartId: string | null = null;
 
-            let swapped = false;
-            const edartP1Id = edartMatch.player1_id;
-
-            if (adP1AutoId) {
-              const { data: adP1Db } = await supabase
-                .from("players")
-                .select("id")
-                .eq("autodarts_user_id", adP1AutoId)
-                .maybeSingle();
-              if (adP1Db) {
-                swapped = adP1Db.id !== edartP1Id;
-              }
-            } else {
-              const { data: adP1Db } = await supabase
-                .from("players")
-                .select("id")
-                .ilike("name", players[0].name || "___NONE___")
-                .maybeSingle();
-              if (adP1Db) {
-                swapped = adP1Db.id !== edartP1Id;
-              }
+            // Find eDART player ID for API players[0]
+            const api0Ids = [players[0]?.userId, players[0]?.user_id, players[0]?.id, players[0]?.user?.id].filter(Boolean);
+            for (const aid of api0Ids) {
+              if (!aid) continue;
+              const { data: found } = await supabase.from("players").select("id").eq("autodarts_user_id", aid).maybeSingle();
+              if (found) { apiIdx0EdartId = found.id; break; }
             }
 
-            const i1 = swapped ? 1 : 0;
-            const i2 = swapped ? 0 : 1;
-            const api1 = swapped ? p2ApiStats : p1ApiStats;
-            const api2 = swapped ? p1ApiStats : p2ApiStats;
+            // Find eDART player ID for API players[1]
+            const api1Ids = [players[1]?.userId, players[1]?.user_id, players[1]?.id, players[1]?.user?.id].filter(Boolean);
+            for (const aid of api1Ids) {
+              if (!aid) continue;
+              const { data: found } = await supabase.from("players").select("id").eq("autodarts_user_id", aid).maybeSingle();
+              if (found) { apiIdx1EdartId = found.id; break; }
+            }
+
+            console.log(`[auto-submit] API player mapping: api[0]=${apiIdx0EdartId}, api[1]=${apiIdx1EdartId}, dbP1=${edartMatch.player1_id}, dbP2=${edartMatch.player2_id}`);
+
+            // Determine which st[] index corresponds to DB player1 and player2
+            // i1 = index into st[] for DB player1, i2 = index for DB player2
+            let i1: number;
+            let i2: number;
+
+            if (apiIdx0EdartId === edartMatch.player1_id) {
+              // API players[0] is DB player1
+              i1 = 0; i2 = 1;
+            } else if (apiIdx1EdartId === edartMatch.player1_id) {
+              // API players[1] is DB player1
+              i1 = 1; i2 = 0;
+            } else if (apiIdx0EdartId === edartMatch.player2_id) {
+              // API players[0] is DB player2
+              i1 = 1; i2 = 0;
+            } else if (apiIdx1EdartId === edartMatch.player2_id) {
+              // API players[1] is DB player2
+              i1 = 0; i2 = 1;
+            } else {
+              // Fallback: use extension's player order for swap detection
+              const swapped = p1Id !== edartMatch.player1_id;
+              i1 = swapped ? 1 : 0;
+              i2 = swapped ? 0 : 1;
+              console.log(`[auto-submit] Could not map API players to DB, fallback swap=${swapped}`);
+            }
+
+            const p1ApiStats = players[i1]?.stats || {};
+            const p2ApiStats = players[i2]?.stats || {};
+            const api1 = p1ApiStats;
+            const api2 = p2ApiStats;
+
+            console.log(`[auto-submit] Final mapping: st[${i1}]→DB player1, st[${i2}]→DB player2`);
 
             const hasTurnData = st[0].totalDarts > 0 || st[1].totalDarts > 0;
-            console.log(`[auto-submit] hasTurnData=${hasTurnData}, swapped=${swapped}`);
+            console.log(`[auto-submit] hasTurnData=${hasTurnData}, i1=${i1}, i2=${i2}`);
 
             statsData = {
               score1: st[i1].legsWon,
@@ -653,14 +683,9 @@ Deno.serve(async (req) => {
     if (!statsData && client_stats) {
       console.log("[auto-submit] Using client-captured stats as fallback");
       
-      let cSwapped = false;
-      if (player1_autodarts_id) {
-        const { data: cp1 } = await supabase.from("players").select("id").eq("autodarts_user_id", player1_autodarts_id).maybeSingle();
-        if (cp1) cSwapped = cp1.id !== edartMatch.player1_id;
-      } else if (player1_name) {
-        const { data: cp1 } = await supabase.from("players").select("id").ilike("name", player1_name).maybeSingle();
-        if (cp1) cSwapped = cp1.id !== edartMatch.player1_id;
-      }
+      // p1Id = DB player for extension's player1 (Autodarts players[0])
+      const cSwapped = p1Id !== edartMatch.player1_id;
+      console.log(`[auto-submit] Client fallback swap: p1Id=${p1Id}, edartP1=${edartMatch.player1_id}, cSwapped=${cSwapped}`);
 
       const cs = client_stats;
       if (cSwapped) {

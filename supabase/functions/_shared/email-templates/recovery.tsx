@@ -28,7 +28,7 @@ export const RecoveryEmail = ({
     <Preview>Resetowanie hasła – {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://uiolhzctnbskdjteufkj.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
+        <Img src="https://uoklwwalgkbafjqjahmi.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
         <Heading style={h1}>Resetowanie hasła</Heading>
         <Text style={text}>
           Otrzymaliśmy prośbę o zresetowanie hasła do konta {siteName}. Kliknij poniższy przycisk, aby ustawić nowe hasło.

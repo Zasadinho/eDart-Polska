@@ -63,7 +63,7 @@ const PrivacyPolicyPage = () => (
         <p>Dane osobowe mogą być udostępniane:</p>
         <ul className="list-disc pl-6 space-y-1">
           <li><strong>Innym uczestnikom ligi:</strong> pseudonim, avatar i statystyki gry są widoczne publicznie; dane kontaktowe (telefon, Discord) udostępniane są wyłącznie aktualnym przeciwnikom meczowym;</li>
-          <li><strong>Dostawcom usług technicznych:</strong> hosting (Supabase/Lovable), w zakresie niezbędnym do świadczenia usługi;</li>
+          <li><strong>Dostawcom usług technicznych:</strong> hosting (Supabase, Vercel), w zakresie niezbędnym do świadczenia usługi;</li>
           <li><strong>Platformom integracyjnym:</strong> Discord (w przypadku włączenia webhooka — jedynie pseudonim i wynik meczu).</li>
         </ul>
         <p>Dane nie są sprzedawane ani udostępniane podmiotom trzecim w celach marketingowych.</p>

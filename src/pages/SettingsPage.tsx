@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { KeyRound, User, ArrowLeft, Phone, MessageCircle, Gamepad2, Zap, Trash2 } from "lucide-react";
+import { KeyRound, User, ArrowLeft, Phone, MessageCircle, Gamepad2, Zap, Trash2, Bell } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ import { translateError } from "@/lib/translateError";
 import { useLeague } from "@/contexts/LeagueContext";
 import AvatarUpload from "@/components/AvatarUpload";
 import PageHeader from "@/components/PageHeader";
+import { isPushSupported, isPushSubscribed, subscribeToPush, unsubscribeFromPush, getNotificationPreferences, updateNotificationPreferences } from "@/lib/pushNotifications";
 
 const SettingsPage = () => {
   const { toast } = useToast();
@@ -56,6 +57,38 @@ const SettingsPage = () => {
       window.postMessage({ type: "EDART_STORE_USER_ID", userId: user.id }, window.location.origin);
     }
   }, [user]);
+
+  // Push notification state
+  const [pushSupported] = useState(() => isPushSupported());
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [notifPrefs, setNotifPrefs] = useState({ match_reminders: true, match_results: true, challenge_updates: true, announcements: true });
+
+  useEffect(() => {
+    if (pushSupported && user) {
+      isPushSubscribed().then(setPushEnabled);
+      getNotificationPreferences().then(setNotifPrefs);
+    }
+  }, [pushSupported, user]);
+
+  const togglePush = async () => {
+    setPushLoading(true);
+    if (pushEnabled) {
+      const ok = await unsubscribeFromPush();
+      if (ok) { setPushEnabled(false); toast({ title: "Powiadomienia push wyłączone" }); }
+    } else {
+      const ok = await subscribeToPush();
+      if (ok) { setPushEnabled(true); toast({ title: "Powiadomienia push włączone!" }); }
+      else toast({ title: "Nie udało się włączyć powiadomień", variant: "destructive" });
+    }
+    setPushLoading(false);
+  };
+
+  const toggleNotifPref = async (key: keyof typeof notifPrefs) => {
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(updated);
+    await updateNotificationPreferences({ [key]: updated[key] });
+  };
 
   if (loading) return null;
 
@@ -215,6 +248,56 @@ const SettingsPage = () => {
                 }
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Push notifications */}
+      {pushSupported && (
+        <div className="rounded-lg border border-border bg-card p-6 card-glow mb-6">
+          <h2 className="text-lg font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <Bell className="h-5 w-5 text-primary" /> Powiadomienia push
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="font-body font-medium text-foreground">Powiadomienia push</Label>
+                <p className="text-xs text-muted-foreground font-body mt-0.5">Otrzymuj powiadomienia w przeglądarce</p>
+              </div>
+              <Switch checked={pushEnabled} onCheckedChange={togglePush} disabled={pushLoading} />
+            </div>
+            {pushEnabled && (
+              <>
+                <div className="border-t border-border pt-4 flex items-center justify-between">
+                  <div>
+                    <Label className="font-body font-medium text-foreground">Przypomnienia o meczach</Label>
+                    <p className="text-xs text-muted-foreground font-body mt-0.5">Powiadomienie przed nadchodzącymi meczami</p>
+                  </div>
+                  <Switch checked={notifPrefs.match_reminders} onCheckedChange={() => toggleNotifPref("match_reminders")} />
+                </div>
+                <div className="border-t border-border pt-4 flex items-center justify-between">
+                  <div>
+                    <Label className="font-body font-medium text-foreground">Wyniki meczów</Label>
+                    <p className="text-xs text-muted-foreground font-body mt-0.5">Powiadomienie o zakończonych meczach</p>
+                  </div>
+                  <Switch checked={notifPrefs.match_results} onCheckedChange={() => toggleNotifPref("match_results")} />
+                </div>
+                <div className="border-t border-border pt-4 flex items-center justify-between">
+                  <div>
+                    <Label className="font-body font-medium text-foreground">Wyzwania tygodniowe</Label>
+                    <p className="text-xs text-muted-foreground font-body mt-0.5">Nowe wyzwania i aktualizacje rankingów</p>
+                  </div>
+                  <Switch checked={notifPrefs.challenge_updates} onCheckedChange={() => toggleNotifPref("challenge_updates")} />
+                </div>
+                <div className="border-t border-border pt-4 flex items-center justify-between">
+                  <div>
+                    <Label className="font-body font-medium text-foreground">Ogłoszenia</Label>
+                    <p className="text-xs text-muted-foreground font-body mt-0.5">Ważne ogłoszenia od administratorów</p>
+                  </div>
+                  <Switch checked={notifPrefs.announcements} onCheckedChange={() => toggleNotifPref("announcements")} />
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

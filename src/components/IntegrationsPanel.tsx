@@ -228,7 +228,7 @@ const AiSection = ({ config, updateField, showSecrets, toggleSecret, toast }: an
   const endpoint = config["custom_ai_endpoint"] || "";
 
   const isCustomKey = !!apiKey.trim();
-  const displayModel = model || (isCustomKey ? "gemini-2.5-flash-lite" : "Lovable AI (domyślny)");
+  const displayModel = model || (isCustomKey ? "gemini-2.5-flash-lite" : "Brak (ustaw klucz API)");
 
   useEffect(() => {
     if (enabled) setStatus("ok");
@@ -239,14 +239,14 @@ const AiSection = ({ config, updateField, showSecrets, toggleSecret, toast }: an
     setStatus("testing");
     try {
       if (!isCustomKey) {
-        // Test Lovable AI gateway
+        // Test AI gateway
         const resp = await supabase.functions.invoke("analyze-match-screenshot", {
           body: { test: true },
         });
         setStatus(resp.error ? "error" : "ok");
         toast({
           title: resp.error ? "Błąd AI" : "AI działa ✅",
-          description: resp.error ? resp.error.message : "Lovable AI odpowiada poprawnie.",
+          description: resp.error ? resp.error.message : "AI odpowiada poprawnie.",
         });
       } else {
         // Determine endpoint based on key prefix
@@ -304,8 +304,7 @@ const AiSection = ({ config, updateField, showSecrets, toggleSecret, toast }: an
     >
       <div className="bg-muted/30 border border-border rounded-md p-3">
         <p className="text-xs text-muted-foreground">
-          <strong>Instrukcja:</strong> Domyślnie używany jest Lovable AI. Aby użyć własnego modelu,
-          wpisz klucz API (OpenAI <code>sk-...</code> lub Gemini <code>AIza...</code>).
+          <strong>Instrukcja:</strong> Wpisz klucz API (OpenAI <code>sk-...</code> lub Gemini <code>AIza...</code>).
           Model <strong>Gemini 2.5 Flash-Lite</strong> (darmowy tier: 1000 req/dzień, 15 req/min).
         </p>
       </div>
@@ -320,11 +319,11 @@ const AiSection = ({ config, updateField, showSecrets, toggleSecret, toast }: an
           <div className="space-y-1.5">
             <Label className="text-sm">API Key (opcjonalnie)</Label>
             <SecretInput value={apiKey} onChange={v => updateField("custom_ai_api_key", v)} placeholder="sk-... lub AIza..." show={showSecrets["custom_ai_api_key"] || false} onToggle={() => toggleSecret("custom_ai_api_key")} />
-            <p className="text-xs text-muted-foreground">Zostaw puste, aby korzystać z Lovable AI</p>
+            <p className="text-xs text-muted-foreground">Klucz API do usługi AI</p>
           </div>
           <div className="space-y-1.5">
             <Label className="text-sm">Model</Label>
-            <Input value={model} onChange={e => updateField("custom_ai_model", e.target.value)} placeholder={isCustomKey ? "gemini-2.5-flash-lite" : "Lovable AI (automatycznie)"} />
+            <Input value={model} onChange={e => updateField("custom_ai_model", e.target.value)} placeholder={isCustomKey ? "gemini-2.5-flash-lite" : "Ustaw klucz API"} />
             <p className="text-xs text-muted-foreground">Aktualnie: <strong>{displayModel}</strong></p>
           </div>
           <div className="space-y-1.5 md:col-span-2">

@@ -33,7 +33,7 @@ export const SignupEmail = ({
     <Preview>Potwierdź swój e-mail – {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src="https://uiolhzctnbskdjteufkj.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
+        <Img src="https://uoklwwalgkbafjqjahmi.supabase.co/storage/v1/object/public/avatars/email-logo.jpg" width="120" height="auto" alt="eDART Polska" style={logo} />
         <Heading style={h1}>Potwierdź swój e-mail</Heading>
         <Text style={text}>
           Dziękujemy za rejestrację w{' '}

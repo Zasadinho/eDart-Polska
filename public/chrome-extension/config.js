@@ -1,8 +1,8 @@
 // ─── Static configuration constants ───
 const CONFIG = {
   EDART_URL: "https://edartpolska.pl",
-  SUPABASE_URL: "https://uiolhzctnbskdjteufkj.supabase.co",
-  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpb2xoemN0bmJza2RqdGV1ZmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTc4NjEsImV4cCI6MjA4ODQ5Mzg2MX0.SEGOONfttWCS7jbacT5NxlbiOGSxmrVRp4DFqQRDYkk",
+  SUPABASE_URL: "https://uoklwwalgkbafjqjahmi.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVva2x3d2FsZ2tiYWZqcWphaG1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODExMTgsImV4cCI6MjA4OTE1NzExOH0.tJAr5NfpMc74IqQSgx9SNsOSbK97k72YxEgYYTXRk1Y",
   VERSION: "2.2.0",
   TOKEN_FRESH_MS: 300000,          // 5 min — consider fresh
   TOKEN_MAX_AGE_MS: 1800000,       // 30 min — force refresh
