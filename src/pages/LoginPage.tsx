@@ -23,8 +23,17 @@ const LoginPage = () => {
   const [nickAutodarts, setNickAutodarts] = useState("");
   const [nickDartcounter, setNickDartcounter] = useState("");
   const [nickDartsmind, setNickDartsmind] = useState("");
+  const [nicksTouched, setNicksTouched] = useState({ autodarts: false, dartcounter: false, dartsmind: false });
   const [submitting, setSubmitting] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  // Auto-fill nicks from name if user hasn't manually edited them
+  const handleNameChange = (val: string) => {
+    setName(val);
+    if (!nicksTouched.autodarts) setNickAutodarts(val);
+    if (!nicksTouched.dartcounter) setNickDartcounter(val);
+    if (!nicksTouched.dartsmind) setNickDartsmind(val);
+  };
 
   if (user) {
     return (
@@ -134,7 +143,7 @@ const LoginPage = () => {
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
                 <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Nazwa użytkownika</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="np. Jan Kowalski" className="bg-muted/30 border-border" required />
+                <Input value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="np. Jan Kowalski" className="bg-muted/30 border-border" required />
                 <p className="text-[10px] text-muted-foreground">Twój nick wyświetlany na stronie (obowiązkowy).</p>
               </div>
               <div className="space-y-3 rounded-lg border border-border/50 p-3 bg-muted/10">
@@ -145,13 +154,13 @@ const LoginPage = () => {
                   <p className="text-[10px] text-muted-foreground mt-1">Wpisz nicki z platform, na których grasz — ułatwi to dopasowywanie wyników i wyszukiwanie.</p>
                 </div>
                 <div className="space-y-2">
-                  <Input value={nickAutodarts} onChange={(e) => setNickAutodarts(e.target.value)} placeholder="Nick na Autodarts" className="bg-muted/30 border-border h-9 text-sm" />
+                  <Input value={nickAutodarts} onChange={(e) => { setNickAutodarts(e.target.value); setNicksTouched(t => ({ ...t, autodarts: true })); }} placeholder="Nick na Autodarts" className="bg-muted/30 border-border h-9 text-sm" />
                 </div>
                 <div className="space-y-2">
-                  <Input value={nickDartcounter} onChange={(e) => setNickDartcounter(e.target.value)} placeholder="Nick na DartCounter" className="bg-muted/30 border-border h-9 text-sm" />
+                  <Input value={nickDartcounter} onChange={(e) => { setNickDartcounter(e.target.value); setNicksTouched(t => ({ ...t, dartcounter: true })); }} placeholder="Nick na DartCounter" className="bg-muted/30 border-border h-9 text-sm" />
                 </div>
                 <div className="space-y-2">
-                  <Input value={nickDartsmind} onChange={(e) => setNickDartsmind(e.target.value)} placeholder="Nick na DartsMind" className="bg-muted/30 border-border h-9 text-sm" />
+                  <Input value={nickDartsmind} onChange={(e) => { setNickDartsmind(e.target.value); setNicksTouched(t => ({ ...t, dartsmind: true })); }} placeholder="Nick na DartsMind" className="bg-muted/30 border-border h-9 text-sm" />
                 </div>
               </div>
               <div className="space-y-2">
