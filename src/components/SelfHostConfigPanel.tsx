@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Eye, EyeOff, Server, Key, Brain, Globe, Link2, Cpu } from "lucide-react";
+import { Save, Eye, EyeOff, Server, Key, Brain, Globe, Link2, Cpu, Power } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface ConfigEntry {
   key: string;
@@ -68,6 +69,7 @@ const SelfHostConfigPanel = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
+  const [selfHostEnabled, setSelfHostEnabled] = useState(false);
 
   useEffect(() => {
     loadConfig();
@@ -84,6 +86,7 @@ const SelfHostConfigPanel = () => {
         map[row.key] = row.value;
       });
       setValues(map);
+      setSelfHostEnabled(map["self_host_enabled"] === "true");
     }
     if (error) console.error("Error loading config:", error);
     setLoading(false);
@@ -92,6 +95,14 @@ const SelfHostConfigPanel = () => {
   const saveConfig = async () => {
     setSaving(true);
     try {
+      // Save enable flag
+      await supabase
+        .from("app_config")
+        .upsert(
+          { key: "self_host_enabled", value: selfHostEnabled ? "true" : "false", updated_at: new Date().toISOString() },
+          { onConflict: "key" }
+        );
+
       for (const field of CONFIG_FIELDS) {
         const val = values[field.key] ?? "";
         const { error } = await supabase
@@ -111,7 +122,7 @@ const SelfHostConfigPanel = () => {
     }
   };
 
-  const isSelfHosted = Boolean(values["custom_supabase_url"] && values["custom_supabase_anon_key"]);
+  const isSelfHosted = selfHostEnabled && Boolean(values["custom_supabase_url"] && values["custom_supabase_anon_key"]);
   const hasAiKey = Boolean(values["custom_ai_api_key"]?.trim());
 
   if (loading) {
@@ -127,10 +138,23 @@ const SelfHostConfigPanel = () => {
         </p>
       </div>
 
+      <div className="flex items-center justify-between bg-muted/30 border border-border rounded-lg p-4">
+        <div className="flex items-center gap-3">
+          <Power className={`h-5 w-5 ${selfHostEnabled ? "text-primary" : "text-muted-foreground"}`} />
+          <div>
+            <p className="font-medium text-sm text-foreground">Tryb Self-Host</p>
+            <p className="text-xs text-muted-foreground">
+              {selfHostEnabled ? "Włączony — logowanie przez własny serwer Supabase" : "Wyłączony — logowanie przez domyślny serwer"}
+            </p>
+          </div>
+        </div>
+        <Switch checked={selfHostEnabled} onCheckedChange={setSelfHostEnabled} />
+      </div>
+
       {isSelfHosted && (
         <div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
           <p className="text-sm text-primary font-medium">
-            ✅ Tryb self-host aktywny — logowanie używa standardowego Supabase Auth.
+            ✅ Tryb self-host aktywny — logowanie używa własnego Supabase.
           </p>
         </div>
       )}

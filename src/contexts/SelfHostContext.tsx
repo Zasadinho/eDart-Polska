@@ -40,8 +40,11 @@ const KEY_MAP: Record<string, keyof SelfHostConfig> = {
   custom_site_url: "customSiteUrl",
 };
 
+const ENABLED_KEY = "self_host_enabled";
+
 export const SelfHostProvider = ({ children }: { children: ReactNode }) => {
   const [config, setConfig] = useState<SelfHostConfig>(emptyCfg);
+  const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,11 +56,16 @@ export const SelfHostProvider = ({ children }: { children: ReactNode }) => {
 
         if (data) {
           const cfg = { ...emptyCfg };
+          let selfHostFlag = false;
           data.forEach((row: { key: string; value: string }) => {
+            if (row.key === ENABLED_KEY) {
+              selfHostFlag = row.value === "true";
+            }
             const field = KEY_MAP[row.key];
             if (field) cfg[field] = row.value ?? "";
           });
           setConfig(cfg);
+          setEnabled(selfHostFlag);
         }
       } catch (e) {
         console.error("Failed to load self-host config:", e);
@@ -68,7 +76,8 @@ export const SelfHostProvider = ({ children }: { children: ReactNode }) => {
     load();
   }, []);
 
-  const isSelfHosted = false; // Self-host wyłączony — zawsze używaj domyślnego Supabase
+  // Self-host jest aktywny tylko gdy admin włączy flagę self_host_enabled w app_config
+  const isSelfHosted = enabled && Boolean(config.customSupabaseUrl && config.customSupabaseAnonKey);
 
   const customClient = useMemo(() => {
     if (!isSelfHosted) return null;

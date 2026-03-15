@@ -16,14 +16,15 @@ import {
 type NavItem = { label: string; href: string; icon: React.ReactElement; authOnly?: boolean; mobileOnly?: boolean };
 
 const primaryNavItems: NavItem[] = [
+  { label: "Moje Mecze", href: "/my-matches", icon: <Handshake className="h-4 w-4" />, authOnly: true },
   { label: "Tabele", href: "/tables", icon: <Trophy className="h-4 w-4" /> },
   { label: "Mecze", href: "/matches", icon: <Target className="h-4 w-4" /> },
   { label: "Dodaj Wynik", href: "/submit", icon: <ClipboardEdit className="h-4 w-4" /> },
+  { label: "Kalendarz", href: "/calendar", icon: <Calendar className="h-4 w-4" /> },
   { label: "Gracze", href: "/players", icon: <Swords className="h-4 w-4" /> },
 ];
 
 const moreNavItems: NavItem[] = [
-  { label: "Kalendarz", href: "/calendar", icon: <Calendar className="h-3.5 w-3.5" /> },
   { label: "Statystyki", href: "/stats", icon: <BarChart3 className="h-3.5 w-3.5" /> },
   { label: "H2H", href: "/h2h", icon: <Swords className="h-3.5 w-3.5" /> },
   { label: "Rekordy", href: "/hall-of-fame", icon: <Trophy className="h-3.5 w-3.5" /> },
@@ -63,7 +64,7 @@ const Navbar = () => {
 
           {/* Desktop nav — centered, icon on top + label below */}
           <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
-            {primaryNavItems.map((item) => {
+            {primaryNavItems.filter(i => !i.authOnly || user).map((item) => {
               const active = location.pathname === item.href;
               return (
                 <Link key={item.href} to={item.href}>
@@ -114,18 +115,6 @@ const Navbar = () => {
 
           {/* Right side */}
           <div className="flex items-center gap-1">
-            {user && (
-              <Link to="/my-matches">
-                <Button 
-                  variant={location.pathname === "/my-matches" ? "default" : "outline"} 
-                  size="sm" 
-                  className="hidden lg:flex items-center gap-1.5 h-8 px-3 font-display uppercase tracking-wider text-[10px]"
-                >
-                  <Handshake className="h-3.5 w-3.5" />
-                  Moje Mecze
-                </Button>
-              </Link>
-            )}
             <ThemeToggle />
             {user && <NotificationBell />}
 
