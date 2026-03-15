@@ -11,7 +11,7 @@ interface AuthContextType {
   isModerator: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
-  register: (name: string, email: string, password: string, gamingNick?: string) => Promise<{ error: string | null }>;
+  register: (name: string, email: string, password: string, nicks?: { autodarts?: string; dartcounter?: string; dartsmind?: string }) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
   updatePassword: (password: string) => Promise<{ error: string | null }>;
@@ -124,21 +124,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error?.message ?? null };
   };
 
-  const register = async (name: string, email: string, password: string, gamingNick?: string) => {
+  const register = async (name: string, email: string, password: string, nicks?: { autodarts?: string; dartcounter?: string; dartsmind?: string }) => {
     const { error, data } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, gaming_nick: gamingNick } },
+      options: { data: { name } },
     });
     
-    // If gaming nick provided, update the player record after registration
-    if (!error && data?.user && gamingNick) {
+    // Update the player record with gaming nicks after registration
+    if (!error && data?.user && nicks && (nicks.autodarts || nicks.dartcounter || nicks.dartsmind)) {
       // The trigger creates the player record, so update it with gaming nick info
       setTimeout(async () => {
-        await supabase.from("players").update({
-          dartcounter_id: gamingNick,
-          dartsmind_id: gamingNick,
-        } as any).eq("user_id", data.user!.id);
+        const updates: Record<string, string> = {};
+        if (nicks.autodarts) updates.autodarts_user_id = nicks.autodarts;
+        if (nicks.dartcounter) updates.dartcounter_id = nicks.dartcounter;
+        if (nicks.dartsmind) updates.dartsmind_id = nicks.dartsmind;
+        await supabase.from("players").update(updates as any).eq("user_id", data.user!.id);
       }, 1000);
     }
     

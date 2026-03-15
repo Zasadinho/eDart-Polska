@@ -20,7 +20,9 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
-  const [gamingNick, setGamingNick] = useState("");
+  const [nickAutodarts, setNickAutodarts] = useState("");
+  const [nickDartcounter, setNickDartcounter] = useState("");
+  const [nickDartsmind, setNickDartsmind] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
@@ -65,7 +67,13 @@ const LoginPage = () => {
       return;
     }
     setSubmitting(true);
-    const { error } = await register(name, email, password, gamingNick || undefined);
+    const nicks = {
+      autodarts: nickAutodarts.trim() || undefined,
+      dartcounter: nickDartcounter.trim() || undefined,
+      dartsmind: nickDartsmind.trim() || undefined,
+    };
+    const hasNicks = nicks.autodarts || nicks.dartcounter || nicks.dartsmind;
+    const { error } = await register(name, email, password, hasNicks ? nicks : undefined);
     setSubmitting(false);
     if (error) {
       toast({ title: "Błąd rejestracji", description: error, variant: "destructive" });
@@ -127,13 +135,24 @@ const LoginPage = () => {
               <div className="space-y-2">
                 <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Nazwa użytkownika</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="np. Jan Kowalski" className="bg-muted/30 border-border" required />
+                <p className="text-[10px] text-muted-foreground">Twój nick wyświetlany na stronie (obowiązkowy).</p>
               </div>
-              <div className="space-y-2">
-                <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">
-                  Nick w grze <span className="text-muted-foreground/60">(opcjonalny)</span>
-                </Label>
-                <Input value={gamingNick} onChange={(e) => setGamingNick(e.target.value)} placeholder="Nick z Autodarts / DartCounter / DartsMind" className="bg-muted/30 border-border" />
-                <p className="text-[10px] text-muted-foreground">Jeśli twój nick różni się od nazwy, podaj go tutaj — ułatwi dopasowywanie wyników.</p>
+              <div className="space-y-3 rounded-lg border border-border/50 p-3 bg-muted/10">
+                <div>
+                  <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">
+                    Nicki na platformach <span className="text-muted-foreground/60">(opcjonalne)</span>
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground mt-1">Wpisz nicki z platform, na których grasz — ułatwi to dopasowywanie wyników i wyszukiwanie.</p>
+                </div>
+                <div className="space-y-2">
+                  <Input value={nickAutodarts} onChange={(e) => setNickAutodarts(e.target.value)} placeholder="Nick na Autodarts" className="bg-muted/30 border-border h-9 text-sm" />
+                </div>
+                <div className="space-y-2">
+                  <Input value={nickDartcounter} onChange={(e) => setNickDartcounter(e.target.value)} placeholder="Nick na DartCounter" className="bg-muted/30 border-border h-9 text-sm" />
+                </div>
+                <div className="space-y-2">
+                  <Input value={nickDartsmind} onChange={(e) => setNickDartsmind(e.target.value)} placeholder="Nick na DartsMind" className="bg-muted/30 border-border h-9 text-sm" />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label className="font-display uppercase tracking-wider text-xs text-muted-foreground">Email</Label>
