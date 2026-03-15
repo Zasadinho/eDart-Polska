@@ -342,7 +342,7 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
 
   const activeChannelData = channels.find((c) => c.id === activeChannel);
 
-  const containerStyle: React.CSSProperties = isMobile
+  const containerStyle: React.CSSProperties = (isMobile || compact)
     ? {}
     : {
         position: "fixed",
@@ -375,9 +375,9 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
   return (
       <div
         style={containerStyle}
-        className={`rounded-lg border border-border bg-card shadow-lg overflow-hidden ${isMobile ? "relative" : ""}`}
+        className={`${compact ? 'flex flex-col h-full' : 'rounded-lg border border-border bg-card shadow-lg'} overflow-hidden ${isMobile ? "relative" : ""}`}
       >
-        {!isMobile && (
+        {!isMobile && !compact && (
           <div className="relative flex items-center justify-between gap-2 px-3 py-2 bg-background/70 border-b border-border">
             <div
               className="flex items-center gap-2 cursor-move"
@@ -405,9 +405,9 @@ const GroupChat = ({ compact = false }: GroupChatProps) => {
         )}
 
         <div
-          className={`flex${compact ? " h-full" : isMobile ? " h-[calc(100vh-260px)] min-h-[400px]" : " h-full"} gap-0 overflow-hidden${isMobile ? " relative" : " h-full"}`}
+          className={`flex${compact ? " flex-1 min-h-0" : isMobile ? " h-[calc(100vh-260px)] min-h-[400px]" : " h-full"} gap-0 overflow-hidden${isMobile ? " relative" : ""}`}
         >
-          <div className="flex min-h-[400px]">
+          <div className={`flex ${compact ? 'flex-1 min-h-0' : 'min-h-[400px]'}`}>
             {/* Channel sidebar */}
             <div className={`${compact ? "w-36" : "w-48"} border-r border-border flex flex-col bg-muted/10 shrink-0 h-full${isMobile ? ` fixed left-0 top-0 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform` : ''}`}>
               <div className="p-2 border-b border-border">

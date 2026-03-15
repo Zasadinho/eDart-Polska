@@ -228,14 +228,39 @@ const FloatingChat = () => {
     window.addEventListener('mouseup', onUp);
   }, [chatPos, chatSize, clampPosition, getDefaultPos]);
 
-  const handleResize = (delta: { width: number; height: number }) => {
-    const newSize = {
-      width: Math.max(300, chatSize.width + delta.width),
-      height: Math.max(400, chatSize.height + delta.height)
+  const resizeRef = useRef<{ startX: number; startY: number; startW: number; startH: number } | null>(null);
+  const latestSizeRef = useRef<{ width: number; height: number } | null>(null);
+
+  const onResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resizeRef.current = { startX: e.clientX, startY: e.clientY, startW: chatSize.width, startH: chatSize.height };
+
+    const onMove = (ev: MouseEvent) => {
+      if (!resizeRef.current) return;
+      const dx = ev.clientX - resizeRef.current.startX;
+      const dy = ev.clientY - resizeRef.current.startY;
+      const newSize = {
+        width: Math.max(320, Math.min(resizeRef.current.startW + dx, window.innerWidth - 40)),
+        height: Math.max(300, Math.min(resizeRef.current.startH + dy, window.innerHeight - 40)),
+      };
+      setChatSize(newSize);
+      latestSizeRef.current = newSize;
     };
-    setChatSize(newSize);
-    saveChatSettings(newSize);
-  };
+
+    const onUp = () => {
+      if (latestSizeRef.current) {
+        saveChatSettings(latestSizeRef.current);
+      }
+      resizeRef.current = null;
+      latestSizeRef.current = null;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, [chatSize]);
 
   const toggleMaximize = () => {
     setIsMaximized(!isMaximized);
@@ -284,7 +309,7 @@ const FloatingChat = () => {
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             ref={chatBoxRef}
-            className={`fixed z-50 rounded-xl border border-border bg-card shadow-2xl flex flex-col overflow-hidden ${isMaximized ? 'inset-0' : ''}`}
+            className={`fixed z-50 rounded-xl border border-border bg-card shadow-2xl flex flex-col overflow-hidden relative ${isMaximized ? 'inset-0' : ''}`}
             style={isMaximized ? {
               width: '100vw',
               height: '100vh',
@@ -419,6 +444,16 @@ const FloatingChat = () => {
                   </>
                 )}
               </>
+            )}
+
+            {/* Resize handle */}
+            {!isMaximized && (
+              <div
+                onMouseDown={onResizeStart}
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-end justify-end pr-0.5 pb-0.5 text-muted-foreground/50 hover:text-muted-foreground"
+              >
+                <svg width="10" height="10" viewBox="0 0 10 10"><path d="M9 1v8H1" fill="none" stroke="currentColor" strokeWidth="1.5"/></svg>
+              </div>
             )}
           </motion.div>
         )}
