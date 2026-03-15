@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { safeStat, safeAvg } from "../_shared/validate.ts";
 
 const API_BASE = "https://api.autodarts.io";
 
@@ -723,41 +724,70 @@ Deno.serve(async (req) => {
     const autoApprove = extSettings?.auto_approve === true;
     const newStatus = autoApprove ? "completed" : "pending_approval";
 
-    // ─── Step 6: Submit results to match ───
+    // ─── Step 6: Sanitize and submit results to match ───
+    const sanitized = {
+      score1: safeStat(statsData.score1, 50),
+      score2: safeStat(statsData.score2, 50),
+      avg1: safeAvg(statsData.avg1),
+      avg2: safeAvg(statsData.avg2),
+      first_9_avg1: safeAvg(statsData.first_9_avg1),
+      first_9_avg2: safeAvg(statsData.first_9_avg2),
+      one_eighties1: safeStat(statsData.one_eighties1, 100),
+      one_eighties2: safeStat(statsData.one_eighties2, 100),
+      high_checkout1: safeStat(statsData.high_checkout1, 170),
+      high_checkout2: safeStat(statsData.high_checkout2, 170),
+      ton60_1: safeStat(statsData.ton60_1, 200),
+      ton60_2: safeStat(statsData.ton60_2, 200),
+      ton80_1: safeStat(statsData.ton80_1, 200),
+      ton80_2: safeStat(statsData.ton80_2, 200),
+      ton_plus1: safeStat(statsData.ton_plus1, 200),
+      ton_plus2: safeStat(statsData.ton_plus2, 200),
+      ton40_1: safeStat(statsData.ton40_1, 200),
+      ton40_2: safeStat(statsData.ton40_2, 200),
+      darts_thrown1: safeStat(statsData.darts_thrown1, 9999),
+      darts_thrown2: safeStat(statsData.darts_thrown2, 9999),
+      checkout_attempts1: safeStat(statsData.checkout_attempts1, 500),
+      checkout_attempts2: safeStat(statsData.checkout_attempts2, 500),
+      checkout_hits1: safeStat(statsData.checkout_hits1, 500),
+      checkout_hits2: safeStat(statsData.checkout_hits2, 500),
+      nine_darters1: safeStat(statsData.nine_darters1, 10),
+      nine_darters2: safeStat(statsData.nine_darters2, 10),
+    };
+
     const { error: updateError } = await supabase
       .from("matches")
       .update({
-        score1: statsData.score1,
-        score2: statsData.score2,
-        legs_won1: statsData.score1,
-        legs_won2: statsData.score2,
+        score1: sanitized.score1,
+        score2: sanitized.score2,
+        legs_won1: sanitized.score1,
+        legs_won2: sanitized.score2,
         status: newStatus,
         is_walkover: false,
-        avg1: statsData.avg1,
-        avg2: statsData.avg2,
-        first_9_avg1: statsData.first_9_avg1,
-        first_9_avg2: statsData.first_9_avg2,
-        one_eighties1: statsData.one_eighties1,
-        one_eighties2: statsData.one_eighties2,
-        high_checkout1: statsData.high_checkout1,
-        high_checkout2: statsData.high_checkout2,
-        ton60_1: statsData.ton60_1,
-        ton60_2: statsData.ton60_2,
-        ton80_1: statsData.ton80_1,
-        ton80_2: statsData.ton80_2,
-        ton_plus1: statsData.ton_plus1,
-        ton_plus2: statsData.ton_plus2,
-        ton40_1: statsData.ton40_1,
-        ton40_2: statsData.ton40_2,
-        darts_thrown1: statsData.darts_thrown1,
-        darts_thrown2: statsData.darts_thrown2,
-        checkout_attempts1: statsData.checkout_attempts1,
-        checkout_attempts2: statsData.checkout_attempts2,
-        checkout_hits1: statsData.checkout_hits1,
-        checkout_hits2: statsData.checkout_hits2,
+        avg1: sanitized.avg1,
+        avg2: sanitized.avg2,
+        first_9_avg1: sanitized.first_9_avg1,
+        first_9_avg2: sanitized.first_9_avg2,
+        one_eighties1: sanitized.one_eighties1,
+        one_eighties2: sanitized.one_eighties2,
+        high_checkout1: sanitized.high_checkout1,
+        high_checkout2: sanitized.high_checkout2,
+        ton60_1: sanitized.ton60_1,
+        ton60_2: sanitized.ton60_2,
+        ton80_1: sanitized.ton80_1,
+        ton80_2: sanitized.ton80_2,
+        ton_plus1: sanitized.ton_plus1,
+        ton_plus2: sanitized.ton_plus2,
+        ton40_1: sanitized.ton40_1,
+        ton40_2: sanitized.ton40_2,
+        darts_thrown1: sanitized.darts_thrown1,
+        darts_thrown2: sanitized.darts_thrown2,
+        checkout_attempts1: sanitized.checkout_attempts1,
+        checkout_attempts2: sanitized.checkout_attempts2,
+        checkout_hits1: sanitized.checkout_hits1,
+        checkout_hits2: sanitized.checkout_hits2,
         autodarts_link: statsData.autodarts_link,
-        nine_darters1: statsData.nine_darters1,
-        nine_darters2: statsData.nine_darters2,
+        nine_darters1: sanitized.nine_darters1,
+        nine_darters2: sanitized.nine_darters2,
       })
       .eq("id", edartMatch.id);
 

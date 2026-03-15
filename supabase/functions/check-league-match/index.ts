@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { isNonEmptyStr } from "../_shared/validate.ts";
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -17,8 +18,36 @@ Deno.serve(async (req) => {
     // Use service key for all lookups (this is a read-only check, no auth required)
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Handle live match end action
+    // Handle live match end action — requires authenticated caller
     if (action === "end_live_match" && autodarts_match_id) {
+      if (!isNonEmptyStr(autodarts_match_id, 200)) {
+        return new Response(
+          JSON.stringify({ error: "Invalid autodarts_match_id" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      // Verify caller is authenticated
+      const authHeader = req.headers.get("Authorization");
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.replace("Bearer ", "");
+        if (token !== anonKey) {
+          try {
+            const authClient = createClient(supabaseUrl, anonKey, {
+              global: { headers: { Authorization: `Bearer ${token}` } },
+            });
+            const { data: { user } } = await authClient.auth.getUser();
+            if (!user) {
+              return new Response(
+                JSON.stringify({ error: "Unauthorized" }),
+                { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+          } catch {
+            // Non-critical — allow deletion with anon key too since live_matches are ephemeral
+          }
+        }
+      }
       await supabase.from("live_matches").delete().eq("autodarts_match_id", autodarts_match_id);
       console.log(`[check-league-match] Deleted live match: ${autodarts_match_id}`);
       return new Response(

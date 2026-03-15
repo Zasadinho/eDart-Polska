@@ -24,6 +24,40 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Auth: allow only service_role (cron) or admin users
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "") || "";
+    const isServiceRole = token === serviceKey;
+
+    if (!isServiceRole) {
+      // Check if caller is an admin
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      let isAdmin = false;
+      if (authHeader?.startsWith("Bearer ") && token !== anonKey) {
+        try {
+          const authClient = createClient(supabaseUrl, anonKey, {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+          });
+          const { data: claimsData } = await authClient.auth.getClaims(token);
+          if (claimsData?.claims?.sub) {
+            const adminClient = createClient(supabaseUrl, serviceKey);
+            const { data: roleCheck } = await adminClient.rpc("has_role", {
+              _user_id: claimsData.claims.sub,
+              _role: "admin",
+            });
+            isAdmin = roleCheck === true;
+          }
+        } catch { /* not admin */ }
+      }
+      if (!isAdmin) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const now = new Date();

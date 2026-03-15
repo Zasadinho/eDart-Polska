@@ -134,14 +134,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Update the player record with gaming nicks after registration
     if (!error && data?.user && nicks && (nicks.autodarts || nicks.dartcounter || nicks.dartsmind)) {
-      // The trigger creates the player record, so update it with gaming nick info
-      setTimeout(async () => {
-        const updates: Record<string, string> = {};
-        if (nicks.autodarts) updates.autodarts_user_id = nicks.autodarts;
-        if (nicks.dartcounter) updates.dartcounter_id = nicks.dartcounter;
-        if (nicks.dartsmind) updates.dartsmind_id = nicks.dartsmind;
-        await supabase.from("players").update(updates as any).eq("user_id", data.user!.id);
-      }, 1000);
+      const updates: Record<string, string> = {};
+      if (nicks.autodarts) updates.autodarts_user_id = nicks.autodarts;
+      if (nicks.dartcounter) updates.dartcounter_id = nicks.dartcounter;
+      if (nicks.dartsmind) updates.dartsmind_id = nicks.dartsmind;
+      
+      // Retry up to 5 times (trigger creates player record in same transaction, 
+      // but Supabase client may return before it's visible)
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const { error: updateErr, count } = await supabase
+          .from("players")
+          .update(updates as any)
+          .eq("user_id", data.user!.id);
+        if (!updateErr && (count === null || count > 0)) break;
+        await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+      }
     }
     
     return { error: error ? translateError(error.message) : null };

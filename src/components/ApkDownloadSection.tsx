@@ -6,7 +6,6 @@ import { useState } from "react";
 const features = [
   { icon: <Zap className="h-5 w-5" />, title: "Szybki dostęp", desc: "Aplikacja działa jak natywna — uruchamia się z ekranu głównego, bez otwierania przeglądarki." },
   { icon: <Bell className="h-5 w-5" />, title: "Powiadomienia", desc: "Otrzymuj powiadomienia o nadchodzących meczach i wynikach na żywo." },
-  { icon: <Bell className="h-5 w-5" />, title: "Powiadomienia", desc: "Otrzymuj powiadomienia o nadchodzących meczach i wynikach na żywo." },
   { icon: <Shield className="h-5 w-5" />, title: "Bezpieczeństwo", desc: "Plik APK pochodzi bezpośrednio z eDART Polska — bez reklam i zbędnych uprawnień." },
 ];
 
@@ -31,7 +30,7 @@ const ApkDownloadSection = () => {
             </div>
             <div>
               <h2 className="text-xl font-display font-bold text-foreground">Aplikacja Android</h2>
-              <p className="text-sm text-muted-foreground font-body">eDART Polska – APK v1.0</p>
+              <p className="text-sm text-muted-foreground font-body">eDART Polska – APK v1.1</p>
             </div>
           </div>
 

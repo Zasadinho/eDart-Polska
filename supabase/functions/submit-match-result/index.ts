@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { safeStat, safeAvg, isUuid } from "../_shared/validate.ts";
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -92,6 +93,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (match_id && !isUuid(match_id)) {
+      return new Response(JSON.stringify({ error: "Invalid match_id format" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (league_id && !isUuid(league_id)) {
+      return new Response(JSON.stringify({ error: "Invalid league_id format" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Find the match
     let matchId = match_id;
 
@@ -148,46 +163,66 @@ Deno.serve(async (req) => {
     // Determine status
     const newStatus = (auto_complete && isAdminOrMod) ? "completed" : "pending_approval";
 
-    // Validate checkout hits <= attempts
-    if (checkout_hits1 > checkout_attempts1 || checkout_hits2 > checkout_attempts2) {
-      return new Response(JSON.stringify({ error: "Checkout hits cannot exceed attempts" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Sanitize all numeric stats before writing to DB
+    const s = {
+      score1: safeStat(score1, 50),
+      score2: safeStat(score2, 50),
+      avg1: safeAvg(avg1),
+      avg2: safeAvg(avg2),
+      one_eighties1: safeStat(one_eighties1, 100),
+      one_eighties2: safeStat(one_eighties2, 100),
+      high_checkout1: safeStat(high_checkout1, 170),
+      high_checkout2: safeStat(high_checkout2, 170),
+      ton60_1: safeStat(ton60_1, 200),
+      ton60_2: safeStat(ton60_2, 200),
+      ton80_1: safeStat(ton80_1, 200),
+      ton80_2: safeStat(ton80_2, 200),
+      ton_plus1: safeStat(ton_plus1, 200),
+      ton_plus2: safeStat(ton_plus2, 200),
+      ton40_1: safeStat(ton40_1, 200),
+      ton40_2: safeStat(ton40_2, 200),
+      darts_thrown1: safeStat(darts_thrown1, 9999),
+      darts_thrown2: safeStat(darts_thrown2, 9999),
+      checkout_attempts1: safeStat(checkout_attempts1, 500),
+      checkout_attempts2: safeStat(checkout_attempts2, 500),
+      checkout_hits1: safeStat(checkout_hits1, 500),
+      checkout_hits2: safeStat(checkout_hits2, 500),
+      first_9_avg1: safeAvg(first_9_avg1),
+      first_9_avg2: safeAvg(first_9_avg2),
+    };
 
     // Update match
     const { error: updateError } = await supabase
       .from("matches")
       .update({
-        score1,
-        score2,
-        legs_won1: score1,
-        legs_won2: score2,
+        score1: s.score1,
+        score2: s.score2,
+        legs_won1: s.score1,
+        legs_won2: s.score2,
         status: newStatus,
         is_walkover: false,
-        avg1: avg1 ?? null,
-        avg2: avg2 ?? null,
-        one_eighties1,
-        one_eighties2,
-        high_checkout1,
-        high_checkout2,
-        ton60_1,
-        ton60_2,
-        ton80_1,
-        ton80_2,
-        ton_plus1,
-        ton_plus2,
-        ton40_1,
-        ton40_2,
-        darts_thrown1,
-        darts_thrown2,
-        checkout_attempts1,
-        checkout_attempts2,
-        checkout_hits1,
-        checkout_hits2,
-        first_9_avg1: first_9_avg1 ?? null,
-        first_9_avg2: first_9_avg2 ?? null,
+        avg1: s.avg1,
+        avg2: s.avg2,
+        one_eighties1: s.one_eighties1,
+        one_eighties2: s.one_eighties2,
+        high_checkout1: s.high_checkout1,
+        high_checkout2: s.high_checkout2,
+        ton60_1: s.ton60_1,
+        ton60_2: s.ton60_2,
+        ton80_1: s.ton80_1,
+        ton80_2: s.ton80_2,
+        ton_plus1: s.ton_plus1,
+        ton_plus2: s.ton_plus2,
+        ton40_1: s.ton40_1,
+        ton40_2: s.ton40_2,
+        darts_thrown1: s.darts_thrown1,
+        darts_thrown2: s.darts_thrown2,
+        checkout_attempts1: s.checkout_attempts1,
+        checkout_attempts2: s.checkout_attempts2,
+        checkout_hits1: s.checkout_hits1,
+        checkout_hits2: s.checkout_hits2,
+        first_9_avg1: s.first_9_avg1,
+        first_9_avg2: s.first_9_avg2,
         autodarts_link: autodarts_link ?? null,
       })
       .eq("id", matchId);

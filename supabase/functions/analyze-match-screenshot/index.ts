@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { isSafeUrl } from "../_shared/validate.ts";
 
 const OPENAI_GATEWAY = "https://api.openai.com/v1/chat/completions";
 const GEMINI_GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
@@ -227,6 +228,15 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "screenshot_urls array is required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Validate all URLs are safe (HTTPS, no internal/private addresses)
+    for (const url of screenshot_urls) {
+      if (!isSafeUrl(url)) {
+        return new Response(JSON.stringify({ error: "Invalid screenshot URL — only HTTPS URLs are allowed" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Limit to maximum 3 screenshots, in expected priority order
