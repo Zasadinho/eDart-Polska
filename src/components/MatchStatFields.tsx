@@ -33,13 +33,13 @@ const STAT_GROUPS: StatGroup[] = [
     ],
   },
   {
-    title: "Zakresy punktowe",
+    title: "Zakresy wizyt",
     icon: "🎯",
     rows: [
       { label: "60+ (60–99 pkt)", k1: "ton60_1", k2: "ton60_2" },
       { label: "100+ (100–139 pkt)", k1: "ton80_1", k2: "ton80_2" },
       { label: "140+ (140–169 pkt)", k1: "tonPlus1", k2: "tonPlus2" },
-      { label: "170+ (170–179 pkt)", k1: "ton40_1", k2: "ton40_2" },
+      { label: "170+ (170–180 pkt)", k1: "ton40_1", k2: "ton40_2" },
     ],
   },
   {
