@@ -282,43 +282,43 @@ export const achievements: Achievement[] = [
   // ═══════════════════════════════════════════════
   // ─── WYNIKI 60-99 (t60_1-t60_7) ───
   // ═══════════════════════════════════════════════
-  { id: "t60_1", name: "60+ Początkujący", description: "Zbierz 5 wizyt w widełkach 60-99 pkt", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 5 },
-  { id: "t60_2", name: "60+ Zbieracz", description: "Zbierz 10 wizyt w widełkach 60-99 pkt", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 10 },
-  { id: "t60_3", name: "60+ Kolekcjoner", description: "Zbierz 20 wizyt w widełkach 60-99 pkt", icon: "🎰", rarity: "rare", condition: (s) => s.ton60 >= 20 },
-  { id: "t60_4", name: "60+ Mistrz", description: "Zbierz 30 wizyt w widełkach 60-99 pkt", icon: "🎯", rarity: "rare", condition: (s) => s.ton60 >= 30 },
-  { id: "t60_5", name: "60+ Ekspert", description: "Zbierz 50 wizyt w widełkach 60-99 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton60 >= 50 },
-  { id: "t60_6", name: "60+ Maszyna", description: "Zbierz 75 wizyt w widełkach 60-99 pkt", icon: "🤖", rarity: "epic", condition: (s) => s.ton60 >= 75 },
-  { id: "t60_7", name: "60+ Legenda", description: "Zbierz 100 wizyt w widełkach 60-99 pkt", icon: "🌟", rarity: "legendary", condition: (s) => s.ton60 >= 100 },
+  { id: "t60_1", name: "60+ Początkujący", description: "Zbierz 5 wizyt w przedziale 60-99 pkt", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 5 },
+  { id: "t60_2", name: "60+ Zbieracz", description: "Zbierz 10 wizyt w przedziale 60-99 pkt", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 10 },
+  { id: "t60_3", name: "60+ Kolekcjoner", description: "Zbierz 20 wizyt w przedziale 60-99 pkt", icon: "🎰", rarity: "rare", condition: (s) => s.ton60 >= 20 },
+  { id: "t60_4", name: "60+ Mistrz", description: "Zbierz 30 wizyt w przedziale 60-99 pkt", icon: "🎯", rarity: "rare", condition: (s) => s.ton60 >= 30 },
+  { id: "t60_5", name: "60+ Ekspert", description: "Zbierz 50 wizyt w przedziale 60-99 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton60 >= 50 },
+  { id: "t60_6", name: "60+ Maszyna", description: "Zbierz 75 wizyt w przedziale 60-99 pkt", icon: "🤖", rarity: "epic", condition: (s) => s.ton60 >= 75 },
+  { id: "t60_7", name: "60+ Legenda", description: "Zbierz 100 wizyt w przedziale 60-99 pkt", icon: "🌟", rarity: "legendary", condition: (s) => s.ton60 >= 100 },
 
   // ═══════════════════════════════════════════════
   // ─── SETKI 100-139 (t100_1-t100_7) ───
   // ═══════════════════════════════════════════════
-  { id: "t100_1", name: "Setka Początkujący", description: "Zbierz 5 wizyt w widełkach 100-139 pkt (setki)", icon: "🃏", rarity: "common", condition: (s) => s.ton80 >= 5 },
-  { id: "t100_2", name: "Setka Zbieracz", description: "Zbierz 10 wizyt w widełkach 100-139 pkt", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 10 },
-  { id: "t100_3", name: "Setka Kolekcjoner", description: "Zbierz 15 wizyt w widełkach 100-139 pkt", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 15 },
-  { id: "t100_4", name: "Setka Mistrz", description: "Zbierz 30 wizyt w widełkach 100-139 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton80 >= 30 },
-  { id: "t100_5", name: "Setka Ekspert", description: "Zbierz 50 wizyt w widełkach 100-139 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton80 >= 50 },
-  { id: "t100_6", name: "Setka Maszyna", description: "Zbierz 75 wizyt w widełkach 100-139 pkt", icon: "🤖", rarity: "legendary", condition: (s) => s.ton80 >= 75 },
-  { id: "t100_7", name: "Setka Legenda", description: "Zbierz 100 wizyt w widełkach 100-139 pkt", icon: "🌟", rarity: "legendary", condition: (s) => s.ton80 >= 100 },
+  { id: "t100_1", name: "Setka Początkujący", description: "Zbierz 5 wizyt w przedziale 100-139 pkt (setki)", icon: "🃏", rarity: "common", condition: (s) => s.ton80 >= 5 },
+  { id: "t100_2", name: "Setka Zbieracz", description: "Zbierz 10 wizyt w przedziale 100-139 pkt", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 10 },
+  { id: "t100_3", name: "Setka Kolekcjoner", description: "Zbierz 15 wizyt w przedziale 100-139 pkt", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 15 },
+  { id: "t100_4", name: "Setka Mistrz", description: "Zbierz 30 wizyt w przedziale 100-139 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton80 >= 30 },
+  { id: "t100_5", name: "Setka Ekspert", description: "Zbierz 50 wizyt w przedziale 100-139 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton80 >= 50 },
+  { id: "t100_6", name: "Setka Maszyna", description: "Zbierz 75 wizyt w przedziale 100-139 pkt", icon: "🤖", rarity: "legendary", condition: (s) => s.ton80 >= 75 },
+  { id: "t100_7", name: "Setka Legenda", description: "Zbierz 100 wizyt w przedziale 100-139 pkt", icon: "🌟", rarity: "legendary", condition: (s) => s.ton80 >= 100 },
 
   // ═══════════════════════════════════════════════
   // ─── WYSOKIE WIZYTY 140-169 (t140_1-t140_6) ───
   // ═══════════════════════════════════════════════
-  { id: "t140_1", name: "140+ Łowca", description: "Rzuć 3 wizyty w widełkach 140-169 pkt", icon: "🎪", rarity: "common", condition: (s) => s.tonPlus >= 3 },
-  { id: "t140_2", name: "140+ Zbieracz", description: "Rzuć 5 wizyt w widełkach 140-169 pkt", icon: "🎪", rarity: "rare", condition: (s) => s.tonPlus >= 5 },
-  { id: "t140_3", name: "140+ Kolekcjoner", description: "Rzuć 10 wizyt w widełkach 140-169 pkt", icon: "🎪", rarity: "rare", condition: (s) => s.tonPlus >= 10 },
-  { id: "t140_4", name: "140+ Mistrz", description: "Rzuć 20 wizyt w widełkach 140-169 pkt", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 20 },
-  { id: "t140_5", name: "140+ Ekspert", description: "Rzuć 30 wizyt w widełkach 140-169 pkt", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 30 },
-  { id: "t140_6", name: "140+ Legenda", description: "Rzuć 50 wizyt w widełkach 140-169 pkt", icon: "🎪", rarity: "legendary", condition: (s) => s.tonPlus >= 50 },
+  { id: "t140_1", name: "140+ Łowca", description: "Rzuć 3 wizyty w przedziale 140-169 pkt", icon: "🎪", rarity: "common", condition: (s) => s.tonPlus >= 3 },
+  { id: "t140_2", name: "140+ Zbieracz", description: "Rzuć 5 wizyt w przedziale 140-169 pkt", icon: "🎪", rarity: "rare", condition: (s) => s.tonPlus >= 5 },
+  { id: "t140_3", name: "140+ Kolekcjoner", description: "Rzuć 10 wizyt w przedziale 140-169 pkt", icon: "🎪", rarity: "rare", condition: (s) => s.tonPlus >= 10 },
+  { id: "t140_4", name: "140+ Mistrz", description: "Rzuć 20 wizyt w przedziale 140-169 pkt", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 20 },
+  { id: "t140_5", name: "140+ Ekspert", description: "Rzuć 30 wizyt w przedziale 140-169 pkt", icon: "🎪", rarity: "epic", condition: (s) => s.tonPlus >= 30 },
+  { id: "t140_6", name: "140+ Legenda", description: "Rzuć 50 wizyt w przedziale 140-169 pkt", icon: "🎪", rarity: "legendary", condition: (s) => s.tonPlus >= 50 },
 
   // ═══════════════════════════════════════════════
   // ─── MAKSYMALNE WIZYTY 170-180 (t170_1-t170_5) ───
   // ═══════════════════════════════════════════════
   { id: "t170_1", name: "Pierwsza 170+", description: "Rzuć pierwszą wizytę za 170-180 pkt", icon: "🎯", rarity: "rare", condition: (s) => s.ton40 >= 1 },
-  { id: "t170_2", name: "170+ Kolekcjoner", description: "Rzuć 3 wizyty w widełkach 170-180 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton40 >= 3 },
-  { id: "t170_3", name: "170+ Ekspert", description: "Rzuć 5 wizyt w widełkach 170-180 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton40 >= 5 },
-  { id: "t170_4", name: "170+ Mistrz", description: "Rzuć 10 wizyt w widełkach 170-180 pkt", icon: "🎯", rarity: "legendary", condition: (s) => s.ton40 >= 10 },
-  { id: "t170_5", name: "170+ Legenda", description: "Rzuć 20 wizyt w widełkach 170-180 pkt", icon: "🌟", rarity: "legendary", condition: (s) => s.ton40 >= 20 },
+  { id: "t170_2", name: "170+ Kolekcjoner", description: "Rzuć 3 wizyty w przedziale 170-180 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton40 >= 3 },
+  { id: "t170_3", name: "170+ Ekspert", description: "Rzuć 5 wizyt w przedziale 170-180 pkt", icon: "🎯", rarity: "epic", condition: (s) => s.ton40 >= 5 },
+  { id: "t170_4", name: "170+ Mistrz", description: "Rzuć 10 wizyt w przedziale 170-180 pkt", icon: "🎯", rarity: "legendary", condition: (s) => s.ton40 >= 10 },
+  { id: "t170_5", name: "170+ Legenda", description: "Rzuć 20 wizyt w przedziale 170-180 pkt", icon: "🌟", rarity: "legendary", condition: (s) => s.ton40 >= 20 },
 
   // ═══════════════════════════════════════════════
   // ─── SUMA WYSOKICH WIZYT (tt1-tt6) ───
