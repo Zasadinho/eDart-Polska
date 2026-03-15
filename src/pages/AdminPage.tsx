@@ -37,7 +37,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 
-type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles" | "integrations" | "discord" | "audit" | "export" | "bugs" | "chats" | "channels" | "league-status" | "activity" | "challenges";
+type AdminTab = "overview" | "leagues" | "players" | "matches" | "approval" | "roles" | "integrations" | "discord" | "audit" | "export" | "bugs" | "chats" | "channels" | "league-status" | "activity" | "challenges" | "self-host";
 
 const LEAGUE_TYPE_LABELS: Record<LeagueType, string> = {
   league: "Liga (Round-Robin)",
@@ -98,6 +98,7 @@ const AdminPage = () => {
     { id: "channels", label: "Kanały", icon: <MessageCircle className="h-4 w-4" />, adminOnly: true },
     { id: "challenges", label: "Wyzwania", icon: <Trophy className="h-4 w-4" />, adminOnly: true },
     { id: "bugs", label: "Błędy", icon: <Bug className="h-4 w-4" /> },
+    { id: "self-host", label: "Self-Host", icon: <Settings className="h-4 w-4" />, adminOnly: true },
   ];
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
@@ -146,6 +147,7 @@ const AdminPage = () => {
           {activeTab === "channels" && isAdmin && <AdminChannelPanel />}
           {activeTab === "challenges" && isAdmin && <WeeklyChallengesPanel />}
           {activeTab === "bugs" && <BugReportsPanel />}
+          {activeTab === "self-host" && isAdmin && <SelfHostConfigPanel />}
         </motion.div>
       </AnimatePresence>
       </div>
