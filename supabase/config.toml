@@ -4,9 +4,9 @@ project_id = "uiolhzctnbskdjteufkj"
   [functions.auth-email-hook]
     verify_jwt = false
   [functions.auto-submit-league-match]
-    verify_jwt = false
+    verify_jwt = true
   [functions.check-league-match]
-    verify_jwt = false
+    verify_jwt = true
   [functions.cleanup-group-chat]
     verify_jwt = false
   [functions.cleanup-storage]

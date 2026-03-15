@@ -1,10 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const KEYCLOAK_URL = "https://login.autodarts.io/realms/autodarts/protocol/openid-connect/token";
 const API_BASE = "https://api.autodarts.io";
@@ -61,6 +56,7 @@ async function getAutodartsToken(): Promise<string> {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

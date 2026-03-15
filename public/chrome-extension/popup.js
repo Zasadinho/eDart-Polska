@@ -1,5 +1,11 @@
-// ─── Popup dashboard logic v2.2 ───
+// ─── Popup dashboard logic v2.3 ───
 const bAPI = typeof browser !== "undefined" ? browser : chrome;
+
+// ─── XSS prevention ───
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
 
 function sendMsg(msg) {
   return new Promise((resolve) => {
@@ -99,10 +105,10 @@ async function loadLeagues() {
   addLog(`Załadowano ${res.leagues.length} lig`, "success");
 
   container.innerHTML = res.leagues.map((l) => `
-    <div class="league-item" data-league-id="${l.id}">
+    <div class="league-item" data-league-id="${escapeHtml(l.id)}">
       <div>
-        <div class="league-name">${l.name}</div>
-        <div class="league-meta">${l.season} · ${l.league_type || "liga"}</div>
+        <div class="league-name">${escapeHtml(l.name)}</div>
+        <div class="league-meta">${escapeHtml(l.season)} · ${escapeHtml(l.league_type || "liga")}</div>
       </div>
       <span style="color: var(--color-success); font-size: var(--font-size-xs);">●</span>
     </div>
@@ -139,13 +145,13 @@ async function loadLeagueMatches(leagueId, leagueName) {
       ? '<span class="badge badge-success">✓ Zakończony</span>'
       : m.status === "pending"
         ? '<span class="badge badge-warning">⏳ Oczekuje</span>'
-        : `<span class="badge badge-muted">${m.status}</span>`;
+        : `<span class="badge badge-muted">${escapeHtml(m.status)}</span>`;
 
     return `
       <div class="match-card">
         <div class="players">
-          <strong>${m.score1 ?? "?"}</strong> : <strong>${m.score2 ?? "?"}</strong>
-          ${m.avg1 ? ` (avg: ${m.avg1})` : ""}
+          <strong>${escapeHtml(m.score1 ?? "?")}</strong> : <strong>${escapeHtml(m.score2 ?? "?")}</strong>
+          ${m.avg1 ? ` (avg: ${escapeHtml(m.avg1)})` : ""}
         </div>
         <div class="meta">
           <span>${m.date ? new Date(m.date).toLocaleDateString("pl") : "?"}</span>
@@ -378,12 +384,12 @@ function loadMatchHistory(container, statsSection, lastMatchSection, lastMatchEl
     if (last) {
       lastMatchSection.style.display = "block";
       lastMatchEl.innerHTML = `
-        <div class="players"><strong>${last.player1}</strong> vs <strong>${last.player2}</strong></div>
+        <div class="players"><strong>${escapeHtml(last.player1)}</strong> vs <strong>${escapeHtml(last.player2)}</strong></div>
         <div style="font-size:20px; font-weight:700; text-align:center; margin:8px 0; color:var(--color-text)">
-          ${last.score || "? : ?"}
+          ${escapeHtml(last.score || "? : ?")}
         </div>
         <div class="meta">
-          <span>${last.league || "Liga"}</span>
+          <span>${escapeHtml(last.league || "Liga")}</span>
           <span class="badge ${last.status === "submitted" ? "badge-success" : last.status === "already_submitted" ? "badge-info" : "badge-error"}">
             ${last.status === "submitted" ? "✓ Wysłany" : last.status === "already_submitted" ? "↻ Już zgłoszony" : "✗ Błąd"}
           </span>
@@ -401,8 +407,8 @@ function loadMatchHistory(container, statsSection, lastMatchSection, lastMatchEl
           : '<span class="badge badge-error">✗</span>';
       return `
         <div class="match-card">
-          <div class="players">${m.player1} vs ${m.player2} — <strong>${m.score || "?"}</strong></div>
-          <div class="meta"><span>${m.league || ""} · ${timeStr}</span>${badge}</div>
+          <div class="players">${escapeHtml(m.player1)} vs ${escapeHtml(m.player2)} — <strong>${escapeHtml(m.score || "?")}</strong></div>
+          <div class="meta"><span>${escapeHtml(m.league || "")} · ${timeStr}</span>${badge}</div>
         </div>
       `;
     }).join("");
