@@ -28,7 +28,7 @@ interface LeagueContextType {
   pendingPlayers: Player[];
   addPendingPlayer: (name: string) => void;
   addPlayer: (name: string) => void;
-  addLeague: (league: Omit<League, "id">) => void;
+  addLeague: (league: Omit<League, "id">) => Promise<{ data: any; error: any }>;
   updateLeague: (id: string, data: Partial<League>) => void;
   deleteLeague: (id: string) => void;
   updatePlayer: (id: string, data: Partial<Player>) => void;
@@ -791,6 +791,7 @@ export const LeagueProvider = ({ children }: { children: ReactNode }) => {
       league_type: league.league_type || "league",
       bonus_rules: league.bonus_rules as any,
       registration_open: league.registration_open ?? false,
+      registration_deadline: league.registration_deadline ?? null,
       meetings_per_pair: league.meetings_per_pair ?? 1,
       platform: league.platform ?? "autodarts",
       third_place_match: league.third_place_match ?? false,

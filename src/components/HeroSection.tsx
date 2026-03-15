@@ -16,14 +16,19 @@ const HeroSection = () => {
   let total180s = 0;
   let bestCheckout = 0;
   let totalDartsThrown = 0;
+  let avgSum = 0;
+  let avgCount = 0;
   matches.forEach(m => {
     if (m.status === "completed") {
       total180s += (m.oneEighties1 ?? 0) + (m.oneEighties2 ?? 0);
       totalDartsThrown += (m.dartsThrown1 ?? 0) + (m.dartsThrown2 ?? 0);
       if (m.highCheckout1 != null && m.highCheckout1 > bestCheckout) bestCheckout = m.highCheckout1;
       if (m.highCheckout2 != null && m.highCheckout2 > bestCheckout) bestCheckout = m.highCheckout2;
+      if (m.avg1 != null && m.avg1 > 0) { avgSum += m.avg1; avgCount++; }
+      if (m.avg2 != null && m.avg2 > 0) { avgSum += m.avg2; avgCount++; }
     }
   });
+  const globalAvg = avgCount > 0 ? (avgSum / avgCount).toFixed(1) : "—";
 
   const stats = [
     { icon: <UserCheck className="h-5 w-5" />, label: "Zarejestrowani", value: totalRegistered.toString(), desc: "Kont założonych na platformie" },
@@ -33,7 +38,7 @@ const HeroSection = () => {
     { icon: <Crosshair className="h-5 w-5" />, label: "Rzutów lotką", value: totalDartsThrown > 0 ? formatNumber(totalDartsThrown) : "0", desc: "Łączna liczba rzutów w sezonie" },
     { icon: <Flame className="h-5 w-5" />, label: "Maksów 180", value: total180s.toString(), desc: "Perfekcyjnych wizyt przy tablicy" },
     { icon: <Crosshair className="h-5 w-5" />, label: "Najwyższy checkout", value: bestCheckout > 0 ? bestCheckout.toString() : "—", desc: "Rekordowe zamknięcie w sezonie" },
-    { icon: <Users className="h-5 w-5" />, label: "Społeczność", value: totalRegistered > 50 ? "Duża" : totalRegistered > 20 ? "Średnia" : "Rosnąca", desc: "Wielkość naszej społeczności" },
+    { icon: <Users className="h-5 w-5" />, label: "Średnia graczy", value: globalAvg, desc: "Średnia wszystkich graczy na platformie" },
   ];
 
   return (

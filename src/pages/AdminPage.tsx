@@ -585,7 +585,8 @@ const LeaguesTab = ({ leagues, players, addLeague, updateLeague, deleteLeague, a
     } else {
       const result = await addLeague({ name, season, description, format, is_active: isActive, registration_open: registrationOpen, registration_deadline: registrationDeadline || null, max_legs: maxLegs, league_type: leagueType, bonus_rules: bonusRules, meetings_per_pair: meetingsPerPair, platform: leaguePlatform, third_place_match: thirdPlaceEnabled, lucky_loser: luckyLoserEnabled, max_players: maxPlayers, exclusive_platform: exclusivePlatform });
       if (result?.error) {
-        toast({ title: "Błąd", description: "Nie udało się utworzyć. Sprawdź uprawnienia.", variant: "destructive" });
+        console.error("League creation error:", result.error);
+        toast({ title: "Błąd", description: result.error.message || "Nie udało się utworzyć ligi.", variant: "destructive" });
         return;
       }
       toast({ title: "Utworzono!", description: `${name} została utworzona.` });

@@ -280,7 +280,7 @@ export const achievements: Achievement[] = [
   { id: "f11", name: "Kosmiczny Start", description: "Średnia z pierwszych 9 rzutów powyżej 140", icon: "🌌", rarity: "legendary", condition: (s) => s.bestFirst9Avg >= 140 },
 
   // ═══════════════════════════════════════════════
-  // ─── TONY 60+ (t60_1-t60_7) ───
+  // ─── PUNKTY 60+ (t60_1-t60_7) ───
   // ═══════════════════════════════════════════════
   { id: "t60_1", name: "60+ Początkujący", description: "Zbierz 5 wyników 60+", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 5 },
   { id: "t60_2", name: "60+ Zbieracz", description: "Zbierz 10 wyników 60+", icon: "🎰", rarity: "common", condition: (s) => s.ton60 >= 10 },
@@ -291,7 +291,7 @@ export const achievements: Achievement[] = [
   { id: "t60_7", name: "60+ Legenda", description: "Zbierz 100 wyników 60+", icon: "🌟", rarity: "legendary", condition: (s) => s.ton60 >= 100 },
 
   // ═══════════════════════════════════════════════
-  // ─── TONY 100+ (t100_1-t100_7) ───
+  // ─── PUNKTY 100+ (t100_1-t100_7) ───
   // ═══════════════════════════════════════════════
   { id: "t100_1", name: "100+ Początkujący", description: "Zbierz 5 wyników 100+", icon: "🃏", rarity: "common", condition: (s) => s.ton80 >= 5 },
   { id: "t100_2", name: "100+ Zbieracz", description: "Zbierz 10 wyników 100+", icon: "🃏", rarity: "rare", condition: (s) => s.ton80 >= 10 },
@@ -302,7 +302,7 @@ export const achievements: Achievement[] = [
   { id: "t100_7", name: "100+ Legenda", description: "Zbierz 100 wyników 100+", icon: "🌟", rarity: "legendary", condition: (s) => s.ton80 >= 100 },
 
   // ═══════════════════════════════════════════════
-  // ─── TONY 140+ (t140_1-t140_6) ───
+  // ─── PUNKTY 140+ (t140_1-t140_6) ───
   // ═══════════════════════════════════════════════
   { id: "t140_1", name: "140+ Łowca", description: "Rzuć 3 wyniki 140+", icon: "🎪", rarity: "common", condition: (s) => s.tonPlus >= 3 },
   { id: "t140_2", name: "140+ Zbieracz", description: "Rzuć 5 wyników 140+", icon: "🎪", rarity: "rare", condition: (s) => s.tonPlus >= 5 },
@@ -312,7 +312,7 @@ export const achievements: Achievement[] = [
   { id: "t140_6", name: "140+ Legenda", description: "Rzuć 50 wyników 140+", icon: "🎪", rarity: "legendary", condition: (s) => s.tonPlus >= 50 },
 
   // ═══════════════════════════════════════════════
-  // ─── TONY 170+ (t170_1-t170_5) ───
+  // ─── PUNKTY 170+ (t170_1-t170_5) ───
   // ═══════════════════════════════════════════════
   { id: "t170_1", name: "Pierwsza 170+", description: "Rzuć pierwszy wynik 170+", icon: "🎯", rarity: "rare", condition: (s) => s.ton40 >= 1 },
   { id: "t170_2", name: "170+ Kolekcjoner", description: "Rzuć 3 wyniki 170+", icon: "🎯", rarity: "epic", condition: (s) => s.ton40 >= 3 },
@@ -321,14 +321,14 @@ export const achievements: Achievement[] = [
   { id: "t170_5", name: "170+ Legenda", description: "Rzuć 20 wyników 170+", icon: "🌟", rarity: "legendary", condition: (s) => s.ton40 >= 20 },
 
   // ═══════════════════════════════════════════════
-  // ─── SUMA TONÓW (tt1-tt6) ───
+  // ─── SUMA PUNKTÓW (tt1-tt6) ───
   // ═══════════════════════════════════════════════
-  { id: "tt1", name: "10 Tonów", description: "Zbierz łącznie 10 tonów (60+100+140+170+)", icon: "💰", rarity: "common", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 10 },
-  { id: "tt2", name: "25 Tonów", description: "Zbierz łącznie 25 tonów", icon: "💰", rarity: "rare", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 25 },
-  { id: "tt3", name: "Ton Kolekcjoner", description: "Zbierz łącznie 50 tonów", icon: "💰", rarity: "epic", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 50 },
-  { id: "tt4", name: "Ton Milioner", description: "Zbierz łącznie 100 tonów", icon: "💎", rarity: "epic", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 100 },
-  { id: "tt5", name: "Ton Bogacz", description: "Zbierz łącznie 200 tonów", icon: "💎", rarity: "legendary", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 200 },
-  { id: "tt6", name: "Ton Imperator", description: "Zbierz łącznie 500 tonów", icon: "👑", rarity: "legendary", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 500 },
+  { id: "tt1", name: "10 Punktów", description: "Zbierz łącznie 10 punktów (60+100+140+170+)", icon: "💰", rarity: "common", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 10 },
+  { id: "tt2", name: "25 Punktów", description: "Zbierz łącznie 25 punktów", icon: "💰", rarity: "rare", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 25 },
+  { id: "tt3", name: "Punkt Kolekcjoner", description: "Zbierz łącznie 50 punktów", icon: "💰", rarity: "epic", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 50 },
+  { id: "tt4", name: "Punkt Milioner", description: "Zbierz łącznie 100 punktów", icon: "💎", rarity: "epic", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 100 },
+  { id: "tt5", name: "Punkt Bogacz", description: "Zbierz łącznie 200 punktów", icon: "💎", rarity: "legendary", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 200 },
+  { id: "tt6", name: "Punkt Imperator", description: "Zbierz łącznie 500 punktów", icon: "👑", rarity: "legendary", condition: (s) => (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 500 },
 
   // ═══════════════════════════════════════════════
   // ─── PROCENT WYGRANYCH (r1-r9) ───
@@ -400,7 +400,7 @@ export const achievements: Achievement[] = [
   { id: "x2", name: "Debiut z Klasą", description: "Wygraj pierwszy mecz ze średnią 70+", icon: "🎩", rarity: "rare", condition: (s) => s.wins >= 1 && s.matchesPlayed === 1 && s.avg >= 70 },
   { id: "x3", name: "Snajper i Siłacz", description: "Checkout 100+ i 180-tka w jednej lidze", icon: "🎯", rarity: "rare", condition: (s) => s.highestCheckout >= 100 && s.oneEighties >= 1 },
   { id: "x4", name: "Trójca", description: "Średnia 60+, checkout 60+ i min. 3 wygrane", icon: "🔱", rarity: "rare", condition: (s) => s.avg >= 60 && s.highestCheckout >= 60 && s.wins >= 3 },
-  { id: "x5", name: "Wszechstronny", description: "Tony 60+, 100+, 140+ i 170+ w jednej lidze", icon: "🌈", rarity: "rare", condition: (s) => s.ton60 >= 1 && s.ton80 >= 1 && s.tonPlus >= 1 && s.ton40 >= 1 },
+  { id: "x5", name: "Wszechstronny", description: "Punkty 60+, 100+, 140+ i 170+ w jednej lidze", icon: "🌈", rarity: "rare", condition: (s) => s.ton60 >= 1 && s.ton80 >= 1 && s.tonPlus >= 1 && s.ton40 >= 1 },
   { id: "x6", name: "Ligowy Weteran", description: "Rozegraj 20 meczów i zdobądź 20 punktów", icon: "🎖️", rarity: "rare", condition: (s) => s.matchesPlayed >= 20 && s.points >= 20 },
   { id: "x7", name: "Kompletny Gracz", description: "Średnia 70+, checkout 80+ i min. 5 wygranych", icon: "🏅", rarity: "epic", condition: (s) => s.avg >= 70 && s.highestCheckout >= 80 && s.wins >= 5 },
   { id: "x8", name: "180 i CO 100+", description: "Rzuć 180 i zamknij checkoutem 100+ w jednej lidze", icon: "🎯", rarity: "epic", condition: (s) => s.oneEighties >= 1 && s.highestCheckout >= 100 },
@@ -416,11 +416,11 @@ export const achievements: Achievement[] = [
   { id: "x18", name: "5000 Dartsów + 50x 180", description: "Rzuć 5000 dartsów i 50x 180", icon: "🌠", rarity: "legendary", condition: (s) => s.totalDartsThrown >= 5000 && s.oneEighties >= 50 },
   { id: "x19", name: "10 Wygranych + Średnia 80+", description: "Wygraj 10 meczów ze średnią 80+", icon: "🏆", rarity: "epic", condition: (s) => s.wins >= 10 && s.avg >= 80 },
   { id: "x20", name: "25 Wygranych + 10x 180", description: "Wygraj 25 meczów i rzuć 10x 180", icon: "🥇", rarity: "epic", condition: (s) => s.wins >= 25 && s.oneEighties >= 10 },
-  { id: "x21", name: "50 Meczów + 100 Tonów", description: "Rozegraj 50 meczów i zbierz 100 tonów", icon: "🏛️", rarity: "legendary", condition: (s) => s.matchesPlayed >= 50 && (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 100 },
+  { id: "x21", name: "50 Meczów + 100 Punktów", description: "Rozegraj 50 meczów i zbierz 100 punktów", icon: "🏛️", rarity: "legendary", condition: (s) => s.matchesPlayed >= 50 && (s.ton60 + s.ton80 + s.tonPlus + s.ton40) >= 100 },
   { id: "x22", name: "Średnia 90+ + 5x 180", description: "Średnia ligowa 90+ i 5x 180 w jednej lidze", icon: "💫", rarity: "legendary", condition: (s) => s.avg >= 90 && s.oneEighties >= 5 },
   { id: "x23", name: "20x 180 + CO 120+", description: "Rzuć 20x 180 i checkout 120+", icon: "🔥", rarity: "legendary", condition: (s) => s.oneEighties >= 20 && s.highestCheckout >= 120 },
   { id: "x24", name: "30 Meczów + Średnia 70+", description: "Rozegraj 30 meczów ze średnią 70+", icon: "📈", rarity: "epic", condition: (s) => s.matchesPlayed >= 30 && s.avg >= 70 },
-  { id: "x25", name: "Ton Master", description: "Każdy zakres tonów min. 10 (60+, 100+, 140+, 170+)", icon: "🌈", rarity: "legendary", condition: (s) => s.ton60 >= 10 && s.ton80 >= 10 && s.tonPlus >= 10 && s.ton40 >= 10 },
+  { id: "x25", name: "Punkt Master", description: "Każdy zakres punktów min. 10 (60+, 100+, 140+, 170+)", icon: "🌈", rarity: "legendary", condition: (s) => s.ton60 >= 10 && s.ton80 >= 10 && s.tonPlus >= 10 && s.ton40 >= 10 },
   { id: "x26", name: "Elita Dartsów", description: "Średnia 85+, checkout 120+ i 10+ wygranych", icon: "💎", rarity: "legendary", condition: (s) => s.avg >= 85 && s.highestCheckout >= 120 && s.wins >= 10 },
   { id: "x27", name: "Niezniszczalny", description: "30 meczów, 70%+ wygranych i średnia 65+", icon: "🏰", rarity: "legendary", condition: (s) => s.matchesPlayed >= 30 && s.winRate >= 70 && s.avg >= 65 },
   { id: "x28", name: "Ligowy Bóg", description: "50 meczów, 80%+ wygranych, średnia 80+ i 10+ 180-tek", icon: "👑", rarity: "legendary", condition: (s) => s.matchesPlayed >= 50 && s.winRate >= 80 && s.avg >= 80 && s.oneEighties >= 10 },
